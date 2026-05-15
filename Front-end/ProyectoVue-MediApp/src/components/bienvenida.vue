@@ -18,7 +18,7 @@
     </div>
 
   </nav>
-<div class="texto">La agenda medica mas <br> usada en el mundo.</div>
+<div class="texto">Tu salud, mas simple.</div>
 
   <button class="boton3"> 
     <span>Descubrela</span>
@@ -122,7 +122,7 @@
   background-color: #D9D9D9;
   align-items: center;
   position: absolute;
-  top: 500px;
+  top: 430px;
   left: 50%;
   transform: translateX(-50%);
   border-radius: 28px;
