@@ -1,3 +1,5 @@
+<!-- JavaScript -->
+
 <script setup lang="ts">
 
 import { ref } from 'vue'
@@ -37,6 +39,9 @@ function registrar() {
 }
 
 </script>
+
+
+<!-- HTML -->
 
 <template>
   <div class="contenedor">
@@ -87,7 +92,11 @@ function registrar() {
   </div>
 </template>
 
+<!-- CSS -->
+
 <style scoped>
+
+
 .contenedor {
   max-width: 480px;
   margin: 60px auto;
@@ -165,4 +174,6 @@ button:hover {
   color: green;
   font-size: 1rem;
 }
+
+
 </style>
