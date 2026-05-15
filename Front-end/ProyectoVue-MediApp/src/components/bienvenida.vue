@@ -1,87 +1,59 @@
 <template>
-  <div class="item">
-    <i>
-      <slot name="icon"></slot>
-    </i>
-    <div class="details">
-      <h3>
-        <slot name="heading"></slot>
-      </h3>
-      <slot></slot>
+  <nav class="navbar">
+
+    <div class="navbar-logo">
+      <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
+      <span>App</span>
     </div>
-  </div>
+
+    <div class="navbar-acciones">
+      <slot />
+    </div>
+
+  </nav>
 </template>
 
 <style scoped>
-.item {
-  margin-top: 2rem;
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
   display: flex;
-  position: relative;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #D9D9D9;
+  box-sizing: border-box;
+  padding: 8px 24px;
+  z-index: 100;
 }
 
-.details {
-  flex: 1;
-  margin-left: 1rem;
-}
-
-i {
+.navbar-logo {
   display: flex;
-  place-items: center;
-  place-content: center;
-  width: 32px;
-  height: 32px;
-
-  color: var(--color-text);
+  align-items: center;
+  gap: 0;
 }
 
-h3 {
-  font-size: 1.2rem;
-  font-weight: 500;
-  margin-bottom: 0.4rem;
-  color: var(--color-heading);
+.navbar-logo img {
+  width: 80px;
+  height: 80px;
 }
 
-@media (min-width: 1024px) {
-  .item {
-    margin-top: 0;
-    padding: 0.4rem 0 1rem calc(var(--section-gap) / 2);
-  }
+.navbar-logo span {
+  font-size: 28px;
+  font-weight: bold;
+  background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-left: -14px;
+  margin-top: 14px;
+  
+}
 
-  i {
-    top: calc(50% - 25px);
-    left: -26px;
-    position: absolute;
-    border: 1px solid var(--color-border);
-    background: var(--color-background);
-    border-radius: 8px;
-    width: 50px;
-    height: 50px;
-  }
-
-  .item:before {
-    content: ' ';
-    border-left: 1px solid var(--color-border);
-    position: absolute;
-    left: 0;
-    bottom: calc(50% + 25px);
-    height: calc(50% - 25px);
-  }
-
-  .item:after {
-    content: ' ';
-    border-left: 1px solid var(--color-border);
-    position: absolute;
-    left: 0;
-    top: calc(50% + 25px);
-    height: calc(50% - 25px);
-  }
-
-  .item:first-of-type:before {
-    display: none;
-  }
-
-  .item:last-of-type:after {
-    display: none;
-  }
+.navbar-acciones {
+  display: flex;
+  gap: 12px;
 }
 </style>
