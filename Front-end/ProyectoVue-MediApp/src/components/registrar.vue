@@ -32,12 +32,21 @@ function validar(): boolean {
   return true
 }
 
+function guardarEnSession() {
+  sessionStorage.setItem('nombre', form.value.nombre)
+  sessionStorage.setItem('apellido', form.value.apellido)
+  sessionStorage.setItem('email', form.value.email)
+  sessionStorage.setItem('telefono', form.value.telefono)
+  sessionStorage.setItem('password', form.value.password)
+  sessionStorage.setItem('confirmarPassword', form.value.confirmarPassword)
+}
+
 function registrar() {
   error.value = ''
   if (!validar()) return
+  guardarEnSession()
   exito.value = true
 }
-
 </script>
 
 
@@ -50,23 +59,23 @@ function registrar() {
     <form v-if="!exito" @submit.prevent="registrar">
       <div class="fila-doble">
         <div class="campo">
-          <label for="nombre">Nombre *</label>
+          <label for="nombre">Nombre</label>
           <input id="nombre" v-model="form.nombre" type="text" placeholder="Juan" required />
         </div>
         <div class="campo">
-          <label for="apellido">Apellido *</label>
+          <label for="apellido">Apellido</label>
           <input id="apellido" v-model="form.apellido" type="text" placeholder="Pérez" required />
         </div>
       </div>
 
       <div class="campo">
-        <label for="email">Correo electrónico *</label>
+        <label for="email">Correo electrónico</label>
         <input id="email" v-model="form.email" type="email" placeholder="juan@ejemplo.com" required />
       </div>
 
       <div class="campo">
         <label for="telefono">Teléfono</label>
-        <input id="telefono" v-model="form.telefono" type="tel" placeholder="+54 11 1234-5678" />
+        <input id="telefono" v-model="form.telefono" type="tel" placeholder="11 1234-5678" />
       </div>
 
       <div class="campo">
@@ -106,13 +115,13 @@ function registrar() {
 }
 
 h1 {
-  margin-bottom: 1.5rem;
-  font-size: 1.6rem;
+  margin-bottom: 24px;
+  font-size: 25.6px;
 }
 
 .fila-doble {
   display: flex;
-  gap: 1rem;
+  gap: 16px;
 }
 
 .fila-doble .campo {
@@ -122,19 +131,19 @@ h1 {
 .campo {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
 }
 
 label {
-  margin-bottom: 0.3rem;
-  font-size: 0.9rem;
+  margin-bottom: 4.8px;
+  font-size: 14.4px;
 }
 
 input {
-  padding: 0.5rem 0.75rem;
+  padding: 8px 12px;
   border: 1px solid #bbb;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 input:focus {
@@ -144,13 +153,13 @@ input:focus {
 
 button {
   width: 100%;
-  padding: 0.65rem;
-  margin-top: 0.5rem;
+  padding: 10.4px;
+  margin-top: 8px;
   background: #4a90e2;
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -160,19 +169,19 @@ button:hover {
 
 .error {
   color: red;
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
+  font-size: 13.6px;
+  margin-bottom: 8px;
 }
 
 .login-link {
-  margin-top: 1rem;
+  margin-top: 16px;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 14.4px;
 }
 
 .exito {
   color: green;
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 
