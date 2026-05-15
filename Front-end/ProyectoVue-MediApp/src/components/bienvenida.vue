@@ -1,4 +1,5 @@
 <template>
+
   <nav class="navbar">
 
     <div class="navbar-logo">
@@ -7,13 +8,25 @@
     </div>
 
     <div class="navbar-acciones">
-      <slot />
+      <button class="boton1"> 
+        <span>Registrar</span>
+      </button>
+
+      <button class="boton2"> 
+        <span>Iniciar sesión</span>
+      </button>
     </div>
 
   </nav>
+<div class="texto">La agenda medica mas <br> usada en el mundo.</div>
+
+  <button class="boton3"> 
+    <span>Descubrela</span>
+  </button>
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap');
 
 .navbar {
   position: fixed;
@@ -36,24 +49,99 @@
 }
 
 .navbar-logo img {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
 }
 
 .navbar-logo span {
-  font-size: 28px;
-  font-weight: bold;
+  font-family: 'Lexend', sans-serif;
+  font-size: 43px;
+  font-weight: 700;
   background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-left: -14px;
-  margin-top: 14px;
-  
+  margin-top: 7px;
 }
 
 .navbar-acciones {
   display: flex;
+  align-items: center;
   gap: 12px;
 }
+
+.boton1 {
+  display: flex;
+  gap: 12px;
+  font-family: 'Lexend', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  background-color: #585858;
+  align-items: center;
+
+}
+.boton1 span {
+  display: flex;
+  gap: 12px;
+  font-family: 'Lexend', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+  display: flex;
+  margin: 5px; 
+  }
+
+  .boton2  {
+  display: flex;
+  gap: 12px;
+  font-family: 'Lexend', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  background-color: #585858;
+  align-items: center;
+
+}
+.boton2 span {
+  display: flex;
+  gap: 12px;
+  font-family: 'Lexend', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+  display: flex;
+  margin: 5px; 
+  }
+
+  .boton3 {
+  display: flex;
+  gap: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  background-color: #D9D9D9;
+  align-items: center;
+  position: absolute;
+  top: 500px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 28px;
+  border-color:#D9D9D9;
+}
+.boton3 span {
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 15px;
+  }
+  
+  .texto {
+    font-family: 'Lexend', sans-serif;
+    font-size: 60px;
+    font-weight: 700;
+    color: #000000;
+    display: flex;
+    justify-content: center;
+    margin-top: 300px; 
+  }
 </style>
