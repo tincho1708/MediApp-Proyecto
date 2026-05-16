@@ -1,28 +1,28 @@
+<script setup lang="ts">
+const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
+</script>
+
 <template>
-
-  <nav class="navbar">
-
-    <div class="navbar-logo">
-      <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
-      <span>App</span>
-    </div>
-
-    <div class="navbar-acciones">
-      <button class="boton1"> 
-        <span>Registrar</span>
-      </button>
-
-      <button class="boton2"> 
-        <span>Iniciar sesión</span>
-      </button>
-    </div>
-
-  </nav>
-<div class="texto">Tu salud, mas simple.</div>
-
-  <button class="boton3"> 
-    <span>Descubrela</span>
-  </button>
+  <div>
+    <nav class="navbar">
+      <div class="navbar-logo">
+        <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
+        <span>App</span>
+      </div>
+      <div class="navbar-acciones">
+        <button class="boton1" @click="emit('ir-a-registro')">
+          <span>Registrar</span>
+        </button>
+        <button class="boton2" @click="emit('ir-a-login')">
+          <span>Iniciar sesión</span>
+        </button>
+      </div>
+    </nav>
+    <div class="texto">Tu salud, mas simple.</div>
+    <button class="boton3" @click="emit('ir-a-registro')">
+      <span>Descubrela</span>
+    </button>
+  </div>
 </template>
 
 <style scoped>

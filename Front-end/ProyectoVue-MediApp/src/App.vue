@@ -1,13 +1,37 @@
 <script setup lang="ts">
-import Registrar from './components/registrar.vue'
+import { ref } from 'vue'
 import Bienvenida from './components/bienvenida.vue'
+import Registrar from './components/registrar.vue'
+import IniciarSesion from './components/inicio-sesion.vue'
+
+const vista = ref('bienvenida')
 </script>
 
 <template>
-  <Bienvenida />
-
+  <Transition name="fade" mode="out-in">
+    <Bienvenida
+      v-if="vista === 'bienvenida'"
+      @ir-a-registro="vista = 'registrar'"
+      @ir-a-login="vista = 'iniciarSesion'"
+    />
+    <Registrar
+      v-else-if="vista === 'registrar'"
+      @ir-a-login="vista = 'iniciarSesion'"
+    />
+    <IniciarSesion
+      v-else
+      @ir-a-registro="vista = 'registrar'"
+    />
+  </Transition>
 </template>
 
-<style scoped>
-
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

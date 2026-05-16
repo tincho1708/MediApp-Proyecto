@@ -1,8 +1,9 @@
 <!-- JavaScript -->
 
 <script setup lang="ts">
-
 import { ref } from 'vue'
+
+const emit = defineEmits(['ir-a-login'])
 
 const form = ref({
   nombre: '',
@@ -32,21 +33,6 @@ function validar(): boolean {
   return true
 }
 
-function guardarEnSession() {
-  sessionStorage.setItem('nombre', form.value.nombre)
-  sessionStorage.setItem('apellido', form.value.apellido)
-  sessionStorage.setItem('email', form.value.email)
-  sessionStorage.setItem('telefono', form.value.telefono)
-  sessionStorage.setItem('password', form.value.password)
-  sessionStorage.setItem('confirmarPassword', form.value.confirmarPassword)
-}
-
-function registrar() {
-  error.value = ''
-  if (!validar()) return
-  guardarEnSession()
-  exito.value = true
-}
 </script>
 
 
@@ -56,12 +42,13 @@ function registrar() {
   <div class="contenedor">
     <h1>Crear cuenta</h1>
 
-    <form v-if="!exito" @submit.prevent="registrar">
+    <form v-if="!exito" autocomplete="off">
       <div class="fila-doble">
         <div class="campo">
           <label for="nombre">Nombre</label>
-          <input id="nombre" v-model="form.nombre" type="text" placeholder="Juan" required />
+          <input id="nombre" v  -model="form.nombre" type="text" placeholder="Juan" required />
         </div>
+        
         <div class="campo">
           <label for="apellido">Apellido</label>
           <input id="apellido" v-model="form.apellido" type="text" placeholder="Pérez" required />
@@ -79,12 +66,12 @@ function registrar() {
       </div>
 
       <div class="campo">
-        <label for="password">Contraseña *</label>
+        <label for="password">Contraseña</label>
         <input id="password" v-model="form.password" type="password" placeholder="Mínimo 8 caracteres" required />
       </div>
 
       <div class="campo">
-        <label for="confirmar">Confirmar contraseña *</label>
+        <label for="confirmar">Confirmar contraseña</label>
         <input id="confirmar" v-model="form.confirmarPassword" type="password" placeholder="Repite tu contraseña" required />
       </div>
 
@@ -92,7 +79,7 @@ function registrar() {
 
       <button type="submit">Registrarse</button>
 
-      <p class="login-link">¿Ya tienes cuenta? <a href="#">Inicia sesión</a></p>
+      <p class="login-link">¿Ya tienes cuenta? <a href="#" @click.prevent="emit('ir-a-login')">Inicia sesión</a></p>
     </form>
 
     <div v-else class="exito">
@@ -105,6 +92,7 @@ function registrar() {
 
 <style scoped>
 
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap');
 
 .contenedor {
   max-width: 480px;
@@ -115,6 +103,7 @@ function registrar() {
 }
 
 h1 {
+  font-family: 'Lexend', sans-serif;
   margin-bottom: 24px;
   font-size: 25.6px;
 }
@@ -129,9 +118,12 @@ h1 {
 }
 
 .campo {
+  font-family: 'Lexend', sans-serif;
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
+  margin-left: -5px;
+  margin-right: -8px;
 }
 
 label {
