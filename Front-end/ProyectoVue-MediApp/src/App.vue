@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import Bienvenida from './components/bienvenida.vue'
 import Registrar from './components/registrar.vue'
 import IniciarSesion from './components/inicio-sesion.vue'
-import medicoPaciente from './components/medico-paciente.vue'
 
 const vista = ref('bienvenida')
 </script>
@@ -11,10 +10,10 @@ const vista = ref('bienvenida')
 <template>
 
    <Transition name="fade" mode="out-in">
+    
     <Bienvenida
       v-if="vista === 'bienvenida'"
       @ir-a-registro="vista = 'registrar'"
-      @ir-a-medico-paciente="vista = 'medicoPaciente'"
       @ir-a-login="vista = 'iniciarSesion'"
     />
 
