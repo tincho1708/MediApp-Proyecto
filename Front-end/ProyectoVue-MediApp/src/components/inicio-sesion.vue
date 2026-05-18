@@ -67,6 +67,7 @@ function iniciarSesion() {
   padding: 32px;
   border: 1px solid #ccc;
   border-radius: 8px;
+  background-color: white;
 }
 
 h1 {

@@ -32,7 +32,9 @@ function validar(): boolean {
   }
   return true
 }
-
+function tipoUsuario(tipousuario: string) {
+  console.log(tipousuario)
+}
 </script>
 
 
@@ -41,17 +43,21 @@ function validar(): boolean {
 <template>
   <div>
   <button class="btn-atras" @click="emit('ir-a-bienvenida')">← Atrás</button>
-  
+  <div class="titulo">Crear cuenta</div>
   <div class="contenedor">
-    <h1>Crear cuenta</h1>
+
+    <div class="tipo-usuario">
+      <button class="boton1" @click="tipoUsuario('Medico')">Medico</button>
+      <div class="separador"></div>
+      <button class="boton2" @click="tipoUsuario('Paciente')">Paciente</button>
+    </div>
 
     <form v-if="!exito" autocomplete="off">
       <div class="fila-doble">
         <div class="campo">
           <label for="nombre">Nombre</label>
-          <input id="nombre" v  -model="form.nombre" type="text" placeholder="Juan" required />
+          <input id="nombre" v-model="form.nombre" type="text" placeholder="Juan" required />
         </div>
-        
         <div class="campo">
           <label for="apellido">Apellido</label>
           <input id="apellido" v-model="form.apellido" type="text" placeholder="Pérez" required />
@@ -61,11 +67,6 @@ function validar(): boolean {
       <div class="campo">
         <label for="email">Correo electrónico</label>
         <input id="email" v-model="form.email" type="email" placeholder="juan@ejemplo.com" required />
-      </div>
-
-      <div class="campo">
-        <label for="telefono">Teléfono</label>
-        <input id="telefono" v-model="form.telefono" type="tel" placeholder="11 1234-5678" />
       </div>
 
       <div class="campo">
@@ -80,7 +81,7 @@ function validar(): boolean {
 
       <p v-if="error" class="error">{{ error }}</p>
 
-      <button type="submit">Registrarse</button>
+      <button class="submit" type="submit">Crear cuenta</button>
 
       <p class="login-link">¿Ya tienes cuenta? <a href="#" @click.prevent="emit('ir-a-login')">Inicia sesión</a></p>
     </form>
@@ -98,28 +99,65 @@ function validar(): boolean {
 
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap');
 
+.titulo {
+  font-family: 'Lexend', sans-serif;
+  font-size: 40px;
+  text-align: center;
+  margin-bottom: 0;
+}
+
 .btn-atras {
   font-family: 'Lexend', sans-serif;
   margin: 20px;
+  padding: 10px;
   background: none;
   border: none;
   width: 100px;
   background-color: #bbb;
   font-size: 16px;
   cursor: pointer;
+  border-radius: 7px;
 }
+
+.tipo-usuario {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.separador {
+  width: 1px;
+  height: 36px;
+  background-color: #bbb;
+  margin: 0 8px;
+}
+
+.boton1, .boton2 {
+  font-family: 'Lexend', sans-serif;
+  background-color: #bbb;
+  border: none;
+  width: 200px;
+  height: 50px;
+  font-size: 25px;
+  cursor: pointer;
+  border-radius: 30px;
+  color: #000000;
+}
+
 .contenedor {
   max-width: 480px;
-  margin: 60px auto;
+  width: 90%;
+  margin: 12px auto;
   padding: 2rem;
   border: 1px solid #ccc;
   border-radius: 8px;
+  background-color: #FFFFFF;
+  overflow: hidden;
 }
 
-h1 {
-  font-family: 'Lexend', sans-serif;
-  margin-bottom: 24px;
-  font-size: 25.6px;
+form {
+  width: 100%;
 }
 
 .fila-doble {
@@ -129,6 +167,7 @@ h1 {
 
 .fila-doble .campo {
   flex: 1;
+  min-width: 0;
 }
 
 .campo {
@@ -136,8 +175,6 @@ h1 {
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
-  margin-left: -5px;
-  margin-right: -8px;
 }
 
 label {
@@ -150,6 +187,8 @@ input {
   border: 1px solid #bbb;
   border-radius: 4px;
   font-size: 16px;
+  width: 100%;
+  min-width: 0;
 }
 
 input:focus {
@@ -157,12 +196,12 @@ input:focus {
   border-color: transparent;
 }
 
-button {
+.submit {
   width: 100%;
   padding: 10.4px;
   margin-top: 8px;
   background: #4a90e2;
-  color: white;
+  color: black;
   border: none;
   border-radius: 4px;
   font-size: 16px;
@@ -189,6 +228,5 @@ button:hover {
   color: green;
   font-size: 16px;
 }
-
 
 </style>

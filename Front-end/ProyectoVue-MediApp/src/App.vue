@@ -18,12 +18,7 @@ const vista = ref('bienvenida')
       @ir-a-login="vista = 'iniciarSesion'"
     />
 
-    <medicoPaciente
-      v-else-if="vista === 'medicoPaciente'"
-      @ir-a-registro="vista = 'registrar'"
-      @ir-a-login="vista = 'iniciarSesion'"
-    />
-
+    
     <Registrar
       v-else-if="vista === 'registrar'"
       @ir-a-login="vista = 'iniciarSesion'"
@@ -33,8 +28,7 @@ const vista = ref('bienvenida')
     <IniciarSesion
       v-else
       @bienvenida="vista = 'bienvenida'"
-      @ir-a-registro="vista = 'registrar'"
-      @ir-a-medico-paciente="vista = 'medicoPaciente'"/>
+      @ir-a-registro="vista = 'registrar'"/>
 
   </Transition> 
 
