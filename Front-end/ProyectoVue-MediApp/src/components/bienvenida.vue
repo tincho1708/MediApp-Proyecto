@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
+const emit = defineEmits(['ir-a-registro', 'ir-a-login', 'ir-a-medico-paciente'])
 </script>
 
 <template>
@@ -10,7 +10,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
         <span>App</span>
       </div>
       <div class="navbar-acciones">
-        <button class="boton1" @click="emit('ir-a-registro')">
+        <button class="boton1" @click="emit('ir-a-medico-paciente')">
           <span>Registrar</span>
         </button>
         <button class="boton2" @click="emit('ir-a-login')">
@@ -19,7 +19,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
       </div>
     </nav>
     <div class="texto">Tu salud, mas simple.</div>
-    <button class="boton3" @click="emit('ir-a-registro')">
+    <button class="boton3" @click="emit('ir-a-medico-paciente')">
       <span>Descubrela</span>
     </button>
   </div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const emit = defineEmits(['ir-a-registro'])
+const emit = defineEmits(['ir-a-registro', 'bienvenida'])
 
 const form = ref({
   email: '',
@@ -20,6 +20,9 @@ function iniciarSesion() {
 </script>
 
 <template>
+  <div>
+  <button class="btn-atras" @click="emit('bienvenida')">← Atrás</button>
+
   <div class="contenedor">
     <h1>Iniciar sesión</h1>
 
@@ -42,11 +45,22 @@ function iniciarSesion() {
       <p class="olvido-contraseña">¿Olvidaste tu contraseña? <a href="h">Recuperala</a></p>
     </form>
   </div>
+  </div>
 </template>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap');
 
+.btn-atras {
+  font-family: 'Lexend', sans-serif;
+  margin: 20px;
+  background: none;
+  border: none;
+  width: 100px;
+  background-color: #bbb;
+  font-size: 16px;
+  cursor: pointer;
+}
 .contenedor {
   max-width: 400px;
   margin: 60px auto;

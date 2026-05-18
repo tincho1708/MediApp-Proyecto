@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const emit = defineEmits(['ir-a-login'])
+const emit = defineEmits(['ir-a-login', 'ir-a-bienvenida'])
 
 const form = ref({
   nombre: '',
@@ -39,6 +39,9 @@ function validar(): boolean {
 <!-- HTML -->
 
 <template>
+  <div>
+  <button class="btn-atras" @click="emit('ir-a-bienvenida')">← Atrás</button>
+  
   <div class="contenedor">
     <h1>Crear cuenta</h1>
 
@@ -86,6 +89,7 @@ function validar(): boolean {
       <p>Cuenta creada correctamente. ¡Bienvenido, {{ form.nombre }}!</p>
     </div>
   </div>
+  </div>
 </template>
 
 <!-- CSS -->
@@ -94,6 +98,16 @@ function validar(): boolean {
 
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap');
 
+.btn-atras {
+  font-family: 'Lexend', sans-serif;
+  margin: 20px;
+  background: none;
+  border: none;
+  width: 100px;
+  background-color: #bbb;
+  font-size: 16px;
+  cursor: pointer;
+}
 .contenedor {
   max-width: 480px;
   margin: 60px auto;
