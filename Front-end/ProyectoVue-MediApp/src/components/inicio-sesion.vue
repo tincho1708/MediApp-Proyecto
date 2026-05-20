@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const emit = defineEmits(['ir-a-registro', 'bienvenida'])
+const emit = defineEmits(['ir-a-registro', 'bienvenida','ir-a-principal'])
 
 const form = ref({
   email: '',
@@ -16,6 +16,7 @@ function iniciarSesion() {
     error.value = 'Por favor completá todos los campos.'
     return
   }
+  emit('ir-a-principal')
 }
 </script>
 
@@ -26,15 +27,24 @@ function iniciarSesion() {
   <div class="contenedor">
     <h1>Iniciar sesión</h1>
 
+    <div class="texto-sesion1">
+    <img src="@/assets/imagenes/google.png" alt="Google"/>
+    Continuar con Google
+    </div> 
+
+    <div class="texto-sesion2">
+    <img src="@/assets/imagenes/microsoft.png" alt="Microsoft"/>
+    Continuar con Microsoft
+    </div>
+
+    <p class="separador">────────────── O ──────────────</p>
     <form @submit.prevent="iniciarSesion" autocomplete="off">
       <div class="campo">
-        <label for="email">Correo electrónico</label>
-        <input id="email" v-model="form.email" type="email" placeholder="juan@ejemplo.com" required />
+        <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
       </div>
 
       <div class="campo">
-        <label for="password">Contraseña</label>
-        <input id="password" v-model="form.password" type="password" placeholder="Tu contraseña" required />
+        <input id="password" v-model="form.password" type="password" placeholder="Contraseña" required />
       </div>
 
       <p v-if="error" class="error">{{ error }}</p>
@@ -68,6 +78,7 @@ function iniciarSesion() {
   border: 1px solid #ccc;
   border-radius: 8px;
   background-color: white;
+  box-shadow: 0 1px 29.7px 11px rgba(0, 0, 0, 0.13);
 }
 
 h1 {
@@ -80,17 +91,12 @@ h1 {
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
-}
-
-label {
-  font-family: 'Lexend', sans-serif;
-  margin-bottom: 5px;
-  font-size: 14px;
-}
+  margint-left: 30px;
+  }
 
 input {
   padding: 8px 12px;
-  border: 1px solid #bbb;
+  border: 1px solid black;
   border-radius: 4px;
   font-size: 16px;
 }
@@ -131,5 +137,45 @@ button:hover {
   margin-top: 6px;
   text-align: center;
   font-size: 14px;
+}
+
+.texto-sesion1, .texto-sesion2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 200;
+  color: #000000;
+  cursor: pointer;
+  border: 1.5px solid #000000;
+  border-radius: 40px;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin: 10px;
+}
+
+.texto-sesion1 img {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+.texto-sesion2 img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+.texto-sesion1:hover, .texto-sesion2:hover {
+  background-color: rgba(255,255,255,0.3);
+}
+
+.separador {
+  color: black;
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 15.7px;
 }
 </style>

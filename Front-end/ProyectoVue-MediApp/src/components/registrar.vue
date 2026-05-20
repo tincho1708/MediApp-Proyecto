@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const emit = defineEmits(['ir-a-login', 'ir-a-bienvenida'])
+const emit = defineEmits(['ir-a-login', 'ir-a-bienvenida', 'ir-a-principal'])
 
 const form = ref({
   nombre: '',
@@ -55,27 +55,24 @@ function tipoUsuario(tipousuario: string) {
     <form v-if="!exito" autocomplete="off">
       <div class="fila-doble">
         <div class="campo">
-          <label for="nombre">Nombre</label>
-          <input id="nombre" v-model="form.nombre" type="text" placeholder="Juan" required />
+          
+          <input id="nombre" v-model="form.nombre" type="text" placeholder="Nombre" required />
         </div>
         <div class="campo">
-          <label for="apellido">Apellido</label>
-          <input id="apellido" v-model="form.apellido" type="text" placeholder="Pérez" required />
+         
+          <input id="apellido" v-model="form.apellido" type="text" placeholder="Apellido" required />
         </div>
       </div>
 
       <div class="campo">
-        <label for="email">Correo electrónico</label>
-        <input id="email" v-model="form.email" type="email" placeholder="juan@ejemplo.com" required />
+        <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
       </div>
 
       <div class="campo">
-        <label for="password">Contraseña</label>
-        <input id="password" v-model="form.password" type="password" placeholder="Mínimo 8 caracteres" required />
+        <input id="password" v-model="form.password" type="password" placeholder="Contraseña" required />
       </div>
 
       <div class="campo">
-        <label for="confirmar">Confirmar contraseña</label>
         <input id="confirmar" v-model="form.confirmarPassword" type="password" placeholder="Repite tu contraseña" required />
       </div>
 
@@ -86,9 +83,7 @@ function tipoUsuario(tipousuario: string) {
       <p class="login-link">¿Ya tienes cuenta? <a href="#" @click.prevent="emit('ir-a-login')">Inicia sesión</a></p>
     </form>
 
-    <div v-else class="exito">
-      <p>Cuenta creada correctamente. ¡Bienvenido, {{ form.nombre }}!</p>
-    </div>
+    
   </div>
   </div>
 </template>
@@ -141,7 +136,7 @@ function tipoUsuario(tipousuario: string) {
   height: 50px;
   font-size: 25px;
   cursor: pointer;
-  border-radius: 30px;
+  border-radius: 40px;
   color: #000000;
 }
 
@@ -184,8 +179,8 @@ label {
 
 input {
   padding: 8px 12px;
-  border: 1px solid #bbb;
-  border-radius: 4px;
+  border-radius: 44px;
+  border: 1.5px solid #000;
   font-size: 16px;
   width: 100%;
   min-width: 0;
@@ -224,9 +219,5 @@ button:hover {
   font-size: 14.4px;
 }
 
-.exito {
-  color: green;
-  font-size: 16px;
-}
 
 </style>

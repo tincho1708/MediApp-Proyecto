@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import Principal from './components/principal.vue'
 import Bienvenida from './components/bienvenida.vue'
 import Registrar from './components/registrar.vue'
 import IniciarSesion from './components/inicio-sesion.vue'
@@ -15,6 +16,7 @@ const vista = ref('bienvenida')
       v-if="vista === 'bienvenida'"
       @ir-a-registro="vista = 'registrar'"
       @ir-a-login="vista = 'iniciarSesion'"
+      @ir-a-principal="vista = 'Principal'"
     />
 
     
@@ -22,12 +24,19 @@ const vista = ref('bienvenida')
       v-else-if="vista === 'registrar'"
       @ir-a-login="vista = 'iniciarSesion'"
       @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-principal="vista = 'Principal'"
     />
 
     <IniciarSesion
-      v-else
+      v-else-if="vista === 'iniciarSesion'"
       @bienvenida="vista = 'bienvenida'"
-      @ir-a-registro="vista = 'registrar'"/>
+      @ir-a-registro="vista = 'registrar'"
+      @ir-a-principal="vista = 'Principal'"
+      />
+
+    <Principal
+      v-else-if ="vista === 'Principal'"
+      @ir-a-bienvenida="vista = 'bienvenida'"/>
 
   </Transition> 
 

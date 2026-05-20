@@ -10,8 +10,8 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
         <span>App</span>
       </div>
       <div class="navbar-acciones">
-        <button class="boton1" @click="emit('ir-a-registro')">Registrar</button>
-        <button class="boton2" @click="emit('ir-a-login')">Iniciar sesión</button>
+        <button class="boton1" @click="emit('ir-a-login')">Iniciar sesion</button>
+        <button class="boton2" @click="emit('ir-a-registro')">Registrarse</button>
       </div>
     </nav>
 
@@ -56,6 +56,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   display: flex;
   flex-direction: column;
   gap: 20px;
+  margin-bottom: 60px;
 }
 
 .columna-der {
@@ -63,6 +64,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 60px;
 }
 
 .texto {
@@ -178,11 +180,22 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   gap: 12px;
 }
 
-.boton1, .boton2 {
+.boton1 {
   font-family: 'Lexend', sans-serif;
   font-size: 18px;
   font-weight: 700;
-  background: linear-gradient(90deg, #EAFAFF 0%, #44A6D4 100%);
+  background-color: white;
+  border: 1px solid #2E9CE0;
+  border-radius: 12px;
+  cursor: pointer;
+  padding: 10px 24px;
+  color: #000000;
+}
+.boton2 {
+  font-family: 'Lexend', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  background-color: #2E9CE0;
   border: none;
   border-radius: 12px;
   cursor: pointer;
