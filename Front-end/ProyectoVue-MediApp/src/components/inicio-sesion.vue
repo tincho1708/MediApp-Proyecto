@@ -46,13 +46,12 @@ function iniciarSesion() {
       <div class="campo">
         <input id="password" v-model="form.password" type="password" placeholder="Contraseña" required />
       </div>
-
+      <p class="olvido-contraseña">¿Olvidaste tu contraseña? <a href="h">Recuperala</a></p>
       <p v-if="error" class="error">{{ error }}</p>
 
       <button type="submit">Iniciar sesión</button>
 
       <p class="registro-link">¿No tenés cuenta? <a href="#" @click.prevent="emit('ir-a-registro')">Registrate</a></p>
-      <p class="olvido-contraseña">¿Olvidaste tu contraseña? <a href="h">Recuperala</a></p>
     </form>
   </div>
   </div>
@@ -82,16 +81,18 @@ function iniciarSesion() {
 }
 
 h1 {
-  font-family: 'Lexend', sans-serif;
-  margin-bottom: 24px;
-  font-size: 25.6px;
+  font-family: 'Lexend';
+  font-weight: 100;
+  margin-bottom: 18px;
+  font-size: 40px;
+  text-align: center;
+  line-height: normal;
 }
 
 .campo {
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
-  margint-left: 30px;
   }
 
 input {
@@ -134,9 +135,7 @@ button:hover {
   font-size: 14px;
 }
 .olvido-contraseña {
-  margin-top: 6px;
-  text-align: center;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .texto-sesion1, .texto-sesion2 {
