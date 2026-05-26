@@ -16,6 +16,8 @@ const form = ref({
 
 const error = ref('')
 const exito = ref(false)
+const estado1 = ref('inactivo')
+const estado2 = ref('inactivo')
 
 function validar(): boolean {
   if (!form.value.nombre || !form.value.apellido || !form.value.email || !form.value.password) {
@@ -32,8 +34,32 @@ function validar(): boolean {
   }
   return true
 }
-function tipoUsuario(tipousuario: string) {
-  console.log(tipousuario)
+
+function seleccionar(tipo: 'Medico' | 'Paciente') {
+  console.log(tipo)
+let boton1 = document.querySelector('.boton1') as HTMLButtonElement;
+let boton2 = document.querySelector('.boton2') as HTMLButtonElement;
+let estado1 = (document.querySelector('.boton1') as HTMLButtonElement).value;
+let estado2 = (document.querySelector('.boton2') as HTMLButtonElement).value;
+
+  if (tipo === 'Medico') {
+    estado1 = "Activo"
+    estado2 = "Inactivo"
+
+    boton1.style.transition = 'background-color 0.3s';
+    boton2.style.transition = 'background-color 0.3s';
+    boton1.style.backgroundColor = '#4a90e2';
+    boton2.style.backgroundColor = '#ccc';
+
+  } else {
+   estado1 = "Inactivo"
+   estado2 = "Activo"
+   
+   boton1.style.transition = 'background-color 0.3s';
+   boton2.style.transition = 'background-color 0.3s';
+   boton1.style.backgroundColor = '#ccc';
+   boton2.style.backgroundColor = '#4a90e2';
+  }
 }
 </script>
 
@@ -47,9 +73,9 @@ function tipoUsuario(tipousuario: string) {
   <div class="contenedor">
 
     <div class="tipo-usuario">
-      <button class="boton1" @click="tipoUsuario('Medico')">Medico</button>
+      <button class="boton1"@click="seleccionar('Medico')" value="Inactivo" >Medico</button>
       <div class="separador"></div>
-      <button class="boton2" @click="tipoUsuario('Paciente')">Paciente</button>
+      <button class="boton2"@click="seleccionar('Paciente')" value="Inactivo">Paciente</button>
     </div>
 
     <form v-if="!exito" autocomplete="off">
@@ -138,6 +164,11 @@ function tipoUsuario(tipousuario: string) {
   cursor: pointer;
   border-radius: 40px;
   color: #000000;
+}
+
+boton1.activo, .boton2.activo {
+  background-color: #4a90e2;
+  color: #fff;
 }
 
 .contenedor {
