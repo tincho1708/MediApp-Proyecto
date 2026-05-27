@@ -12,36 +12,22 @@ const form = ref({
   confirmarPassword: '',
 })
 
-const error = ref('')
 const exito = ref(false)
-const estado1 = ref('inactivo')
-const estado2 = ref('inactivo')
-
-
 function seleccionar(tipo: 'Medico' | 'Paciente') {
-  console.log(tipo)
-let boton1 = document.querySelector('.boton1') as HTMLButtonElement;
-let boton2 = document.querySelector('.boton2') as HTMLButtonElement;
-let estado1 = (document.querySelector('.boton1') as HTMLButtonElement).value;
-let estado2 = (document.querySelector('.boton2') as HTMLButtonElement).value;
+  const boton1 = document.querySelector('.boton1') as HTMLButtonElement
+  const boton2 = document.querySelector('.boton2') as HTMLButtonElement
+
+  boton1.style.transition = 'background-color 0.3s'
+  boton2.style.transition = 'background-color 0.3s'
 
   if (tipo === 'Medico') {
-    estado1 = "Activo"
-    estado2 = "Inactivo"
-
-    boton1.style.transition = 'background-color 0.3s';
-    boton2.style.transition = 'background-color 0.3s';
-    boton1.style.backgroundColor = '#4a90e2';
-    boton2.style.backgroundColor = '#ccc';
-
+    boton1.style.backgroundColor = '#4a90e2'
+    boton2.style.backgroundColor = '#ccc'
+    console.log(tipo);
   } else {
-   estado1 = "Inactivo"
-   estado2 = "Activo"
-   
-   boton1.style.transition = 'background-color 0.3s';
-   boton2.style.transition = 'background-color 0.3s';
-   boton1.style.backgroundColor = '#ccc';
-   boton2.style.backgroundColor = '#4a90e2';
+    boton1.style.backgroundColor = '#ccc'
+    boton2.style.backgroundColor = '#4a90e2'
+    console.log(tipo);
   }
 }
 </script>
@@ -55,12 +41,12 @@ let estado2 = (document.querySelector('.boton2') as HTMLButtonElement).value;
   <div class="contenedor">
 
     <div class="tipo-usuario">
-      <button class="boton1"@click="seleccionar('Medico')" value="Inactivo" >Medico</button>
+      <button class="boton1"@click="seleccionar('Medico')">Medico</button>
       <div class="separador"></div>
-      <button class="boton2"@click="seleccionar('Paciente')" value="Inactivo">Paciente</button>
+      <button class="boton2"@click="seleccionar('Paciente')">Paciente</button>
     </div>
 
-    <form v-if="!exito" autocomplete="off">
+    <form v-if="!exito" autocomplete="off" @submit.prevent="emit('ir-a-principal')">
       
         <div class="campo">
           
@@ -80,7 +66,7 @@ let estado2 = (document.querySelector('.boton2') as HTMLButtonElement).value;
       </div>
 
 
-      <button class="submit" type="submit">Crear cuenta</button>
+      <button class="submit" type="submit" @click="emit('ir-a-principal')">Crear cuenta</button>
 
       <p class="login-link">¿Ya tienes cuenta? <a href="#" @click.prevent="emit('ir-a-login')">Inicia sesión</a></p>
     </form>

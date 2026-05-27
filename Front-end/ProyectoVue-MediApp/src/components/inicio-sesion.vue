@@ -8,16 +8,9 @@ const form = ref({
   password: '',
 })
 
-const error = ref('')
 
-function iniciarSesion() {
-  error.value = ''
-  if (!form.value.email || !form.value.password) {
-    error.value = 'Por favor completá todos los campos.'
-    return
-  }
-  emit('ir-a-principal')
-}
+
+
 </script>
 
 <template>
@@ -38,7 +31,7 @@ function iniciarSesion() {
     </div>
 
     <p class="separador">────────────── O ──────────────</p>
-    <form @submit.prevent="iniciarSesion" autocomplete="off">
+    <form autocomplete="off" @submit.prevent="emit('ir-a-principal')">
       <div class="campo">
         <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
       </div>
@@ -47,9 +40,8 @@ function iniciarSesion() {
         <input id="password" v-model="form.password" type="password" placeholder="Contraseña" required />
       </div>
       <p class="olvido-contraseña">¿Olvidaste tu contraseña? <a href="h">Recuperala</a></p>
-      <p v-if="error" class="error">{{ error }}</p>
 
-      <button type="submit">Iniciar sesión</button>
+      <button type="submit" @click="emit('ir-a-principal')">Iniciar sesión</button>
 
       <p class="registro-link">¿No tenés cuenta? <a href="#" @click.prevent="emit('ir-a-registro')">Registrate</a></p>
     </form>

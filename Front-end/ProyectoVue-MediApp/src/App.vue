@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import Principal from './components/principal.vue'
+import Principal from './components/principal-medico.vue'
 import Bienvenida from './components/bienvenida.vue'
 import Registrar from './components/registrar.vue'
 import IniciarSesion from './components/inicio-sesion.vue'
