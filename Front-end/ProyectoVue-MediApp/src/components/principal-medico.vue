@@ -10,10 +10,10 @@ const emit = defineEmits(['ir-a-bienvenida'])
         <span>App</span>
       </div>    
       <div class="navbar-acciones">
-        <button class="campo">MediBot</button>
-        <button class="campo">Mis pacientes</button>
-        <button class="campo">Notificaciones</button>
-        <button class="campo">MediApp+</button>
+        <button class="campoo">MediBot</button>
+        <button class="campoo">Mis pacientes</button>
+        <button class="campoo">Notificaciones</button>
+        <button class="campoo">MediApp+</button>
         <button class="barra">
           <div>──────</div>
           <div>──────</div>
@@ -58,7 +58,7 @@ const emit = defineEmits(['ir-a-bienvenida'])
   flex-direction: row;
   gap: 50px;
 }
-.campo {
+.campoo {
   text-align: center;
   width: 206px;
   height: 73px;
