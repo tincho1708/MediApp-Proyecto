@@ -7,7 +7,6 @@ const emit = defineEmits(['ir-a-login', 'ir-a-bienvenida', 'ir-a-principal'])
 
 const form = ref({
   nombre: '',
-  apellido: '',
   email: '',
   telefono: '',
   password: '',
@@ -19,21 +18,6 @@ const exito = ref(false)
 const estado1 = ref('inactivo')
 const estado2 = ref('inactivo')
 
-function validar(): boolean {
-  if (!form.value.nombre || !form.value.apellido || !form.value.email || !form.value.password) {
-    error.value = 'Por favor completa todos los campos obligatorios.'
-    return false
-  }
-  if (form.value.password !== form.value.confirmarPassword) {
-    error.value = 'Las contraseñas no coinciden.'
-    return false
-  }
-  if (form.value.password.length < 8) {
-    error.value = 'La contraseña debe tener al menos 8 caracteres.'
-    return false
-  }
-  return true
-}
 
 function seleccionar(tipo: 'Medico' | 'Paciente') {
   console.log(tipo)
@@ -79,16 +63,11 @@ let estado2 = (document.querySelector('.boton2') as HTMLButtonElement).value;
     </div>
 
     <form v-if="!exito" autocomplete="off">
-      <div class="fila-doble">
+      
         <div class="campo">
           
           <input id="nombre" v-model="form.nombre" type="text" placeholder="Nombre" required />
         </div>
-        <div class="campo">
-         
-          <input id="apellido" v-model="form.apellido" type="text" placeholder="Apellido" required />
-        </div>
-      </div>
 
       <div class="campo">
         <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
@@ -180,21 +159,13 @@ boton1.activo, .boton2.activo {
   border-radius: 8px;
   background-color: #FFFFFF;
   overflow: hidden;
+  box-shadow: 0 1px 29.7px 11px rgba(0, 0, 0, 0.25);
 }
 
 form {
   width: 100%;
 }
 
-.fila-doble {
-  display: flex;
-  gap: 16px;
-}
-
-.fila-doble .campo {
-  flex: 1;
-  min-width: 0;
-}
 
 .campo {
   font-family: 'Lexend', sans-serif;
@@ -229,9 +200,10 @@ input:focus {
   background: #4a90e2;
   color: black;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  border-radius: 20px;
+  font-size: 24px;
   cursor: pointer;
+  height: 50px;
 }
 
 button:hover {
