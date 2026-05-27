@@ -1,4 +1,3 @@
-<!-- JavaScript -->
 
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -48,7 +47,6 @@ let estado2 = (document.querySelector('.boton2') as HTMLButtonElement).value;
 </script>
 
 
-<!-- HTML -->
 
 <template>
   <div>
@@ -81,7 +79,6 @@ let estado2 = (document.querySelector('.boton2') as HTMLButtonElement).value;
         <input id="confirmar" v-model="form.confirmarPassword" type="password" placeholder="Repite tu contraseña" required />
       </div>
 
-      <p v-if="error" class="error">{{ error }}</p>
 
       <button class="submit" type="submit">Crear cuenta</button>
 
@@ -93,7 +90,6 @@ let estado2 = (document.querySelector('.boton2') as HTMLButtonElement).value;
   </div>
 </template>
 
-<!-- CSS -->
 
 <style scoped>
 
@@ -127,9 +123,9 @@ let estado2 = (document.querySelector('.boton2') as HTMLButtonElement).value;
 }
 
 .separador {
-  width: 1px;
+  width: 2px;
   height: 36px;
-  background-color: #bbb;
+  background: #000;
   margin: 0 8px;
 }
 
