@@ -27,6 +27,17 @@ const emit = defineEmits(['ir-a-bienvenida'])
 <style>
 .navbar {
   height: 115px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  padding: 8px 24px;
+  z-index: 100;
 }
 .navbar-logo {
   display: flex;
