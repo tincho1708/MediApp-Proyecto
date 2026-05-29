@@ -135,6 +135,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   height: auto;
   object-fit: contain;
   display: block;
+  border: 1px black;
 }
 
 .navbar {

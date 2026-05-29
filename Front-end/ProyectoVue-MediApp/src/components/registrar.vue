@@ -37,8 +37,9 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
 <template>
   <div>
   <button class="boton-atras" @click="emit('ir-a-bienvenida')"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="15" viewBox="0 0 18 15" fill="none">
-<path d="M0.292889 6.65691C-0.0976353 7.04743 -0.0976353 7.6806 0.292889 8.07112L6.65685 14.4351C7.04737 14.8256 7.68054 14.8256 8.07106 14.4351C8.46159 14.0446 8.46159 13.4114 8.07106 13.0209L2.41421 7.36401L8.07106 1.70716C8.46159 1.31664 8.46159 0.68347 8.07106 0.292946C7.68054 -0.0975785 7.04737 -0.0975785 6.65685 0.292946L0.292889 6.65691ZM17.1245 7.36401V6.36401L0.999996 6.36401V7.36401V8.36401L17.1245 8.36401V7.36401Z" fill="black"/>
-</svg> Atrás</button>
+    <path d="M0.292889 6.65691C-0.0976353 7.04743 -0.0976353 7.6806 0.292889 8.07112L6.65685 14.4351C7.04737 14.8256 7.68054 14.8256 8.07106 14.4351C8.46159 14.0446 8.46159 13.4114 8.07106 13.0209L2.41421 7.36401L8.07106 1.70716C8.46159 1.31664 8.46159 0.68347 8.07106 0.292946C7.68054 -0.0975785 7.04737 -0.0975785 6.65685 0.292946L0.292889 6.65691ZM17.1245 7.36401V6.36401L0.999996 6.36401V7.36401V8.36401L17.1245 8.36401V7.36401Z" fill="black"/>
+    </svg> Atrás
+  </button>
   <div class="titulo">Crear cuenta</div>
 
   <div class="contenedor">
@@ -88,9 +89,8 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
 .titulo {
   color: #000;
   text-align: center;
-  font-family: Lexend;
+  font-family: 'Lexend', 'sans-serif';
   font-size: 56px;
-  font-style: normal;
   font-weight: 400;
   line-height: normal;
   text-align: center;
@@ -181,7 +181,7 @@ label {
 input {
   padding: 8px 12px;
   border-radius: 44px;
-  border: 1.5px solid #000;
+  border: 2px solid #000; 
   font-size: 16px;
   width: 100%;
   min-width: 0;
@@ -201,6 +201,7 @@ input:focus {
   border: none;
   border-radius: 20px;
   font-size: 24px;
+  font-family: 'Lexend', sans-serif;
   cursor: pointer;
   height: 50px;
 }
