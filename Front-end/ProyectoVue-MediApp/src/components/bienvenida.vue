@@ -124,18 +124,17 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 .contenedor1 {
   background-color: #D9D9D9;
   width: 100%;
-  max-width: 560px;
+  max-width: 530px;
   border-radius: 20px;
   border: 8px solid #ccc;
-  overflow: hidden;
+  overflow: hidden
 }
 
 .contenedor1 img {
   width: 100%;
-  height: auto;
+  height: 500px;
   object-fit: contain;
   display: block;
-  border: 1px black;
 }
 
 .navbar {
