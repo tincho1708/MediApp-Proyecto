@@ -15,7 +15,10 @@ const form = ref({
 
 <template>
   <div>
-  <button class="btn-atras" @click="emit('bienvenida')">← Atrás</button>
+  <button class="boton-atras" @click="emit('bienvenida')"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="15" viewBox="0 0 18 15" fill="none">
+    <path d="M0.292889 6.65691C-0.0976353 7.04743 -0.0976353 7.6806 0.292889 8.07112L6.65685 14.4351C7.04737 14.8256 7.68054 14.8256 8.07106 14.4351C8.46159 14.0446 8.46159 13.4114 8.07106 13.0209L2.41421 7.36401L8.07106 1.70716C8.46159 1.31664 8.46159 0.68347 8.07106 0.292946C7.68054 -0.0975785 7.04737 -0.0975785 6.65685 0.292946L0.292889 6.65691ZM17.1245 7.36401V6.36401L0.999996 6.36401V7.36401V8.36401L17.1245 8.36401V7.36401Z" fill="black"/>
+    </svg> Atrás
+  </button>
 
   <div class="contenedor">
     <h1>Iniciar sesión</h1>
@@ -30,7 +33,7 @@ const form = ref({
     Continuar con Microsoft
     </button>
 
-    <p class="separador">────────────── O ──────────────</p>
+    <p class="separador">──────────────── O ────────────────</p>
     <form autocomplete="off" @submit.prevent="emit('ir-a-principal')">
       <div class="campo">
         <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
@@ -41,7 +44,7 @@ const form = ref({
       </div>
       <p class="olvido-contraseña">¿Olvidaste tu contraseña? <a href="h">Recuperala</a></p>
 
-      <button type="submit" @click="emit('ir-a-principal')">Iniciar sesión</button>
+      <button class="iniciar" type="submit" @click="emit('ir-a-principal')">Iniciar sesión</button>
 
       <p class="registro-link">¿No tenés cuenta? <a href="#" @click.prevent="emit('ir-a-registro')">Registrate</a></p>
     </form>
@@ -52,24 +55,37 @@ const form = ref({
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap');
 
-.btn-atras {
-  font-family: 'Lexend', sans-serif;
+.boton-atras {
+  color: #000;
+  font-family: 'Lexend', 'sans-serif';
+  font-size: 20px;
+  font-weight: 400;
+  line-height: normal;
   margin: 20px;
-  background: none;
-  border: none;
-  width: 100px;
-  background-color: #bbb;
-  font-size: 16px;
   cursor: pointer;
+  width: 178px;
+  height: 64px;
+  border-radius: 30px;
+  background: #2E9CE0;
+  border: none;
+}
+.boton-atras.svg {
+  stroke-width: 2px;
+  stroke: #000;
+  width: 16.125px;
+  height: 0;
 }
 .contenedor {
-  max-width: 400px;
-  margin: 60px auto;
+  margin: 30px auto;
+  margin-top: 0;
   padding: 32px;
   border: 1px solid #ccc;
   border-radius: 8px;
   background-color: white;
   box-shadow: 0 1px 29.7px 11px rgba(0, 0, 0, 0.13);
+  width: 450px;
+  height: 540px;
+  align-items: center;
 }
 
 h1 {
@@ -84,11 +100,11 @@ h1 {
 .campo {
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   }
 
 input {
-  padding: 8px 12px;
+  padding: 10px 15px;
   border: 1px solid black;
   border-radius: 4px;
   font-size: 16px;
@@ -99,22 +115,23 @@ input:focus {
   border-color: transparent;
 }
 
-button {
+.iniciar {
   width: 100%;
   padding: 10px;
   margin-top: 8px;
   background: #4a90e2;
   color: black;
   border: none;
-  border-radius: 4px;
-  font-size: 20px;
+  border-radius: 30px;
+  font-size: 35px;
   cursor: pointer;
   font-weight: 400;
   font-family: 'Lexend', sans-serif;
+  height: 80px;
 }
 
 button:hover {
-  background: #357abd;
+  background: #3CA4D6;
 }
 
 .error {
@@ -126,10 +143,11 @@ button:hover {
 .registro-link {
   margin-top: 16px;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
+  gap: 20px;
 }
 .olvido-contraseña {
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .texto-sesion1, .texto-sesion2 {
@@ -147,6 +165,8 @@ button:hover {
   gap: 5px;
   margin: 10px;
   background-color: transparent;
+  width: 100%;
+  margin-left: 0;
 }
 
 .texto-sesion1 img {
@@ -163,7 +183,7 @@ button:hover {
 }
 
 .texto-sesion1:hover, .texto-sesion2:hover {
-  background-color: #00b7ff48;
+  background-color: #7cb1f192;
 }
 
 .separador {

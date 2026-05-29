@@ -36,8 +36,11 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
 
 <template>
   <div>
-  <button class="btn-atras" @click="emit('ir-a-bienvenida')">← Atrás</button>
+  <button class="boton-atras" @click="emit('ir-a-bienvenida')"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="15" viewBox="0 0 18 15" fill="none">
+<path d="M0.292889 6.65691C-0.0976353 7.04743 -0.0976353 7.6806 0.292889 8.07112L6.65685 14.4351C7.04737 14.8256 7.68054 14.8256 8.07106 14.4351C8.46159 14.0446 8.46159 13.4114 8.07106 13.0209L2.41421 7.36401L8.07106 1.70716C8.46159 1.31664 8.46159 0.68347 8.07106 0.292946C7.68054 -0.0975785 7.04737 -0.0975785 6.65685 0.292946L0.292889 6.65691ZM17.1245 7.36401V6.36401L0.999996 6.36401V7.36401V8.36401L17.1245 8.36401V7.36401Z" fill="black"/>
+</svg> Atrás</button>
   <div class="titulo">Crear cuenta</div>
+
   <div class="contenedor">
 
     <div class="tipo-usuario">
@@ -45,7 +48,7 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
       <div class="separador"></div>
       <button class="boton2"@click="seleccionar('Paciente')">Paciente</button>
     </div>
-
+  <div>
     <form v-if="!exito" autocomplete="off" @submit.prevent="emit('ir-a-principal')">
       
         <div class="campo">
@@ -74,6 +77,7 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
     
   </div>
   </div>
+  </div>
 </template>
 
 
@@ -82,23 +86,36 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap');
 
 .titulo {
-  font-family: 'Lexend', sans-serif;
-  font-size: 40px;
+  color: #000;
+  text-align: center;
+  font-family: Lexend;
+  font-size: 56px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
   text-align: center;
   margin-bottom: 0;
 }
 
-.btn-atras {
-  font-family: 'Lexend', sans-serif;
+.boton-atras {
+  color: #000;
+  font-family: 'Lexend', 'sans-serif';
+  font-size: 20px;
+  font-weight: 400;
+  line-height: normal;
   margin: 20px;
-  padding: 10px;
-  background: none;
-  border: none;
-  width: 100px;
-  background-color: #bbb;
-  font-size: 16px;
   cursor: pointer;
-  border-radius: 7px;
+  width: 178px;
+  height: 64px;
+  border-radius: 30px;
+  background: #2E9CE0;
+  border: none;
+}
+.boton-atras.svg {
+  stroke-width: 2px;
+  stroke: #000;
+  width: 16.125px;
+  height: 0;
 }
 
 .tipo-usuario {
@@ -138,7 +155,7 @@ boton1.activo, .boton2.activo {
   margin: 12px auto;
   padding: 2rem;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 29px;
   background-color: #FFFFFF;
   overflow: hidden;
   box-shadow: 0 1px 29.7px 11px rgba(0, 0, 0, 0.25);
@@ -201,7 +218,7 @@ button:hover {
 .login-link {
   margin-top: 16px;
   text-align: center;
-  font-size: 14.4px;
+  font-size: 16px;
 }
 
 
