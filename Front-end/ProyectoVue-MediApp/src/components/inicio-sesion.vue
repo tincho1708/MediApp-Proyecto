@@ -20,15 +20,15 @@ const form = ref({
   <div class="contenedor">
     <h1>Iniciar sesión</h1>
 
-    <div class="texto-sesion1">
+    <button class="texto-sesion1" @click="emit('ir-a-principal')">
     <img src="@/assets/imagenes/google.png" alt="Google"/>
     Continuar con Google
-    </div> 
+    </button> 
 
-    <div class="texto-sesion2">
+    <button class="texto-sesion2" @click="emit('ir-a-principal')">
     <img src="@/assets/imagenes/microsoft.png" alt="Microsoft"/>
     Continuar con Microsoft
-    </div>
+    </button>
 
     <p class="separador">────────────── O ──────────────</p>
     <form autocomplete="off" @submit.prevent="emit('ir-a-principal')">
@@ -104,11 +104,13 @@ button {
   padding: 10px;
   margin-top: 8px;
   background: #4a90e2;
-  color: white;
+  color: black;
   border: none;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 20px;
   cursor: pointer;
+  font-weight: 400;
+  font-family: 'Lexend', sans-serif;
 }
 
 button:hover {
@@ -144,6 +146,7 @@ button:hover {
   justify-content: center;
   gap: 5px;
   margin: 10px;
+  background-color: transparent;
 }
 
 .texto-sesion1 img {
@@ -160,7 +163,7 @@ button:hover {
 }
 
 .texto-sesion1:hover, .texto-sesion2:hover {
-  background-color: rgba(255,255,255,0.3);
+  background-color: #00b7ff48;
 }
 
 .separador {

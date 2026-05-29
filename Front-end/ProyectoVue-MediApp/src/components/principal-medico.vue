@@ -26,7 +26,7 @@ const emit = defineEmits(['ir-a-bienvenida'])
 
 <style>
 .navbar {
-  height: 115px;
+  height: 100px;
   position: fixed;
   top: 0;
   left: 0;
@@ -46,13 +46,13 @@ const emit = defineEmits(['ir-a-bienvenida'])
 }
 
 .navbar-logo img {
-  width: 125px;
-  height: 125px;
+  width: 110px;
+  height: 110px;
 }
 
 .navbar-logo span {
   font-family: 'Lexend', sans-serif;
-  font-size: 47px;
+  font-size: 43px;
   font-weight: 700;
   background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
   -webkit-background-clip: text;
@@ -71,8 +71,8 @@ const emit = defineEmits(['ir-a-bienvenida'])
 }
 .campoo {
   text-align: center;
-  width: 206px;
-  height: 73px;
+  width: 190px;
+  height: 65px;
   background: #2185DA;
   border-radius: 40px;
   color: #000;
