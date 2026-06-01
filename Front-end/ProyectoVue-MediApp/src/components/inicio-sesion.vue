@@ -90,7 +90,7 @@ const form = ref({
 
 h1 {
   font-family: 'Lexend';
-  font-weight: 100;
+  font-weight: 400;
   margin-bottom: 18px;
   font-size: 40px;
   text-align: center;
