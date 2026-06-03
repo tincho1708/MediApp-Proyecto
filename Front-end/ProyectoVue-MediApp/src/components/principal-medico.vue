@@ -75,11 +75,23 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
     <div class ="superior">
       <div class="cuadros"></div>
       <div class="cuadros"></div>
-      <div class="cuadros"></div>
-      <div class="cuadros"></div>
     </div>
 
-    <div class ="inferior">
+    <div class="inferior">
+      <div class="cuadro1">
+        <div class="cuadro1-titulo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 30 30" fill="none">
+            <path d="M14.6667 1H26.625C27.5646 1 28.3333 1.76875 28.3333 2.70833V26.625C28.3333 27.5646 27.5646 28.3333 26.625 28.3333H2.70833C1.76875 28.3333 1 27.5646 1 26.625V2.70833C1 1.76875 1.76875 1 2.70833 1H14.6667Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Agenda de hoy
+        </div>
+      </div>
+    </div>
+
+    <div class = "div-derecho">
+      <div class="calendario">
+
+      </div>
     </div>
 
 </template>
@@ -158,7 +170,7 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 .bienvenida {
   color: #000;
   font-family: Lexend;
-  font-size: 70px;
+  font-size: 58px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
@@ -180,7 +192,7 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 .resumen-label {
   color: #000;
   font-family: Lexend;
-  font-size: 40px;
+  font-size: 35px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
@@ -196,10 +208,10 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
   display: flex;
   align-items: center;
   gap: 10px;
-background: #2E9CE0;
+  background: #2E9CE0;
   color: #fff;
   font-family: 'Lexend', sans-serif;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 400;
   padding: 12px 24px;
   border: none;
@@ -274,17 +286,61 @@ background: #2E9CE0;
 .superior {
   display: flex;
   flex-direction: row;
-  gap: 60px;
   margin-top: 20px;
-  justify-content: center;
+  margin-left: 65px;
+  gap: 20px;
+  width: 50%;
 }
 
+.inferior {
+  width: 50%;
+}
 .cuadros {
-  width: 280px;
-  height: 227px;
+  width: 250px;
+  height: 177px;
   border-radius: 20px;
   border: 3px solid #2E9CE0;
   background: #FFF;
   box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
+}
+
+.cuadro1 {
+  border-radius: 20px;
+  border: 5px solid #2E9CE0;
+  background: #FFF;
+  box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
+  width: 522px;
+  height: 267px;
+  margin-left: 65px;
+  margin-top: 20px;
+  padding: 20px 20px;
+}
+
+.cuadro1-titulo {
+  display: flex;
+  gap: 10px;
+  font-family: 'Lexend', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #000;
+}
+
+.cuadro1-titulo path {
+  stroke: #000;
+  stroke-width: 2;
+}
+
+.div-derecho {
+  position: fixed;
+  top: 280px;
+  right: 40px;
+}
+.calendario {
+  border-radius: 20px;
+  border: 5px solid #2E9CE0;
+  background: #FFF;
+  box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
+  width: 620px;
+  height: 470px;
 }
 </style>
