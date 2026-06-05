@@ -7,28 +7,44 @@ const emit = defineEmits(['ir-a-login', 'ir-a-bienvenida', 'ir-a-principal'])
 const form = ref({
   nombre: '',
   email: '',
-  telefono: '',
   password: '',
   confirmarPassword: '',
 })
 
-const exito = ref(false)
+const tipoUsuario = ref<'Medico' | 'Paciente' | null>(null)
+const error = ref('')
+
 function seleccionar(tipo: 'Medico' | 'Paciente') {
+  tipoUsuario.value = tipo
   const boton1 = document.querySelector('.boton1') as HTMLButtonElement
   const boton2 = document.querySelector('.boton2') as HTMLButtonElement
-
   boton1.style.transition = 'background-color 0.3s'
   boton2.style.transition = 'background-color 0.3s'
-
   if (tipo === 'Medico') {
     boton1.style.backgroundColor = '#4a90e2'
     boton2.style.backgroundColor = '#ccc'
-    console.log(tipo);
   } else {
     boton1.style.backgroundColor = '#ccc'
     boton2.style.backgroundColor = '#4a90e2'
-    console.log(tipo);
   }
+}
+
+function testearSubmit() {
+  error.value = ''
+  if (!tipoUsuario.value) {
+    error.value = 'Seleccioná un tipo de usuario (Médico o Paciente)'
+    return
+  }
+  if (form.value.password !== form.value.confirmarPassword) {
+    error.value = 'Las contraseñas no coinciden'
+    return
+  }
+  localStorage.setItem('usuario', JSON.stringify({
+    nombre: form.value.nombre,
+    email: form.value.email,
+    tipo: tipoUsuario.value,
+  }))
+  emit('ir-a-principal')
 }
 </script>
 
@@ -50,12 +66,10 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
       <button class="boton2"@click="seleccionar('Paciente')">Paciente</button>
     </div>
   <div>
-    <form v-if="!exito" autocomplete="off" @submit.prevent="emit('ir-a-principal')">
-      
-        <div class="campo">
-          
-          <input id="nombre" v-model="form.nombre" type="text" placeholder="Nombre" required />
-        </div>
+    <form autocomplete="off" @submit.prevent="testearSubmit">
+      <div class="campo">
+        <input id="nombre" v-model="form.nombre" type="text" placeholder="Nombre" required />
+      </div>
 
       <div class="campo">
         <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
@@ -69,8 +83,9 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
         <input id="confirmar" v-model="form.confirmarPassword" type="password" placeholder="Repite tu contraseña" required />
       </div>
 
+      <p v-if="error" class="error">{{ error }}</p>
 
-      <button class="submit" type="submit" @click="emit('ir-a-principal')">Crear cuenta</button>
+      <button class="submit" type="submit">Crear cuenta</button>
 
       <p class="login-link">¿Ya tienes cuenta? <a href="#" @click.prevent="emit('ir-a-login')">Inicia sesión</a></p>
     </form>

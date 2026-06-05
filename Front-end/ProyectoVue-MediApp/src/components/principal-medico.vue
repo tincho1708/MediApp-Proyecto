@@ -16,6 +16,7 @@ function cerrarAlClickFuera() { abierto.value = false }
 
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
+const esta = ref(true)
 </script>
 
 <template>
@@ -24,17 +25,28 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
       <div class="navbar-logo">
         <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
         <span>App</span>
-      </div>    
+      </div>
+
       <div class="navbar-acciones">
         <button class="campoo">MediBot</button>
         <button class="campoo">Mis pacientes</button>
         <button class="campoo">Notificaciones</button>
         <button class="campoo">MediApp+</button>
-        <button class="barra">
+        <button @click="esta = !esta" class="barra">
           <div>──────</div>
           <div>──────</div>
           <div>──────</div>
         </button>
+
+        <transition name="slide">
+          <div v-if="esta" class="barra-desplegable">
+            <a href="#">Inicio</a>
+            <a href="#">Productos</a>
+            <a href="#">Servicios</a>
+            <a href="#">Contacto</a>
+          </div>
+        </transition>
+
       </div>
 
     </div>
@@ -73,25 +85,25 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
     </div>
 
     <div class ="superior">
-      <div class="cuadros"></div>
+      <div class="cuadros">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="23" viewBox="0 0 20 23" fill="none">
+            <path d="M10 12.65H15.5556V18.4H10V12.65ZM17.7778 2.3H16.6667V0H14.4444V2.3H5.55556V0H3.33333V2.3H2.22222C1 2.3 0 3.335 0 4.6V20.7C0 21.965 1 23 2.22222 23H17.7778C19 23 20 21.965 20 20.7V4.6C20 3.335 19 2.3 17.7778 2.3ZM17.7778 4.6V6.9H2.22222V4.6H17.7778ZM2.22222 20.7V9.2H17.7778V20.7H2.22222Z" fill="black"/>
+          </svg>
+          Agenda de hoy
+      </div>
       <div class="cuadros"></div>
     </div>
 
     <div class="inferior">
       <div class="cuadro1">
         <div class="cuadro1-titulo">
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 30 30" fill="none">
-            <path d="M14.6667 1H26.625C27.5646 1 28.3333 1.76875 28.3333 2.70833V26.625C28.3333 27.5646 27.5646 28.3333 26.625 28.3333H2.70833C1.76875 28.3333 1 27.5646 1 26.625V2.70833C1 1.76875 1.76875 1 2.70833 1H14.6667Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Agenda de hoy
+          
         </div>
       </div>
     </div>
 
-    <div class = "div-derecho">
-      <div class="calendario">
-
-      </div>
+    <div class="div-derecho">
+      <div class="calendario"></div>
     </div>
 
 </template>
@@ -145,7 +157,7 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 }
 .campoo {
   width: 200px;
-  height: 65px;
+  height: 55px;
   background: #2E9CE0;
   border-radius: 40px;
   color: #000;
@@ -156,7 +168,7 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
   font-weight: 400;
   line-height: normal;
   border: none;
-  cursor: pointer;  
+  cursor: pointer;
 }
 
 .barra {
@@ -165,6 +177,52 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
   cursor: pointer;
   padding: 0;
   margin-right: 20px;
+  border-radius: 8px;
+  border: 8px solid transparent;
+}
+.barra:hover {
+  background-color: rgba(33, 133, 218, 0.5);
+  transition: background-color 0.4s ease, transform 0.3s ease;
+}
+
+.barra-desplegable {
+  position: fixed;
+  top: 100px;
+  right: 0;
+  height: 300px;
+  width: 220px;
+  border-radius: 0 0 0 20px;
+  display: flex;
+  flex-direction: column;   
+  gap: 8px;
+
+  background: linear-gradient(160deg, #6366f1, #8b5cf6);
+  padding: 24px 16px;
+  box-shadow: -8px 0 24px rgba(99, 102, 241, 0.35);
+}
+
+.barra-desplegable a {
+  color: #fff;
+  text-decoration: none;
+  font-family: system-ui, sans-serif;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  transition: 0.25s;
+}
+
+.barra-desplegable a:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(100%);
 }
 
 .bienvenida {
@@ -196,7 +254,7 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  margin-left: 65px;
+  margin-left: 80px;
 }
 
 .dropdown {
@@ -295,23 +353,35 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 .inferior {
   width: 50%;
 }
+
 .cuadros {
-  width: 250px;
+  width: 258px;
   height: 177px;
   border-radius: 20px;
   border: 3px solid #2E9CE0;
   background: #FFF;
   box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
+  margin-left: 18.5px;
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
 }
 
+.cuadros svg {
+  width: 20px;
+  height: 23px;
+  fill: black;
+  margin-top: -4px;
+}
 .cuadro1 {
   border-radius: 20px;
   border: 5px solid #2E9CE0;
   background: #FFF;
   box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
-  width: 522px;
+  width: 552px;
   height: 267px;
-  margin-left: 65px;
+  margin-left: 80px;
   margin-top: 20px;
   padding: 20px 20px;
 }
@@ -325,22 +395,18 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
   color: #000;
 }
 
-.cuadro1-titulo path {
-  stroke: #000;
-  stroke-width: 2;
-}
-
 .div-derecho {
   position: fixed;
-  top: 280px;
-  right: 40px;
+  top: 287px;
+  right: 80px;
 }
+
 .calendario {
   border-radius: 20px;
   border: 5px solid #2E9CE0;
   background: #FFF;
   box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
-  width: 620px;
-  height: 470px;
+  width: 650px;
+  height: 468px;
 }
 </style>

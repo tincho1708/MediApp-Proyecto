@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const emit = defineEmits(['ir-a-registro', 'bienvenida','ir-a-principal'])
+const emit = defineEmits(['ir-a-registro', 'bienvenida', 'ir-a-principal'])
 
 const form = ref({
   email: '',
   password: '',
 })
 
+const error = ref('')
 
-
-
+function testearSubmit() {
+  error.value = ''
+  localStorage.setItem('sesion', JSON.stringify({ email: form.value.email, contraseña: form.value.password }))
+  emit('ir-a-principal')
+}
 </script>
 
 <template>
@@ -34,7 +38,7 @@ const form = ref({
     </button>
 
     <p class="separador">──────────────── O ────────────────</p>
-    <form autocomplete="off" @submit.prevent="emit('ir-a-principal')">
+    <form autocomplete="off" @submit.prevent="testearSubmit">
       <div class="campo">
         <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
       </div>
@@ -44,7 +48,9 @@ const form = ref({
       </div>
       <p class="olvido-contraseña">¿Olvidaste tu contraseña? <a href="h">Recuperala</a></p>
 
-      <button class="iniciar" type="submit" @click="emit('ir-a-principal')">Iniciar sesión</button>
+      <p v-if="error" class="error">{{ error }}</p>
+
+      <button class="iniciar" type="submit">Iniciar sesión</button>
 
       <p class="registro-link">¿No tenés cuenta? <a href="#" @click.prevent="emit('ir-a-registro')">Registrate</a></p>
     </form>
