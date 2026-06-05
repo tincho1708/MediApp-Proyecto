@@ -7,4 +7,6 @@ python-jose[cryptography]==3.5.0
 python-multipart==0.0.29
 python-dotenv==1.2.2
 anthropic==0.103.1
-pydantic==2.13.4
+pydantic[email]==2.13.4
+psycopg2-binary==2.9.12
+resend==2.30.1
