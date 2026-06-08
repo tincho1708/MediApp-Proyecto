@@ -32,9 +32,15 @@ def registrar_paciente(data: PacienteRegister, db: Session = Depends(get_db)):
         verification_token_expires=datetime.utcnow() + timedelta(hours=24),
     )
     db.add(paciente)
-    db.commit()
+    db.flush()
 
-    send_verification_email(data.mail, data.nombre, token, "pacientes")
+    try:
+        send_verification_email(data.mail, data.nombre, token, "pacientes")
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al enviar el mail de verificación: {str(e)}")
+
+    db.commit()
     return {"message": "Registro exitoso. Revisá tu mail para verificar tu cuenta."}
 
 
