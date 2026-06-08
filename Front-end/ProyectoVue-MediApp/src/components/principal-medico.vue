@@ -33,9 +33,11 @@ const esta = ref(false)
         <button class="campoo">Notificaciones</button>
         <button class="campoo">MediApp+</button>
         <button @click="esta = !esta" class="barra">
-          <div>──────</div>
-          <div>──────</div>
-          <div>──────</div>
+          <div class="w-12 h-9 relative">
+          <div class="w-12 border-t-2 border-black absolute left-0 top-0"></div>
+          <div class="w-12 border-t-2 border-black absolute left-0 top-[16px]"></div>
+          <div class="w-12 border-t-2 border-black absolute left-0 top-[32px]"></div>
+          </div>
         </button>
 
         <transition name="slide">
@@ -196,13 +198,13 @@ const esta = ref(false)
 
 .campoo {
   width: 190px;
-  height: 65px;
+  height: 55px;
   background: #2E9CE0;
   border-radius: 40px;
   color: #000;
   text-align: center;
   font-family: Lexend;
-  font-size: 24px;
+  font-size: 20px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
@@ -214,7 +216,7 @@ const esta = ref(false)
   background: none;
   border: 8px solid transparent;
   cursor: pointer;
-  padding: 0;
+  padding: 5;
   margin-right: 20px;
   border-radius: 8px;
 }
