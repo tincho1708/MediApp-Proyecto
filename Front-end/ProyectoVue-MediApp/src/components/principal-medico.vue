@@ -16,7 +16,7 @@ function cerrarAlClickFuera() { abierto.value = false }
 
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
-const esta = ref(true)
+const esta = ref(false)
 </script>
 
 <template>
@@ -85,13 +85,23 @@ const esta = ref(true)
     </div>
 
     <div class ="superior">
+
       <div class="cuadros">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="23" viewBox="0 0 20 23" fill="none">
+        <div class="cuadros-titulo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="23" viewBox="0 0 20 23" fill="none">
             <path d="M10 12.65H15.5556V18.4H10V12.65ZM17.7778 2.3H16.6667V0H14.4444V2.3H5.55556V0H3.33333V2.3H2.22222C1 2.3 0 3.335 0 4.6V20.7C0 21.965 1 23 2.22222 23H17.7778C19 23 20 21.965 20 20.7V4.6C20 3.335 19 2.3 17.7778 2.3ZM17.7778 4.6V6.9H2.22222V4.6H17.7778ZM2.22222 20.7V9.2H17.7778V20.7H2.22222Z" fill="black"/>
           </svg>
           Agenda de hoy
+        </div>
+
+        <div class="texto-agenda-hoy">
+          3/5
+          <div class="text-[15px]">Turnos Restantes</div>
+        </div>
       </div>
+
       <div class="cuadros"></div>
+
     </div>
 
     <div class="inferior">
@@ -125,6 +135,7 @@ const esta = ref(true)
   padding: 8px 24px;
   z-index: 100;
 }
+
 .navbar-logo {
   display: flex;
   align-items: center;
@@ -151,13 +162,13 @@ const esta = ref(true)
 .navbar-acciones {
   display: flex;
   align-items: center;
-  gap: 12px;
   flex-direction: row;
   gap: 50px;
 }
+
 .campoo {
-  width: 200px;
-  height: 55px;
+  width: 190px;
+  height: 65px;
   background: #2E9CE0;
   border-radius: 40px;
   color: #000;
@@ -173,13 +184,13 @@ const esta = ref(true)
 
 .barra {
   background: none;
-  border: none;
+  border: 8px solid transparent;
   cursor: pointer;
   padding: 0;
   margin-right: 20px;
   border-radius: 8px;
-  border: 8px solid transparent;
 }
+
 .barra:hover {
   background-color: rgba(33, 133, 218, 0.5);
   transition: background-color 0.4s ease, transform 0.3s ease;
@@ -193,9 +204,8 @@ const esta = ref(true)
   width: 220px;
   border-radius: 0 0 0 20px;
   display: flex;
-  flex-direction: column;   
+  flex-direction: column;
   gap: 8px;
-
   background: linear-gradient(160deg, #6366f1, #8b5cf6);
   padding: 24px 16px;
   box-shadow: -8px 0 24px rgba(99, 102, 241, 0.35);
@@ -308,6 +318,7 @@ const esta = ref(true)
   min-width: 160px;
   z-index: 200;
   overflow: hidden;
+  display: none;
 }
 
 .dropdown-item {
@@ -350,10 +361,6 @@ const esta = ref(true)
   width: 50%;
 }
 
-.inferior {
-  width: 50%;
-}
-
 .cuadros {
   width: 258px;
   height: 177px;
@@ -364,8 +371,18 @@ const esta = ref(true)
   margin-left: 18.5px;
   padding: 10px 15px;
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cuadros-titulo {
+  display: flex;
   flex-direction: row;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Lexend', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .cuadros svg {
@@ -374,6 +391,23 @@ const esta = ref(true)
   fill: black;
   margin-top: -4px;
 }
+
+.texto-agenda-hoy {
+  font-family: 'Lexend', sans-serif;
+  font-size: 48px;
+  font-weight: 500;
+  color: #000;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.inferior {
+  width: 50%;
+}
+
 .cuadro1 {
   border-radius: 20px;
   border: 5px solid #2E9CE0;
