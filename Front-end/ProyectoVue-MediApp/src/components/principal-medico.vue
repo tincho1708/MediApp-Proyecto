@@ -100,16 +100,44 @@ const esta = ref(false)
         </div>
       </div>
 
-      <div class="cuadros"></div>
+        <div class="cuadros">
+          <div class="cuadros-titulo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 31 31" fill="none">
+              <path d="M15.4167 27.75C18.6877 27.75 21.8247 26.4506 24.1376 24.1376C26.4506 21.8247 27.75 18.6877 27.75 15.4167C27.75 12.1457 26.4506 9.00863 24.1376 6.69568C21.8247 4.38273 18.6877 3.08333 15.4167 3.08333C12.1457 3.08333 9.00863 4.38273 6.69568 6.69568C4.38273 9.00863 3.08333 12.1457 3.08333 15.4167C3.08333 18.6877 4.38273 21.8247 6.69568 24.1376C9.00863 26.4506 12.1457 27.75 15.4167 27.75ZM15.4167 0C17.4412 0 19.4459 0.398764 21.3164 1.17352C23.1868 1.94828 24.8863 3.08387 26.3179 4.51544C27.7495 5.94701 28.885 7.64653 29.6598 9.51696C30.4346 11.3874 30.8333 13.3921 30.8333 15.4167C30.8333 19.5054 29.2091 23.4267 26.3179 26.3179C23.4267 29.2091 19.5054 30.8333 15.4167 30.8333C6.89125 30.8333 0 23.8958 0 15.4167C0 11.3279 1.62425 7.40662 4.51544 4.51544C7.40662 1.62425 11.3279 0 15.4167 0ZM16.1875 7.70833V15.8021L23.125 19.9183L21.9688 21.8146L13.875 16.9583V7.70833H16.1875Z" fill="black"/>
+            </svg>
+            Próximo turno
+          </div>
+          <div class="w-20% h-17% text-center justify-start text-black text-7xl font-normal font-['Lexend']" style="margin-top: 1rem">09:30</div>
+        </div>
 
     </div>
 
     <div class="inferior">
+
       <div class="cuadro1">
-        <div class="cuadro1-titulo">
-          
+        <div class="cuadro1-titulo">Agenda de hoy</div>
+        <div class="w-100% h-10 justify-start text-black/75 text-2xl font-normal font-['Lexend']" style="margin-top: 0.1rem; display: flex; align-items: center; gap: 10px">09:30
+          <div class="w-1.5 h-10 bg-indigo-400 rounded-[20px]"></div>
+          <div class="w-80 h-10 justify-start text-black text-base font-normal" style="margin-top: 0.35rem;">Juan liguori knoll</div>
+          <div class="w-80 h-10 text-black/80" style="margin-left: -65.6%; margin-top: 0.95rem; font-size: 1rem;"> <br/> Orientacion vocacional</div>
         </div>
+        <br/>
+        <hr class="h-3 outline-black/60"/>
+        <div class="w-100% h-10 justify-start text-black/75 text-2xl font-normal font-['Lexend']" style="display: flex; align-items: center; gap: 10px">09:30
+          <div class="w-1.5 h-10 bg-red-400 rounded-[20px]"></div>
+          <div class="w-80 h-10 justify-start text-black text-base font-normal" style="margin-top: 0.35rem;">Juan liguori knoll</div>
+          <div class="w-80 h-10 text-black/80" style="margin-left: -65.6%; margin-top: 0.95rem; font-size: 1rem;"> <br/> Orientacion vocacional</div>
+        </div>
+        <br/>
+        <hr class="h-3 outline-black/60" style="margin-top: 2px;"/>
+        <div class="w-100% h-10 justify-start text-black/75 text-2xl font-normal font-['Lexend']" style="display: flex; align-items: center; gap: 10px">09:30
+          <div class="w-1.5 h-10 bg-green-400 rounded-[20px]"></div>
+          <div class="w-80 h-10 justify-start text-black text-base font-normal" style="margin-top: 0.35rem;">Juan liguori knoll</div>
+          <div class="w-80 h-10 text-black/80" style="margin-left: -65.6%; margin-top: 0.95rem; font-size: 1rem;"> <br/> Orientacion vocacional</div>
+        </div>
+        <br/>
       </div>
+
     </div>
 
     <div class="div-derecho">
@@ -318,7 +346,6 @@ const esta = ref(false)
   min-width: 160px;
   z-index: 200;
   overflow: hidden;
-  display: none;
 }
 
 .dropdown-item {
@@ -386,8 +413,8 @@ const esta = ref(false)
 }
 
 .cuadros svg {
-  width: 20px;
-  height: 23px;
+  width: 24px;
+  height: 24px;
   fill: black;
   margin-top: -4px;
 }
@@ -404,6 +431,15 @@ const esta = ref(false)
   justify-content: center;
 }
 
+.Proximo-turno {
+  font-family: 'Lexend', sans-serif;
+  font-weight: 400;
+  color: #000;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  margin-top: -10%;
+}
 .inferior {
   width: 50%;
 }

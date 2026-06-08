@@ -43,6 +43,7 @@ function testearSubmit() {
     nombre: form.value.nombre,
     email: form.value.email,
     tipo: tipoUsuario.value,
+    contraseña: form.value.password
   }))
   emit('ir-a-principal')
 }
@@ -87,7 +88,7 @@ function testearSubmit() {
 
       <button class="submit" type="submit">Crear cuenta</button>
 
-      <p class="login-link">¿Ya tienes cuenta? <a href="#" @click.prevent="emit('ir-a-login')">Inicia sesión</a></p>
+      <p class="login-link">¿Ya tienes cuenta? <a href="#" class="underline" @click.prevent="emit('ir-a-login')">Inicia sesión</a></p>
     </form>
 
     
@@ -125,6 +126,11 @@ function testearSubmit() {
   border-radius: 30px;
   background: #2E9CE0;
   border: none;
+  display: flex;
+  align-items: center;
+  padding-left: 2.5%;
+  justify-content: flex-start;
+  gap: 10%;
 }
 .boton-atras.svg {
   stroke-width: 2px;

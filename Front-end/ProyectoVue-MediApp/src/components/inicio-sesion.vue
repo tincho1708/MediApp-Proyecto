@@ -46,13 +46,13 @@ function testearSubmit() {
       <div class="campo">
         <input id="password" v-model="form.password" type="password" placeholder="Contraseña" required />
       </div>
-      <p class="olvido-contraseña">¿Olvidaste tu contraseña? <a href="h">Recuperala</a></p>
+      <p class="olvido-contraseña">¿Olvidaste tu contraseña? <a href="h" class="underline">Recuperala</a></p>
 
       <p v-if="error" class="error">{{ error }}</p>
 
       <button class="iniciar" type="submit">Iniciar sesión</button>
 
-      <p class="registro-link">¿No tenés cuenta? <a href="#" @click.prevent="emit('ir-a-registro')">Registrate</a></p>
+      <p class="registro-link">¿No tenés cuenta? <a href="h"  class="underline" @click.prevent="emit('ir-a-registro')">Registrate</a></p>
     </form>
   </div>
   </div>
@@ -74,7 +74,13 @@ function testearSubmit() {
   border-radius: 30px;
   background: #2E9CE0;
   border: none;
+  display: flex;
+  align-items: center;
+  padding-left: 2.5%;
+  justify-content: flex-start;
+  gap: 10%;
 }
+
 .boton-atras.svg {
   stroke-width: 2px;
   stroke: #000;
