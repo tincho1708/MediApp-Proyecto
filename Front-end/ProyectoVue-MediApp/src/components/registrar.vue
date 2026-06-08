@@ -43,6 +43,7 @@ function testearSubmit() {
     nombre: form.value.nombre,
     email: form.value.email,
     tipo: tipoUsuario.value,
+    contraseña: form.value.password
   }))
   emit('ir-a-principal')
 }
