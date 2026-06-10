@@ -469,7 +469,7 @@ const esta = ref(false)
 
 .div-derecho {
   position: fixed;
-  top: 287px;
+  top: 38.2%;
   right: 80px;
 }
 
