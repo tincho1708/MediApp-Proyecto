@@ -9,11 +9,47 @@ const form = ref({
 })
 
 const error = ref('')
+const cargando = ref(false)
 
-function testearSubmit() {
+async function testearSubmit() {
   error.value = ''
-  localStorage.setItem('sesion', JSON.stringify({ email: form.value.email, contraseña: form.value.password }))
-  emit('ir-a-principal')
+  cargando.value = true
+
+  const body = { mail: form.value.email, password: form.value.password }
+  const intentos = [
+    { url: '/auth/medicos/login', tipo: 'Medico' },
+    { url: '/auth/pacientes/login', tipo: 'Paciente' },
+  ]
+
+  for (const { url, tipo } of intentos) {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}${url}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, email: form.value.email }))
+        emit('ir-a-principal')
+        return
+      }
+      if (res.status === 403) {
+        error.value = data.detail
+        cargando.value = false
+        return
+      }
+      // 401 = credenciales incorrectas para este tipo, probar el otro
+    } catch {
+      error.value = 'No se pudo conectar al servidor'
+      cargando.value = false
+      return
+    }
+  }
+
+  error.value = 'Credenciales incorrectas'
+  cargando.value = false
 }
 </script>
 
@@ -50,7 +86,9 @@ function testearSubmit() {
 
       <p v-if="error" class="error">{{ error }}</p>
 
-      <button class="iniciar" type="submit">Iniciar sesión</button>
+      <button class="iniciar" type="submit" :disabled="cargando">
+        {{ cargando ? 'Iniciando...' : 'Iniciar sesión' }}
+      </button>
 
       <p class="registro-link">¿No tenés cuenta? <a href="h"  class="underline" @click.prevent="emit('ir-a-registro')">Registrate</a></p>
     </form>

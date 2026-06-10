@@ -16,14 +16,11 @@ router = APIRouter(prefix="/auth/pacientes", tags=["Auth Pacientes"])
 def registrar_paciente(data: PacienteRegister, db: Session = Depends(get_db)):
     if db.query(Paciente).filter(Paciente.mail == data.mail).first():
         raise HTTPException(status_code=400, detail="El mail ya está registrado")
-    if db.query(Paciente).filter(Paciente.dni == data.dni).first():
-        raise HTTPException(status_code=400, detail="El DNI ya está registrado")
 
     token = str(uuid.uuid4())
     paciente = Paciente(
         nombre=data.nombre,
-        apellido=data.apellido,
-        dni=data.dni,
+        apellido="",
         telefono=data.telefono,
         mail=data.mail,
         password_hash=hash_password(data.password),

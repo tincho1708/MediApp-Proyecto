@@ -13,6 +13,8 @@ const form = ref({
 
 const tipoUsuario = ref<'Medico' | 'Paciente' | null>(null)
 const error = ref('')
+const cargando = ref(false)
+const exito = ref('')
 
 function seleccionar(tipo: 'Medico' | 'Paciente') {
   tipoUsuario.value = tipo
@@ -29,7 +31,7 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
   }
 }
 
-function testearSubmit() {
+async function testearSubmit() {
   error.value = ''
   if (!tipoUsuario.value) {
     error.value = 'Seleccioná un tipo de usuario (Médico o Paciente)'
@@ -39,12 +41,30 @@ function testearSubmit() {
     error.value = 'Las contraseñas no coinciden'
     return
   }
-  localStorage.setItem('usuario', JSON.stringify({
-    nombre: form.value.nombre,
-    email: form.value.email,
-    tipo: tipoUsuario.value,
-  }))
-  emit('ir-a-principal')
+
+  cargando.value = true
+  const url = tipoUsuario.value === 'Medico'
+    ? '/auth/medicos/registro'
+    : '/auth/pacientes/registro'
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}${url}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre: form.value.nombre, mail: form.value.email, password: form.value.password }),
+    })
+    const data = await res.json()
+
+    if (res.ok) {
+      exito.value = data.message
+    } else {
+      error.value = data.detail || 'Error al registrarse'
+    }
+  } catch {
+    error.value = 'No se pudo conectar al servidor'
+  } finally {
+    cargando.value = false
+  }
 }
 </script>
 
@@ -84,8 +104,12 @@ function testearSubmit() {
       </div>
 
       <p v-if="error" class="error">{{ error }}</p>
+      <p v-if="exito" class="exito">{{ exito }}</p>
 
-      <button class="submit" type="submit">Crear cuenta</button>
+      <button v-if="!exito" class="submit" type="submit" :disabled="cargando">
+        {{ cargando ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </button>
+      <button v-if="exito" class="submit" type="button" @click="emit('ir-a-login')">Ir a iniciar sesión</button>
 
       <p class="login-link">¿Ya tienes cuenta? <a href="#" class="underline" @click.prevent="emit('ir-a-login')">Inicia sesión</a></p>
     </form>
@@ -234,6 +258,13 @@ button:hover {
   color: red;
   font-size: 13.6px;
   margin-bottom: 8px;
+}
+
+.exito {
+  color: #2e7d32;
+  font-size: 14px;
+  margin-bottom: 8px;
+  text-align: center;
 }
 
 .login-link {
