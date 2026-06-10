@@ -40,7 +40,7 @@ async function testearSubmit() {
         cargando.value = false
         return
       }
-      // 401 = credenciales incorrectas para este tipo, probar el otro
+      
     } catch {
       error.value = 'No se pudo conectar al servidor'
       cargando.value = false
