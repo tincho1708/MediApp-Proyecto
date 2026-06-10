@@ -53,7 +53,6 @@ const esta = ref(false)
 
     </div>
 
-
     <div class ="bienvenida">Bienvenido, Matías</div>
 
 
@@ -143,13 +142,27 @@ const esta = ref(false)
     </div>
 
     <div class="div-derecho">
-      <div class="calendario"></div>
+
+      <div class="calendario">
+
+        <div class="size-20 bg-white rounded-2xl border border-black">
+            <div class="size-20 relative">
+              <div class="size-20 left-0 top-0 absolute bg-white rounded-2xl border border-black"></div>
+              <div class="w-8 h-0 left-[24px] top-[39px] absolute border-2 border-black"></div>
+            </div>
+        </div>
+
+      </div>
+      
     </div>
+    
 
 </template>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+
 
 .navbar {
   height: 100px;
@@ -200,7 +213,7 @@ const esta = ref(false)
   width: 190px;
   height: 55px;
   background: #2E9CE0;
-  border-radius: 40px;
+  border-radius: 22px;
   color: #000;
   text-align: center;
   font-family: Lexend;
