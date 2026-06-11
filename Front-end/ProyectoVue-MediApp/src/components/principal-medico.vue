@@ -12,11 +12,12 @@ function seleccionar(opcion: string) {
   abierto.value = false
 }
 
-function cerrarAlClickFuera() { abierto.value = false }
+function cerrarAlClickFuera() { abierto.value = false; esta.value = false }
 
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 const esta = ref(false)
+
 </script>
 
 <template>
@@ -31,8 +32,9 @@ const esta = ref(false)
         <button class="campoo">MediBot</button>
         <button class="campoo">Mis pacientes</button>
         <button class="campoo">Notificaciones</button>
-        <button class="campoo">MediApp+</button>
-        <button @click="esta = !esta" class="barra">
+        <button class="boton-plus">MediApp+</button>
+
+        <button @click.stop="esta = !esta" class="barra">
           <div class="w-12 h-9 relative">
           <div class="w-12 border-t-2 border-black absolute left-0 top-0"></div>
           <div class="w-12 border-t-2 border-black absolute left-0 top-[16px]"></div>
@@ -41,7 +43,7 @@ const esta = ref(false)
         </button>
 
         <transition name="slide">
-          <div v-if="esta" class="barra-desplegable">
+          <div v-if="esta" class="barra-desplegable" @click.stop>
             <a href="#">Inicio</a>
             <a href="#">Productos</a>
             <a href="#">Servicios</a>
@@ -211,9 +213,9 @@ const esta = ref(false)
 
 .campoo {
   width: 190px;
-  height: 55px;
-  background: #2E9CE0;
-  border-radius: 22px;
+  height: 70px;
+  background: #D8F0FF;
+  border-radius: 20px;
   color: #000;
   text-align: center;
   font-family: Lexend;
@@ -221,10 +223,37 @@ const esta = ref(false)
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  border: none;
+  border: 1px #2E9CE0 solid;
   cursor: pointer;
 }
 
+.campoo:hover {
+  background-color: #2E9CE0;
+  transition: background-color 0.2s ease;
+}
+
+.boton-plus {
+  width: 190px;
+  height: 70px;
+  background: #D8F0FF;
+  border-radius: 20px;
+  color: #000;
+  text-align: center;
+  font-family: Lexend;
+  font-size: 25px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  border: 1px #2E9CE0 solid;
+  cursor: pointer;
+  box-shadow: 0 0 11.3px 1px rgba(35, 106, 205, 0.67);
+
+}
+
+.boton-plus:hover {
+  background-color: #2E9CE0;
+  transition: background-color 0.2s ease;
+}
 .barra {
   background: none;
   border: 8px solid transparent;
