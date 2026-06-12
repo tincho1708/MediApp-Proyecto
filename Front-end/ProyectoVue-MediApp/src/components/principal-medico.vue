@@ -3,16 +3,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const emit = defineEmits(['ir-a-bienvenida'])
 
-const opciones = ['Hoy', '1 Semana', '1 Mes', '1 Año']
-const seleccionado = ref('Hoy')
-const abierto = ref(false)
-
-function seleccionar(opcion: string) {
-  seleccionado.value = opcion
-  abierto.value = false
-}
-
-function cerrarAlClickFuera() { abierto.value = false; esta.value = false }
+function cerrarAlClickFuera() { esta.value = false }
 
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
@@ -58,34 +49,6 @@ const esta = ref(false)
     <div class ="bienvenida">Bienvenido, Matías</div>
 
 
-    <div class ="content">
-
-      <div class="resumen">
-        <span class="resumen-label">Tu resumen de:</span>
-        <div class="dropdown" @click.stop="abierto = !abierto">
-          <button class="dropbtn">
-            {{ seleccionado }}
-            <svg class="flecha" :class="{ 'flecha-arriba': abierto }" xmlns="http://www.w3.org/2000/svg" width="15" height="9" viewBox="0 0 15 9" fill="none">
-              <path d="M6.65666 8.07112C7.04719 8.46164 7.68035 8.46164 8.07088 8.07112L14.4348 1.70716C14.8254 1.31664 14.8254 0.68347 14.4348 0.292946C14.0443 -0.0975785 13.4111 -0.0975785 13.0206 0.292946L7.36377 5.9498L1.70692 0.292946C1.31639 -0.0975785 0.683226 -0.0975785 0.292702 0.292946C-0.0978227 0.68347 -0.0978227 1.31664 0.292702 1.70716L6.65666 8.07112ZM7.36377 5.36401H6.36377V7.36401H7.36377H8.36377V5.36401H7.36377Z" fill="white"/>
-            </svg>
-          </button>
-          <transition name="fade-drop">
-            <ul v-if="abierto" class="dropdown-menu">
-              <li
-                v-for="opcion in opciones"
-                :key="opcion"
-                class="dropdown-item"
-                :class="{ activo: seleccionado === opcion }"
-                @click.stop="seleccionar(opcion)"
-              >
-                {{ opcion }}
-              </li>
-            </ul>
-          </transition>
-        </div>
-      </div>
-
-    </div>
 
     <div class="main-layout">
     <div class="main-izquierdo">
@@ -542,6 +505,7 @@ const esta = ref(false)
   display: flex;
   align-items: flex-start;
   gap: 40px;
+  margin-top: 40px;
 }
 
 .main-izquierdo {
