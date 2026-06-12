@@ -87,6 +87,8 @@ const esta = ref(false)
 
     </div>
 
+    <div class="main-layout">
+    <div class="main-izquierdo">
     <div class ="superior">
 
       <div class="cuadros">
@@ -110,7 +112,7 @@ const esta = ref(false)
             </svg>
             Próximo turno
           </div>
-          <div class="w-20% h-17% text-center justify-start text-black text-7xl font-normal font-['Lexend']" style="margin-top: 1rem">09:30</div>
+          <div class="w-30% h-17% text-center justify-start text-black text-7xl font-normal font-['Lexend']" style="margin-top: 1rem">09:30</div>
         </div>
 
     </div>
@@ -142,22 +144,44 @@ const esta = ref(false)
       </div>
 
     </div>
-
-    <div class="div-derecho">
-
-      <div class="calendario">
-
-        <div class="size-20 bg-white rounded-2xl border border-black">
-            <div class="size-20 relative">
-              <div class="size-20 left-0 top-0 absolute bg-white rounded-2xl border border-black"></div>
-              <div class="w-8 h-0 left-[24px] top-[39px] absolute border-2 border-black"></div>
-            </div>
-        </div>
-
-      </div>
-      
     </div>
-    
+
+  <div class="div-derecho">
+
+    <div class="calendario">
+
+      <div class="cal-header">
+        <button class="cal-nav-btn">
+          <svg width="50" height="50" viewBox="0 0 83 82" fill="none"><path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/></svg>
+        </button>
+        <span class="cal-titulo">Mayo 2026</span>
+        <button class="cal-nav-btn">
+          <svg width="50" height="50" viewBox="0 0 83 82" fill="none" style="transform:rotate(180deg)"><path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/></svg>
+        </button>
+      </div>
+
+      <div class="cal-grid">
+        <div class="cal-nombre-dia">LU</div><div class="cal-nombre-dia">MA</div><div class="cal-nombre-dia">MI</div><div class="cal-nombre-dia">JU</div><div class="cal-nombre-dia">VI</div><div class="cal-nombre-dia">SA</div><div class="cal-nombre-dia">DO</div>
+
+        <div class="cal-dia cal-otro-mes">27</div><div class="cal-dia cal-otro-mes">28</div><div class="cal-dia cal-otro-mes">29</div><div class="cal-dia cal-otro-mes">30</div>
+        <div class="cal-dia">1<span class="cal-punto"></span></div><div class="cal-dia">2</div><div class="cal-dia">3</div>
+
+        <div class="cal-dia">4</div><div class="cal-dia">5<span class="cal-punto"></span></div><div class="cal-dia">6<span class="cal-punto"></span></div><div class="cal-dia">7</div><div class="cal-dia">8<span class="cal-punto"></span></div><div class="cal-dia">9</div><div class="cal-dia">10</div>
+
+        <div class="cal-dia">11<span class="cal-punto"></span></div><div class="cal-dia">12</div><div class="cal-dia">13<span class="cal-punto"></span></div><div class="cal-dia">14</div><div class="cal-dia cal-hoy">15<span class="cal-punto"></span></div><div class="cal-dia">16</div><div class="cal-dia">17</div>
+
+        <div class="cal-dia">18<span class="cal-punto"></span></div><div class="cal-dia">19<span class="cal-punto"></span></div><div class="cal-dia">20</div><div class="cal-dia">21</div><div class="cal-dia">22</div><div class="cal-dia">23</div><div class="cal-dia">24</div>
+
+        <div class="cal-dia">25</div><div class="cal-dia">26<span class="cal-punto"></span></div><div class="cal-dia">27</div><div class="cal-dia">28</div><div class="cal-dia">29<span class="cal-punto"></span></div><div class="cal-dia">30</div><div class="cal-dia">31</div>
+
+        <div class="cal-dia cal-otro-mes">1</div><div class="cal-dia cal-otro-mes">2</div><div class="cal-dia cal-otro-mes">3</div><div class="cal-dia cal-otro-mes">4</div><div class="cal-dia cal-otro-mes">5</div><div class="cal-dia cal-otro-mes">6</div><div class="cal-dia cal-otro-mes">7</div>
+      </div>
+
+      <button class="cal-ver-completo">Ver calendario completo</button>
+
+    </div>
+  </div>
+  </div>
 
 </template>
 
@@ -314,7 +338,7 @@ const esta = ref(false)
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  margin-top: 130px;
+  margin-top: 120px;
   text-align: center;
 }
 
@@ -433,8 +457,10 @@ const esta = ref(false)
 }
 
 .cuadros {
+  flex: 0 0 255px;
   width: 258px;
   height: 177px;
+  overflow: hidden;
   border-radius: 20px;
   border: 3px solid #2E9CE0;
   background: #FFF;
@@ -469,10 +495,13 @@ const esta = ref(false)
   font-weight: 500;
   color: #000;
   flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 200px;
+  margin-left: 3%;
 }
 
 .Proximo-turno {
@@ -509,10 +538,20 @@ const esta = ref(false)
   color: #000;
 }
 
+.main-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.main-izquierdo {
+  flex: 1;
+}
+
 .div-derecho {
-  position: fixed;
-  top: 38.2%;
-  right: 80px;
+  flex-shrink: 0;
+  margin-top: 20px;
+  margin-right: 80px;
 }
 
 .calendario {
@@ -521,6 +560,86 @@ const esta = ref(false)
   background: #FFF;
   box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
   width: 650px;
-  height: 468px;
+  padding-bottom: 16px;
 }
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  padding: 20px 20px 10px;
+}
+
+.cal-nav-btn {
+  width: 56px;
+  height: 56px;
+  background: white;
+  border: 1px solid black;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.cal-titulo {
+  flex: 1;
+  text-align: center;
+  font-family: 'Lexend', sans-serif;
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0 16px;
+}
+
+.cal-nombre-dia {
+  text-align: center;
+  font-family: 'Lexend', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 0 6px;
+}
+
+.cal-dia {
+  text-align: center;
+  font-family: 'Lexend', sans-serif;
+  font-size: 17px;
+  padding: 5px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.cal-otro-mes { color: #aaa; }
+
+.cal-hoy { color: #2E9CE0; font-weight: 700; }
+
+.cal-punto {
+  width: 6px;
+  height: 6px;
+  background: #2E9CE0;
+  border-radius: 50%;
+  margin-top: 2px;
+}
+
+.cal-ver-completo {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 10px 20px 0;
+  padding: 14px;
+  background: #2E9CE0;
+  color: #000;
+  font-family: 'Lexend', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
 </style>
