@@ -1,16 +1,56 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const emit = defineEmits(['ir-a-registro', 'bienvenida','ir-a-principal'])
+const emit = defineEmits(['ir-a-registro', 'bienvenida', 'ir-a-principal'])
 
 const form = ref({
   email: '',
   password: '',
 })
 
+const error = ref('')
+const cargando = ref(false)
 
+async function testearSubmit() {
+  error.value = ''
+  cargando.value = true
 
+  const body = { mail: form.value.email, password: form.value.password }
+  const intentos = [
+    { url: '/auth/medicos/login', tipo: 'Medico' },
+    { url: '/auth/pacientes/login', tipo: 'Paciente' },
+  ]
 
+  for (const { url, tipo } of intentos) {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}${url}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, email: form.value.email }))
+        emit('ir-a-principal')
+        return
+      }
+      if (res.status === 403) {
+        error.value = data.detail
+        cargando.value = false
+        return
+      }
+      
+    } catch {
+      error.value = 'No se pudo conectar al servidor'
+      cargando.value = false
+      return
+    }
+  }
+
+  error.value = 'Credenciales incorrectas'
+  cargando.value = false
+}
 </script>
 
 <template>
@@ -34,7 +74,7 @@ const form = ref({
     </button>
 
     <p class="separador">──────────────── O ────────────────</p>
-    <form autocomplete="off" @submit.prevent="emit('ir-a-principal')">
+    <form autocomplete="off" @submit.prevent="testearSubmit">
       <div class="campo">
         <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
       </div>
@@ -42,11 +82,15 @@ const form = ref({
       <div class="campo">
         <input id="password" v-model="form.password" type="password" placeholder="Contraseña" required />
       </div>
-      <p class="olvido-contraseña">¿Olvidaste tu contraseña? <a href="h">Recuperala</a></p>
+      <p class="olvido-contraseña">¿Olvidaste tu contraseña? <a href="h" class="underline">Recuperala</a></p>
 
-      <button class="iniciar" type="submit" @click="emit('ir-a-principal')">Iniciar sesión</button>
+      <p v-if="error" class="error">{{ error }}</p>
 
-      <p class="registro-link">¿No tenés cuenta? <a href="#" @click.prevent="emit('ir-a-registro')">Registrate</a></p>
+      <button class="iniciar" type="submit" :disabled="cargando">
+        {{ cargando ? 'Iniciando...' : 'Iniciar sesión' }}
+      </button>
+
+      <p class="registro-link">¿No tenés cuenta? <a href="h"  class="underline" @click.prevent="emit('ir-a-registro')">Registrate</a></p>
     </form>
   </div>
   </div>
@@ -68,7 +112,13 @@ const form = ref({
   border-radius: 30px;
   background: #2E9CE0;
   border: none;
+  display: flex;
+  align-items: center;
+  padding-left: 2.5%;
+  justify-content: flex-start;
+  gap: 10%;
 }
+
 .boton-atras.svg {
   stroke-width: 2px;
   stroke: #000;

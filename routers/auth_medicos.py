@@ -16,14 +16,11 @@ router = APIRouter(prefix="/auth/medicos", tags=["Auth Medicos"])
 def registrar_medico(data: MedicoRegister, db: Session = Depends(get_db)):
     if db.query(Medico).filter(Medico.mail == data.mail).first():
         raise HTTPException(status_code=400, detail="El mail ya está registrado")
-    if db.query(Medico).filter(Medico.dni == data.dni).first():
-        raise HTTPException(status_code=400, detail="El DNI ya está registrado")
 
     token = str(uuid.uuid4())
     medico = Medico(
         nombre=data.nombre,
-        apellido=data.apellido,
-        dni=data.dni,
+        apellido="",
         telefono=data.telefono,
         mail=data.mail,
         especialidad_id=data.especialidad_id,

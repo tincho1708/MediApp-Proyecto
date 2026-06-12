@@ -7,12 +7,10 @@ import datetime
 
 class MedicoRegister(BaseModel):
     nombre: str
-    apellido: str
-    dni: str
     telefono: Optional[str] = None
     mail: EmailStr
     password: str
-    especialidad_id: int
+    especialidad_id: Optional[int] = None
 
 
 class MedicoLogin(BaseModel):
@@ -38,8 +36,6 @@ class MedicoResponse(BaseModel):
 
 class PacienteRegister(BaseModel):
     nombre: str
-    apellido: str
-    dni: str
     telefono: Optional[str] = None
     mail: EmailStr
     password: str
