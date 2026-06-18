@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-medibot'])
 
 function cerrarAlClickFuera() { esta.value = false }
 
@@ -12,6 +12,7 @@ const esta = ref(false)
 </script>
 
 <template>
+  <div>
     <div class="navbar">
 
       <div class="navbar-logo">
@@ -20,7 +21,7 @@ const esta = ref(false)
       </div>
 
       <div class="navbar-acciones">
-        <button class="campoo">MediBot</button>
+        <button class="campoo" @click="emit('ir-a-medibot')">MediBot</button>
         <button class="campoo">Mis pacientes</button>
         <button class="campoo">Notificaciones</button>
         <button class="boton-plus">MediApp+</button>
@@ -145,6 +146,7 @@ const esta = ref(false)
     </div>
   </div>
   </div>
+  </div><!-- fin wrapper raíz -->
 
 </template>
 

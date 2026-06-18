@@ -4,6 +4,7 @@ import Principal from './components/principal-medico.vue'
 import Bienvenida from './components/bienvenida.vue'
 import Registrar from './components/registrar.vue'
 import IniciarSesion from './components/inicio-sesion.vue'
+import Medibot from './components/medibot.vue'
 
 const vista = ref('bienvenida')
 </script>
@@ -36,7 +37,13 @@ const vista = ref('bienvenida')
 
     <Principal
       v-else-if ="vista === 'Principal'"
-      @ir-a-bienvenida="vista = 'bienvenida'"/>
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-medibot="vista = 'medibot'"/>
+
+    <Medibot
+      v-else-if="vista === 'medibot'"
+      @bienvenida="vista = 'bienvenida'"
+      @ir-a-principal="vista = 'Principal'"/>
 
   </Transition> 
 
