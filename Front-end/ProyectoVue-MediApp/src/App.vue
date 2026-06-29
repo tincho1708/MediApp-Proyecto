@@ -11,8 +11,8 @@ const vista = ref('bienvenida')
 
 <template>
 
-   <Transition name="fade">
-    
+   <Transition name="fade" mode="out-in">
+
     <Bienvenida
       v-if="vista === 'bienvenida'"
       key="bienvenida"
@@ -20,7 +20,6 @@ const vista = ref('bienvenida')
       @ir-a-login="vista = 'iniciarSesion'"
       @ir-a-principal="vista = 'Principal'"
     />
-
 
     <Registrar
       v-else-if="vista === 'registrar'"
@@ -36,19 +35,21 @@ const vista = ref('bienvenida')
       @bienvenida="vista = 'bienvenida'"
       @ir-a-registro="vista = 'registrar'"
       @ir-a-principal="vista = 'Principal'"
-      />
+    />
 
     <Principal
       v-else-if="vista === 'Principal'"
       key="principal"
       @ir-a-bienvenida="vista = 'bienvenida'"
-      @ir-a-chatbot="vista = 'chatbot'"/>
+      @ir-a-chatbot="vista = 'chatbot'"
+    />
 
     <Chatbot
       v-else-if="vista === 'chatbot'"
       key="chatbot"
       @ir-a-bienvenida="vista = 'bienvenida'"
-      @ir-a-principal="vista = 'Principal'"/>
+      @ir-a-principal="vista = 'Principal'"
+    />
 
   </Transition> 
 

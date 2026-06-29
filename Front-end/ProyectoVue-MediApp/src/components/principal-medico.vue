@@ -78,8 +78,8 @@ const celdas = computed(() => {
         <button @click.stop="esta = !esta" class="barra">
           <div class="w-12 h-9 relative">
             <div class="w-12 border-t-2 border-black absolute left-0 top-0"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-[16px]"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-[32px]"></div>
+            <div class="w-12 border-t-2 border-black absolute left-0 top-4"></div>
+            <div class="w-12 border-t-2 border-black absolute left-0 top-8"></div>
           </div>
         </button>
 
