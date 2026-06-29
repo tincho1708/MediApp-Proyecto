@@ -4,24 +4,27 @@ import Principal from './components/principal-medico.vue'
 import Bienvenida from './components/bienvenida.vue'
 import Registrar from './components/registrar.vue'
 import IniciarSesion from './components/inicio-sesion.vue'
+import Chatbot from './components/chatbot.vue'
 
 const vista = ref('bienvenida')
 </script>
 
 <template>
 
-   <Transition name="fade" mode="out-in">
+   <Transition name="fade">
     
     <Bienvenida
       v-if="vista === 'bienvenida'"
+      key="bienvenida"
       @ir-a-registro="vista = 'registrar'"
       @ir-a-login="vista = 'iniciarSesion'"
       @ir-a-principal="vista = 'Principal'"
     />
 
-    
+
     <Registrar
       v-else-if="vista === 'registrar'"
+      key="registrar"
       @ir-a-login="vista = 'iniciarSesion'"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
@@ -29,14 +32,23 @@ const vista = ref('bienvenida')
 
     <IniciarSesion
       v-else-if="vista === 'iniciarSesion'"
+      key="iniciarSesion"
       @bienvenida="vista = 'bienvenida'"
       @ir-a-registro="vista = 'registrar'"
       @ir-a-principal="vista = 'Principal'"
       />
 
     <Principal
-      v-else-if ="vista === 'Principal'"
-      @ir-a-bienvenida="vista = 'bienvenida'"/>
+      v-else-if="vista === 'Principal'"
+      key="principal"
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-chatbot="vista = 'chatbot'"/>
+
+    <Chatbot
+      v-else-if="vista === 'chatbot'"
+      key="chatbot"
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-principal="vista = 'Principal'"/>
 
   </Transition> 
 
