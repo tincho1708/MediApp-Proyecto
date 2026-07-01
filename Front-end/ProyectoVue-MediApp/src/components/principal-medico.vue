@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario'])
 
 const esta = ref(false)
 
@@ -236,7 +236,7 @@ const celdas = computed(() => {
             </div>
           </div>
 
-          <button class="cal-ver-completo">Ver calendario completo</button>
+          <button class="cal-ver-completo" @click="emit('ir-a-calendario')">Ver calendario completo</button>
         </div>
       </div>
     </div>

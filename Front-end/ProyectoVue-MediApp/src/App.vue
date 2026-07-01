@@ -5,6 +5,7 @@ import Bienvenida from './components/bienvenida.vue'
 import Registrar from './components/registrar.vue'
 import IniciarSesion from './components/inicio-sesion.vue'
 import Chatbot from './components/chatbot.vue'
+import CalendarioMedico from './components/calendario-medico.vue'
 
 const vista = ref('bienvenida')
 </script>
@@ -42,13 +43,21 @@ const vista = ref('bienvenida')
       v-else-if="vista === 'Principal'"
       key="principal"
       @ir-a-bienvenida="vista = 'bienvenida'"
-      @ir-a-chatbot="vista = 'chatbot'"/>
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-calendario="vista = 'calendarioMedico'"/>
 
     <Chatbot
       v-else-if="vista === 'chatbot'"
       key="chatbot"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"/>
+
+    <CalendarioMedico
+      v-else-if="vista === 'calendarioMedico'"
+      key="calendarioMedico"
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-principal="vista = 'Principal'"
+      @ir-a-chatbot="vista = 'chatbot'"/>
 
   </Transition> 
 
