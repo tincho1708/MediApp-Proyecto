@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot'])
 
@@ -9,6 +9,56 @@ function cerrarAlClickFuera() { esta.value = false }
 
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
+
+const hoy = new Date()
+const mesActual = ref(hoy.getMonth())
+const añoActual = ref(hoy.getFullYear())
+
+const nombresMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+function mesAnterior() {
+  if (mesActual.value === 0) {
+    mesActual.value = 11
+    añoActual.value--
+  } else {
+    mesActual.value--
+  }
+}
+
+function mesSiguiente() {
+  if (mesActual.value === 11) {
+    mesActual.value = 0
+    añoActual.value++
+  } else {
+    mesActual.value++
+  }
+}
+
+const celdas = computed(() => {
+  const ultimoDia = new Date(añoActual.value, mesActual.value + 1, 0).getDate()
+  const primerDia = new Date(añoActual.value, mesActual.value, 1).getDay()
+  const offset = (primerDia + 6) % 7
+  const resultado = []
+
+  for (let i = 0; i < offset; i++) {
+    resultado.push({ otroMes: true })
+  }
+
+  for (let d = 1; d <= ultimoDia; d++) {
+    resultado.push({
+      dia: d,
+      hoy: d === hoy.getDate() && mesActual.value === hoy.getMonth() && añoActual.value === hoy.getFullYear(),
+    })
+  }
+
+  let siguiente = 1
+  while (resultado.length % 7 !== 0) {
+    resultado.push({ dia: siguiente, otroMes: true })
+    siguiente++
+  }
+
+  return resultado
+})
 </script>
 
 <template>
@@ -82,11 +132,56 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
     </div>
 
     <div class="cal-contenido">
-      <div id="calendario" class="w-[1144px] h-[600px] bg-white rounded-[20px] shadow-[0px_4px_10.699999809265137px_5px_rgba(0,0,0,0.25)] border-[5px] border-sky-500">
-        <div></div>
-        <div></div>
+      <div id="calendario">
+
+        <div class="izq">
+          <div class="cal-header">
+            <button class="cal-nav-btn" @click="mesAnterior">
+              <svg width="50" height="50" viewBox="0 0 83 82" fill="none">
+                <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
+              </svg>
+            </button>
+
+            <span class="cal-titulo">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
+            <button class="cal-nav-btn" @click="mesSiguiente">
+              <svg width="50" height="50" viewBox="0 0 83 82" fill="none" class="cal-nav-der">
+                <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
+              </svg>
+            </button>
+          </div>
+
+           <div class="calgGrid">
+            <div class="cal-nombre-dia">LU</div>
+            <div class="cal-nombre-dia">MA</div>
+            <div class="cal-nombre-dia">MI</div>
+            <div class="cal-nombre-dia">JU</div>
+            <div class="cal-nombre-dia">VI</div>
+            <div class="cal-nombre-dia">SA</div>
+            <div class="cal-nombre-dia">DO</div>
+
+            <div
+              v-for="(celda, i) in celdas"
+              :key="i"
+              class="calDia"
+              :class="{
+                'cal-hoy': celda.hoy,
+                'cal-otro-mes': celda.otroMes
+              }"
+            >
+              {{ celda.dia }}
+            </div>
+          </div>
+        </div>
+
+        <div class="divisor-v"></div>
+
+        <div class="der">
+       
+        </div>
+
       </div>
     </div>
+
   </div>
 </template>
 
@@ -97,5 +192,67 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
   align-items: center;
   height: calc(100vh - 100px);
   margin-top: 100px;
+}
+
+#calendario {
+  width: 1144px;
+  height: 600px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0px 4px 10.7px 5px rgba(0, 0, 0, 0.25);
+  border: 5px solid #2E9CE0;
+  display: flex;
+  flex-direction: row;
+}
+
+.divisor-v {
+  width: 1.3px;
+  background: black;
+  align-self: center;
+  flex-shrink: 0;
+  height: 90%;
+  justify-content: center;
+}
+.izq {
+  width: 35%;
+}
+.der {
+  width: 65%;
+}
+.cal-nav-btn {
+  display: flex;
+  justify-content: flex-start;
+}
+.cal-nav-der {
+  transform: rotate(180deg);
+}
+.cal-titulo {
+  color: #000;
+  text-align: center;
+  font-family: Lexend;
+  font-size: 1.7rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+.calDia {
+  text-align: center;
+  font-family: 'Lexend', sans-serif;
+  font-size: 25px;
+  padding: 5px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  gap: 20px;
+}
+
+.calgGrid {
+  row-gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0 16px;
+  flex: 1;
+  align-content: start;
 }
 </style>

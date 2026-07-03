@@ -612,7 +612,7 @@ const celdas = computed(() => {
 .cal-dia {
   text-align: center;
   font-family: 'Lexend', sans-serif;
-  font-size: 17px;
+  font-size: 20px;
   padding: 5px 0;
   display: flex;
   flex-direction: column;
