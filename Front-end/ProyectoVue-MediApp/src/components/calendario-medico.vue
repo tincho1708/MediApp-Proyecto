@@ -59,15 +59,41 @@ const celdas = computed(() => {
 
   return resultado
 })
+const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+
+const seleccionado = ref(new Date())
+
+function correrDias(n: number) {
+  return new Date(
+    seleccionado.value.getFullYear(),
+    seleccionado.value.getMonth(),
+    seleccionado.value.getDate() + n
+  )
+}
+
+const anterior = computed(() => correrDias(-1))
+const siguiente = computed(() => correrDias(1))
+
+function diaAnterior() {
+  seleccionado.value = correrDias(-1)
+}
+
+function diaSiguiente() {
+  seleccionado.value = correrDias(1)
+}
+
 </script>
 
 <template>
   <div>
+    
     <div class="navbar">
-      <div class="navbar-logo">
-        <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
-        <span>App</span>
-      </div>
+      <button  @click="emit('ir-a-principal')">
+        <div class="navbar-logo" style="cursor:pointer">
+          <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
+          <span>App</span>
+        </div>
+      </button>
 
       <div class="navbar-acciones">
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
@@ -176,7 +202,38 @@ const celdas = computed(() => {
         <div class="divisor-v"></div>
 
         <div class="der">
-       
+          <div class="flex items-center justify-between w-full">
+            <button @click="diaAnterior">
+              <div class="size-20 relative flex items-center justify-center rounded-[42px] border border-black bg-white">
+                <svg width="80" height="70" viewBox="0 0 83 82" fill="none">
+                  <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
+                </svg>
+              </div>
+            </button>
+
+            <div class="flex flex-col items-center">
+              <span class="text-2xl text-gray-400 font-medium">{{ nombresDia[anterior.getDay()] }}</span>
+              <span class="text-5xl text-gray-400 font-semibold">{{ anterior.getDate() }}</span>
+            </div>
+
+            <div class="flex flex-col items-center">
+              <span class="text-2xl text-black font-medium">{{ nombresDia[seleccionado.getDay()] }}</span>
+              <span class="text-5xl text-black font-bold">{{ seleccionado.getDate() }}</span>
+            </div>
+
+            <div class="flex flex-col items-center">
+              <span class="text-2xl text-gray-400 font-medium">{{ nombresDia[siguiente.getDay()] }}</span>
+              <span class="text-5xl text-gray-400 font-semibold">{{ siguiente.getDate() }}</span>
+            </div>
+
+            <button @click="diaSiguiente">
+              <div class="size-20 relative flex items-center justify-center rounded-[42px] border border-black bg-white">
+                <svg width="80" height="70" viewBox="0 0 83 82" fill="none" class="rotate-180">
+                  <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
+                </svg>
+              </div>
+            </button>
+          </div>
         </div>
 
       </div>
@@ -218,6 +275,11 @@ const celdas = computed(() => {
 }
 .der {
   width: 65%;
+  display: flex;
+  align-items: flex-start;
+  padding: 3%;
+  font-family: 'Lexend', sans-serif;
+  font-weight: 200;
 }
 .cal-nav-btn {
   display: flex;
@@ -255,4 +317,6 @@ const celdas = computed(() => {
   flex: 1;
   align-content: start;
 }
+
+
 </style>
