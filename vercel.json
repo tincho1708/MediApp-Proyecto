@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "Front-end/ProyectoVue-MediApp/dist",
+  "installCommand": "cd Front-end/ProyectoVue-MediApp && npm install",
+  "framework": "vite",
+  "rootDirectory": "Front-end/ProyectoVue-MediApp"
+}
