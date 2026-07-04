@@ -417,7 +417,7 @@ const celdas = computed(() => {
 .main-layout {
   display: flex;
   align-items: stretch;
-  gap: 40px;
+  gap: 4%;
   margin-top: 40px;
 }
 
