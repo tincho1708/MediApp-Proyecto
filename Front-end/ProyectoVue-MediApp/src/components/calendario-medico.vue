@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot'])
 
 const esta = ref(false)
 
@@ -59,15 +59,41 @@ const celdas = computed(() => {
 
   return resultado
 })
+const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+
+const seleccionado = ref(new Date())
+
+function correrDias(n: number) {
+  return new Date(
+    seleccionado.value.getFullYear(),
+    seleccionado.value.getMonth(),
+    seleccionado.value.getDate() + n
+  )
+}
+
+const anterior = computed(() => correrDias(-1))
+const siguiente = computed(() => correrDias(1))
+
+function diaAnterior() {
+  seleccionado.value = correrDias(-1)
+}
+
+function diaSiguiente() {
+  seleccionado.value = correrDias(1)
+}
+
 </script>
 
 <template>
   <div>
+    
     <div class="navbar">
-      <div class="navbar-logo">
-        <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
-        <span>App</span>
-      </div>
+      <button  @click="emit('ir-a-principal')">
+        <div class="navbar-logo" style="cursor:pointer">
+          <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
+          <span>App</span>
+        </div>
+      </button>
 
       <div class="navbar-acciones">
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
@@ -78,8 +104,8 @@ const celdas = computed(() => {
         <button @click.stop="esta = !esta" class="barra">
           <div class="w-12 h-9 relative">
             <div class="w-12 border-t-2 border-black absolute left-0 top-0"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-4"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-8"></div>
+            <div class="w-12 border-t-2 border-black absolute left-0 top-[16px]"></div>
+            <div class="w-12 border-t-2 border-black absolute left-0 top-[32px]"></div>
           </div>
         </button>
 
@@ -131,90 +157,26 @@ const celdas = computed(() => {
       </div>
     </div>
 
-    <div class="bienvenida">Bienvenido, Matías</div>
+    <div class="cal-contenido">
+      <div id="calendario">
 
-    <div class="main-layout">
-      <div class="main-izquierdo">
-        <div class="superior">
-          <div class="cuadros">
-            <div class="cuadros-titulo">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="23" viewBox="0 0 20 23" fill="none">
-                <path d="M10 12.65H15.5556V18.4H10V12.65ZM17.7778 2.3H16.6667V0H14.4444V2.3H5.55556V0H3.33333V2.3H2.22222C1 2.3 0 3.335 0 4.6V20.7C0 21.965 1 23 2.22222 23H17.7778C19 23 20 21.965 20 20.7V4.6C20 3.335 19 2.3 17.7778 2.3ZM17.7778 4.6V6.9H2.22222V4.6H17.7778ZM2.22222 20.7V9.2H17.7778V20.7H2.22222Z" fill="black"/>
-              </svg>
-              Agenda de hoy
-            </div>
-            <div class="texto-agenda-hoy">
-              3/5
-              <div class="text-[15px]">Turnos Restantes</div>
-            </div>
-          </div>
-
-          <div class="cuadros">
-            <div class="cuadros-titulo">
-              <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 31 31" fill="none">
-                <path d="M15.4167 27.75C18.6877 27.75 21.8247 26.4506 24.1376 24.1376C26.4506 21.8247 27.75 18.6877 27.75 15.4167C27.75 12.1457 26.4506 9.00863 24.1376 6.69568C21.8247 4.38273 18.6877 3.08333 15.4167 3.08333C12.1457 3.08333 9.00863 4.38273 6.69568 6.69568C4.38273 9.00863 3.08333 12.1457 3.08333 15.4167C3.08333 18.6877 4.38273 21.8247 6.69568 24.1376C9.00863 26.4506 12.1457 27.75 15.4167 27.75ZM15.4167 0C17.4412 0 19.4459 0.398764 21.3164 1.17352C23.1868 1.94828 24.8863 3.08387 26.3179 4.51544C27.7495 5.94701 28.885 7.64653 29.6598 9.51696C30.4346 11.3874 30.8333 13.3921 30.8333 15.4167C30.8333 19.5054 29.2091 23.4267 26.3179 26.3179C23.4267 29.2091 19.5054 30.8333 15.4167 30.8333C6.89125 30.8333 0 23.8958 0 15.4167C0 11.3279 1.62425 7.40662 4.51544 4.51544C7.40662 1.62425 11.3279 0 15.4167 0ZM16.1875 7.70833V15.8021L23.125 19.9183L21.9688 21.8146L13.875 16.9583V7.70833H16.1875Z" fill="black"/>
-              </svg>
-              Próximo turno
-            </div>
-            <div class="proximo-turno-hora">09:30</div>
-          </div>
-        </div>
-
-        <div class="inferior">
-          <div class="cuadro1">
-            <div class="cuadro1-titulo">Agenda de hoy</div>
-
-            <div class="turno-fila" style="margin-top: 0.1rem;">
-              09:30
-              <div class="w-1.5 h-10 bg-indigo-400 rounded-[20px]"></div>
-              <div class="turno-info">
-                <div class="turno-nombre">Juan liguori knoll</div>
-                <div class="turno-detalle">Orientacion vocacional</div>
-              </div>
-            </div>
-
-            <hr class="separador" />
-
-            <div class="turno-fila">
-              09:30
-              <div class="w-1.5 h-10 bg-red-400 rounded-[20px]"></div>
-              <div class="turno-info">
-                <div class="turno-nombre">Juan liguori knoll</div>
-                <div class="turno-detalle">Orientacion vocacional</div>
-              </div>
-            </div>
-
-            <hr class="separador" />
-
-            <div class="turno-fila">
-              09:30
-              <div class="w-1.5 h-10 bg-green-400 rounded-[20px]"></div>
-              <div class="turno-info">
-                <div class="turno-nombre">Juan liguori knoll</div>
-                <div class="turno-detalle">Orientacion vocacional</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="div-derecho">
-        <div class="calendario">
+        <div class="izq">
           <div class="cal-header">
             <button class="cal-nav-btn" @click="mesAnterior">
               <svg width="50" height="50" viewBox="0 0 83 82" fill="none">
                 <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
               </svg>
             </button>
+
             <span class="cal-titulo">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
             <button class="cal-nav-btn" @click="mesSiguiente">
-              <svg width="50" height="50" viewBox="0 0 83 82" fill="none" style="transform:rotate(180deg)">
+              <svg width="50" height="50" viewBox="0 0 83 82" fill="none" class="cal-nav-der">
                 <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
               </svg>
             </button>
           </div>
 
-          <div class="cal-grid">
+           <div class="calgGrid">
             <div class="cal-nombre-dia">LU</div>
             <div class="cal-nombre-dia">MA</div>
             <div class="cal-nombre-dia">MI</div>
@@ -226,7 +188,7 @@ const celdas = computed(() => {
             <div
               v-for="(celda, i) in celdas"
               :key="i"
-              class="cal-dia"
+              class="calDia"
               :class="{
                 'cal-hoy': celda.hoy,
                 'cal-otro-mes': celda.otroMes
@@ -235,365 +197,134 @@ const celdas = computed(() => {
               {{ celda.dia }}
             </div>
           </div>
-
-          <button class="cal-ver-completo" @click="emit('ir-a-calendario')">Ver calendario completo</button>
         </div>
+
+        <div class="divisor-v"></div>
+
+        <div class="der">
+          <div class="flex items-center justify-between w-full">
+            <button @click="diaAnterior">
+              <div class="size-20 relative flex items-center justify-center rounded-[42px] border border-black bg-white">
+                <svg width="80" height="70" viewBox="0 0 83 82" fill="none">
+                  <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
+                </svg>
+              </div>
+            </button>
+
+            <div class="flex flex-col items-center">
+              <span class="text-2xl text-gray-400 font-medium">{{ nombresDia[anterior.getDay()] }}</span>
+              <span class="text-5xl text-gray-400 font-semibold">{{ anterior.getDate() }}</span>
+            </div>
+
+            <div class="flex flex-col items-center">
+              <span class="text-2xl text-black font-medium">{{ nombresDia[seleccionado.getDay()] }}</span>
+              <span class="text-5xl text-black font-bold">{{ seleccionado.getDate() }}</span>
+            </div>
+
+            <div class="flex flex-col items-center">
+              <span class="text-2xl text-gray-400 font-medium">{{ nombresDia[siguiente.getDay()] }}</span>
+              <span class="text-5xl text-gray-400 font-semibold">{{ siguiente.getDate() }}</span>
+            </div>
+
+            <button @click="diaSiguiente">
+              <div class="size-20 relative flex items-center justify-center rounded-[42px] border border-black bg-white">
+                <svg width="80" height="70" viewBox="0 0 83 82" fill="none" class="rotate-180">
+                  <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
+                </svg>
+              </div>
+            </button>
+          </div>
+          <div class="gap-y-{20%}">
+            <div class="linea-der"></div>
+            <div class="linea-der"></div>
+            <div class="linea-der"></div>
+          </div>
+
+
+        </div>
+
       </div>
     </div>
+
   </div>
 </template>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap');
-
-.navbar {
-  height: 100px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
+.cal-contenido {
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  background-color: #FFFFFF;
-  box-sizing: border-box;
-  padding: 8px 24px;
-  z-index: 100;
+  height: calc(100vh - 100px);
+  margin-top: 100px;
 }
 
-.navbar-logo {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-.navbar-logo img {
-  width: 110px;
-  height: 110px;
-}
-
-.navbar-logo span {
-  font-family: 'Lexend', sans-serif;
-  font-size: 43px;
-  font-weight: 700;
-  background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-left: -14px;
-  margin-top: 7px;
-}
-
-.navbar-acciones {
-  display: flex;
-  align-items: center;
-  flex-direction: row;
-  gap: 50px;
-}
-
-.campoo {
-  width: 190px;
-  height: 70px;
-  background: #D8F0FF;
+#calendario {
+  width: 1144px;
+  height: 600px;
+  background: #fff;
   border-radius: 20px;
+  box-shadow: 0px 4px 10.7px 5px rgba(0, 0, 0, 0.25);
+  border: 5px solid #2E9CE0;
+  display: flex;
+  flex-direction: row;
+}
+
+.divisor-v {
+  width: 1.3px;
+  background: black;
+  align-self: center;
+  flex-shrink: 0;
+  height: 90%;
+  justify-content: center;
+}
+.izq {
+  width: 35%;
+}
+.der {
+  width: 65%;
+  display: flex;
+  flex-direction: column;
+  padding: 3%;
+  font-family: 'Lexend', sans-serif;
+  font-weight: 200;
+}
+.linea-der {
+  margin-top: 20%;
+  align-self: center;
+  width: 100%;
+  border-top: 1.3px solid black;
+  
+}
+.cal-nav-btn {
+  display: flex;
+  justify-content: flex-start;
+}
+.cal-nav-der {
+  transform: rotate(180deg);
+}
+.cal-titulo {
   color: #000;
   text-align: center;
-  font-family: 'Lexend', sans-serif;
-  font-size: 20px;
+  font-family: Lexend;
+  font-size: 1.7rem;
+  font-style: normal;
   font-weight: 400;
   line-height: normal;
-  border: 1px #2E9CE0 solid;
-  cursor: pointer;
 }
-
-.campoo:hover {
-  background-color: #2E9CE0;
-  transition: background-color 0.2s ease;
-}
-
-.boton-plus {
-  width: 190px;
-  height: 70px;
-  background: #D8F0FF;
-  border-radius: 20px;
-  color: #000;
+.calDia {
   text-align: center;
   font-family: 'Lexend', sans-serif;
   font-size: 25px;
-  font-weight: 400;
-  line-height: normal;
-  border: 1px #2E9CE0 solid;
-  cursor: pointer;
-  box-shadow: 0 0 11.3px 1px rgba(35, 106, 205, 0.67);
-}
-
-.boton-plus:hover {
-  background-color: #2E9CE0;
-  transition: background-color 0.2s ease;
-}
-
-.barra {
-  background: none;
-  border: 8px solid transparent;
-  cursor: pointer;
-  padding: 5px;
-  margin-right: 20px;
-  border-radius: 8px;
-}
-
-.barra:hover {
-  background-color: rgba(33, 133, 218, 0.5);
-  transition: background-color 0.4s ease, transform 0.3s ease;
-}
-
-.barra-desplegable {
-  position: fixed;
-  top: 100px;
-  right: 0;
-  height: 350px;
-  width: 220px;
+  padding: 5px 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 24px 16px;
-  box-shadow: -8px 0 24px rgba(99, 102, 241, 0.35);
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-  pointer-events: none;
-  border-radius: 1.3125rem;
-  background: #DEDEDE;
-  margin-top: 1%;
-}
-
-.barra-abierta {
-  transform: translateX(0);
-  pointer-events: auto;
-}
-
-#barra-dentro {
   align-items: center;
-  display: flex;
-  justify-content: center;
-}
-
-#barra-dentro:hover {
-  background-color: #2E9CE0;
-  transition: background-color 0.2s ease;
-}
-
-.barra-dentro-cerrar {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-}
-
-.barra-dentro-cerrar:hover {
-  background-color: #fca5a5;
-  transition: background-color 0.2s ease;
-}
-
-.barra-texto {
-  width: 11rem;
-  height: 2rem;
-  color: #000;
-  font-size: 1.375rem;
-  font-weight: 400;
-  font-family: 'Lexend', sans-serif;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.bienvenida {
-  color: #000;
-  font-family: 'Lexend', sans-serif;
-  font-size: 58px;
-  font-weight: 400;
-  line-height: normal;
-  margin-top: 120px;
-  text-align: center;
-}
-
-.main-layout {
-  display: flex;
-  align-items: stretch;
-  gap: 4%;
-  margin-top: 40px;
-}
-
-.main-izquierdo {
-  flex: 1;
-}
-
-.superior {
-  display: flex;
-  flex-direction: row;
-  margin-top: 20px;
-  margin-left: 65px;
+  cursor: pointer;
   gap: 20px;
-  width: 50%;
 }
 
-.cuadros {
-  flex: 0 0 255px;
-  width: 258px;
-  height: 177px;
-  overflow: hidden;
-  border-radius: 20px;
-  border: 3px solid #2E9CE0;
-  background: #FFF;
-  box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
-  margin-left: 18.5px;
-  padding: 10px 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.cuadros-titulo {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  font-family: 'Lexend', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.cuadros svg {
-  width: 24px;
-  height: 24px;
-  fill: black;
-  margin-top: -4px;
-}
-
-.texto-agenda-hoy {
-  font-family: 'Lexend', sans-serif;
-  font-size: 48px;
-  font-weight: 500;
-  color: #000;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 200px;
-  margin-left: 3%;
-}
-
-.proximo-turno-hora {
-  font-family: 'Lexend', sans-serif;
-  font-size: 4.5rem;
-  font-weight: 400;
-  color: #000;
-  text-align: center;
-  margin-top: 1rem;
-}
-
-.inferior {
-  width: 50%;
-}
-
-.cuadro1 {
-  border-radius: 20px;
-  border: 5px solid #2E9CE0;
-  background: #FFF;
-  box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
-  width: 552px;
-  height: 267px;
-  margin-left: 80px;
-  margin-top: 20px;
-  padding: 20px;
-}
-
-.cuadro1-titulo {
-  display: flex;
-  gap: 10px;
-  font-family: 'Lexend', sans-serif;
-  font-size: 18px;
-  font-weight: 500;
-  color: #000;
-}
-
-.turno-fila {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: 'Lexend', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: rgba(0, 0, 0, 0.75);
-}
-
-.turno-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.turno-nombre {
-  font-size: 1rem;
-  font-weight: 400;
-  color: #000;
-}
-
-.turno-detalle {
-  font-size: 1rem;
-  color: rgba(0, 0, 0, 0.8);
-}
-
-.separador {
-  border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.6);
-  margin: 6px 0;
-}
-
-.div-derecho {
-  flex-shrink: 0;
-  margin-top: 20px;
-  margin-right: 80px;
-  display: flex;
-}
-
-.calendario {
-  border-radius: 20px;
-  border: 5px solid #2E9CE0;
-  background: #FFF;
-  box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
-  width: 650px;
-  padding-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.cal-header {
-  display: flex;
-  align-items: center;
-  padding: 20px 20px 10px;
-}
-
-.cal-nav-btn {
-  width: 56px;
-  height: 56px;
-  background: white;
-  border: 1px solid black;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.cal-titulo {
-  flex: 1;
-  text-align: center;
-  font-family: 'Lexend', sans-serif;
-  font-size: 28px;
-  font-weight: 500;
-}
-
-.cal-grid {
+.calgGrid {
+  row-gap: 20px;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   padding: 0 16px;
@@ -601,46 +332,5 @@ const celdas = computed(() => {
   align-content: start;
 }
 
-.cal-nombre-dia {
-  text-align: center;
-  font-family: 'Lexend', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 10px 0 6px;
-}
 
-.cal-dia {
-  text-align: center;
-  font-family: 'Lexend', sans-serif;
-  font-size: 20px;
-  padding: 5px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-}
-
-.cal-otro-mes {
-  color: #aaa;
-}
-
-.cal-hoy {
-  color: #2E9CE0;
-  font-weight: 700;
-}
-
-.cal-ver-completo {
-  display: block;
-  width: calc(100% - 40px);
-  margin: auto 20px 16px;
-  padding: 14px;
-  background: #2E9CE0;
-  color: #000;
-  font-family: 'Lexend', sans-serif;
-  font-size: 18px;
-  font-weight: 500;
-  border: none;
-  border-radius: 16px;
-  cursor: pointer;
-}
 </style>
