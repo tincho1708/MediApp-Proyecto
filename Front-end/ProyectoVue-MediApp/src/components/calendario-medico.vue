@@ -234,6 +234,13 @@ function diaSiguiente() {
               </div>
             </button>
           </div>
+          <div class="gap-y-{20%}">
+            <div class="linea-der"></div>
+            <div class="linea-der"></div>
+            <div class="linea-der"></div>
+          </div>
+
+
         </div>
 
       </div>
@@ -276,10 +283,17 @@ function diaSiguiente() {
 .der {
   width: 65%;
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
   padding: 3%;
   font-family: 'Lexend', sans-serif;
   font-weight: 200;
+}
+.linea-der {
+  margin-top: 20%;
+  align-self: center;
+  width: 100%;
+  border-top: 1.3px solid black;
+  
 }
 .cal-nav-btn {
   display: flex;

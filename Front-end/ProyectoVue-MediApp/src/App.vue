@@ -6,6 +6,7 @@ import Registrar from './components/registrar.vue'
 import IniciarSesion from './components/inicio-sesion.vue'
 import Chatbot from './components/chatbot.vue'
 import CalendarioMedico from './components/calendario-medico.vue'
+import PrincipalUsuario from './components/principal-usuario.vue'
 
 const vista = ref('bienvenida')
 </script>
@@ -58,7 +59,13 @@ const vista = ref('bienvenida')
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
       @ir-a-chatbot="vista = 'chatbot'"/>
-
+      
+    <PrincipalUsuario
+      v-else-if="vista === 'principalUsuario'"
+      key="principalUsuario"
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-principal="vista = 'Principal'"
+      @ir-a-chatbot="vista = 'chatbot'"/>
   </Transition> 
 
 </template>
