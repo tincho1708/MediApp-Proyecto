@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const emit = defineEmits(['ir-a-login', 'ir-a-bienvenida', 'ir-a-principal'])
+const emit = defineEmits(['ir-a-login', 'ir-a-bienvenida', 'ir-a-principal', 'ir-a-principal-usuario'])
 
 const form = ref({
   nombre: '',
@@ -43,7 +43,7 @@ async function testearSubmit() {
   }
 
   cargando.value = true
-  const url = tipoUsuario.value === 'Medico'
+  const url = tipoUsuario.value === 'Medico' || tipoUsuario.value === 'Paciente'
     ? '/auth/medicos/registro'
     : '/auth/pacientes/registro'
 
@@ -55,8 +55,15 @@ async function testearSubmit() {
     })
     const data = await res.json()
 
-    if (res.ok) {
+    if (res.ok && tipoUsuario.value === 'Paciente') {
       exito.value = data.message
+      emit('ir-a-principal-usuario')
+
+    }
+    else if (res.ok && tipoUsuario.value === 'Medico') {
+      exito.value = data.message
+      emit('ir-a-principal')
+
     } else {
       error.value = data.detail || 'Error al registrarse'
     }

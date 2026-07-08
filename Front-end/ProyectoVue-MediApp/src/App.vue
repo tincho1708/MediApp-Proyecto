@@ -20,7 +20,6 @@ const vista = ref('bienvenida')
       key="bienvenida"
       @ir-a-registro="vista = 'registrar'"
       @ir-a-login="vista = 'iniciarSesion'"
-      @ir-a-principal="vista = 'Principal'"
     />
 
 
@@ -30,6 +29,7 @@ const vista = ref('bienvenida')
       @ir-a-login="vista = 'iniciarSesion'"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"
     />
 
     <IniciarSesion
@@ -38,6 +38,7 @@ const vista = ref('bienvenida')
       @bienvenida="vista = 'bienvenida'"
       @ir-a-registro="vista = 'registrar'"
       @ir-a-principal="vista = 'Principal'"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"
       />
 
     <Principal
@@ -58,7 +59,8 @@ const vista = ref('bienvenida')
       key="calendarioMedico"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
-      @ir-a-chatbot="vista = 'chatbot'"/>
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"/>
       
     <PrincipalUsuario
       v-else-if="vista === 'principalUsuario'"
