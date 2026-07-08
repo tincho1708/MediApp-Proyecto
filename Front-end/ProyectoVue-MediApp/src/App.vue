@@ -6,7 +6,7 @@ import Registrar from './components/registrar.vue'
 import IniciarSesion from './components/inicio-sesion.vue'
 import Chatbot from './components/chatbot.vue'
 import CalendarioMedico from './components/calendario-medico.vue'
-import PrincipalUsuario from './components/principal-usuario.vue'
+import PrincipalUsuario from './components/principal-paciente.vue'
 
 const vista = ref('bienvenida')
 </script>
