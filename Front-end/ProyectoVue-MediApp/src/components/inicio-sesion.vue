@@ -68,7 +68,7 @@ async function testearSubmit() {
   <div class="contenedor">
     <h1>Iniciar sesión</h1>
 
-    <button class="texto-sesion1" @click="emit('ir-a-principal')">
+    <button class="texto-sesion1" @click="emit('ir-a-principal-usuario')">
     <img src="@/assets/imagenes/google.png" alt="Google"/>
     Continuar con Google
     </button> 
