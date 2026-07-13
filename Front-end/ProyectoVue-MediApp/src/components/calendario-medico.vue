@@ -249,7 +249,7 @@ function diaSiguiente() {
   </div>
 </template>
 
-<style>
+<style scoped>
 .cal-contenido {
   display: flex;
   justify-content: center;
