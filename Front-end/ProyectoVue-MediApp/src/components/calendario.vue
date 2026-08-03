@@ -104,8 +104,8 @@ function diaSiguiente() {
         <button @click.stop="esta = !esta" class="barra">
           <div class="w-12 h-9 relative">
             <div class="w-12 border-t-2 border-black absolute left-0 top-0"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-[16px]"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-[32px]"></div>
+            <div class="w-12 border-t-2 border-black absolute left-0 top-[1rem]"></div>
+            <div class="w-12 border-t-2 border-black absolute left-0 top-[2rem]"></div>
           </div>
         </button>
 
@@ -204,7 +204,7 @@ function diaSiguiente() {
         <div class="der">
           <div class="flex items-center justify-between w-full">
             <button @click="diaAnterior">
-              <div class="size-20 relative flex items-center justify-center rounded-[42px] border border-black bg-white">
+              <div class="size-20 relative flex items-center justify-center rounded-[2.625rem] border border-black bg-white">
                 <svg width="80" height="70" viewBox="0 0 83 82" fill="none">
                   <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
                 </svg>
@@ -227,7 +227,7 @@ function diaSiguiente() {
             </div>
 
             <button @click="diaSiguiente">
-              <div class="size-20 relative flex items-center justify-center rounded-[42px] border border-black bg-white">
+              <div class="size-20 relative flex items-center justify-center rounded-[2.625rem] border border-black bg-white">
                 <svg width="80" height="70" viewBox="0 0 83 82" fill="none" class="rotate-180">
                   <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
                 </svg>
@@ -254,23 +254,23 @@ function diaSiguiente() {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: calc(100vh - 100px);
-  margin-top: 100px;
+  height: calc(100vh - 6.25rem);
+  margin-top: 6.25rem;
 }
 
 #calendario {
-  width: 1144px;
-  height: 600px;
+  width: 71.5rem;
+  height: 37.5rem;
   background: #fff;
-  border-radius: 20px;
-  box-shadow: 0px 4px 10.7px 5px rgba(0, 0, 0, 0.25);
-  border: 5px solid #2E9CE0;
+  border-radius: 1.25rem;
+  box-shadow: 0rem 0.25rem 0.66875rem 0.3125rem rgba(0, 0, 0, 0.25);
+  border: 0.3125rem solid #2E9CE0;
   display: flex;
   flex-direction: row;
 }
 
 .divisor-v {
-  width: 1.3px;
+  width: 0.08125rem;
   background: black;
   align-self: center;
   flex-shrink: 0;
@@ -292,7 +292,7 @@ function diaSiguiente() {
   margin-top: 20%;
   align-self: center;
   width: 100%;
-  border-top: 1.3px solid black;
+  border-top: 0.08125rem solid black;
   
 }
 .cal-nav-btn {
@@ -314,20 +314,20 @@ function diaSiguiente() {
 .calDia {
   text-align: center;
   font-family: 'Lexend', sans-serif;
-  font-size: 25px;
-  padding: 5px 0;
+  font-size: 1.5625rem;
+  padding: 0.3125rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   cursor: pointer;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .calgGrid {
-  row-gap: 20px;
+  row-gap: 1.25rem;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  padding: 0 16px;
+  padding: 0 1rem;
   flex: 1;
   align-content: start;
 }

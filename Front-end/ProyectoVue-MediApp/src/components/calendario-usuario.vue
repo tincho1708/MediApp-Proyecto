@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-calendario-usuario'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot'])
 
 const esta = ref(false)
 
@@ -59,15 +59,41 @@ const celdas = computed(() => {
 
   return resultado
 })
+const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+
+const seleccionado = ref(new Date())
+
+function correrDias(n: number) {
+  return new Date(
+    seleccionado.value.getFullYear(),
+    seleccionado.value.getMonth(),
+    seleccionado.value.getDate() + n
+  )
+}
+
+const anterior = computed(() => correrDias(-1))
+const siguiente = computed(() => correrDias(1))
+
+function diaAnterior() {
+  seleccionado.value = correrDias(-1)
+}
+
+function diaSiguiente() {
+  seleccionado.value = correrDias(1)
+}
+
 </script>
 
 <template>
   <div>
+    
     <div class="navbar">
-      <div class="navbar-logo">
-        <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
-        <span>App</span>
-      </div>
+      <button  @click="emit('ir-a-principal-usuario')">
+        <div class="navbar-logo" style="cursor:pointer">
+          <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
+          <span>App</span>
+        </div>
+      </button>
 
       <div class="navbar-acciones">
         <button class="campoo">Reservar Turno</button>
@@ -120,42 +146,26 @@ const celdas = computed(() => {
       </div>
     </div>
 
-    <div class="bienvenida">Bienvenido, Matias</div>
+    <div class="cal-contenido">
+      <div id="calendario">
 
-    <div class="main-layout">
-      <div class="main-izquierdo" style="margin-left: 2.5rem; height: 30.25rem;">
-
-        <div class="w-[40.9375rem] h-full bg-white rounded-[1.25rem] shadow-[0rem_0.25rem_0.66875rem_0.3125rem_rgba(0,0,0,0.25)] border-[0.3125rem] border-sky-500" style="padding: 1.25rem;">
-          <div style="display: flex; align-items: center; gap: 0.625rem;">
-            <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="16" cy="8" r="7" stroke="black" stroke-width="3"/>
-              <path d="M2 42V32c0-8.284 6.716-15 15-15 2.24 0 4.37.49 6.28 1.37" stroke="black" stroke-width="3" stroke-linecap="round"/>
-              <circle cx="30" cy="30" r="10" stroke="black" stroke-width="3" fill="white"/>
-              <path d="M30 24.5V30l4 2.8" stroke="black" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div style="color: black; font-size: 1.975rem; font-weight: 400; font-family: 'Lexend', sans-serif;">Proximos turnos</div>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="div-derecho" style="margin-top: 0;">
-        <div class="calendario">
+        <div class="izq">
           <div class="cal-header">
             <button class="cal-nav-btn" @click="mesAnterior">
               <svg width="50" height="50" viewBox="0 0 83 82" fill="none">
                 <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
               </svg>
             </button>
+
             <span class="cal-titulo">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
             <button class="cal-nav-btn" @click="mesSiguiente">
-              <svg width="50" height="50" viewBox="0 0 83 82" fill="none" style="transform:rotate(180deg)">
+              <svg width="50" height="50" viewBox="0 0 83 82" fill="none" class="cal-nav-der">
                 <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
               </svg>
             </button>
           </div>
 
-          <div class="cal-grid">
+           <div class="calgGrid">
             <div class="cal-nombre-dia">LU</div>
             <div class="cal-nombre-dia">MA</div>
             <div class="cal-nombre-dia">MI</div>
@@ -167,7 +177,7 @@ const celdas = computed(() => {
             <div
               v-for="(celda, i) in celdas"
               :key="i"
-              class="cal-dia"
+              class="calDia"
               :class="{
                 'cal-hoy': celda.hoy,
                 'cal-otro-mes': celda.otroMes
@@ -176,12 +186,140 @@ const celdas = computed(() => {
               {{ celda.dia }}
             </div>
           </div>
-
-          <button class="cal-ver-completo" @click="emit('ir-a-calendario-usuario')">Ver calendario completo</button>
         </div>
+
+        <div class="divisor-v"></div>
+
+        <div class="der">
+          <div class="flex items-center justify-between w-full">
+            <button @click="diaAnterior">
+              <div class="size-20 relative flex items-center justify-center rounded-[2.625rem] border border-black bg-white">
+                <svg width="80" height="70" viewBox="0 0 83 82" fill="none">
+                  <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
+                </svg>
+              </div>
+            </button>
+
+            <div class="flex flex-col items-center">
+              <span class="text-2xl text-gray-400 font-medium">{{ nombresDia[anterior.getDay()] }}</span>
+              <span class="text-5xl text-gray-400 font-semibold">{{ anterior.getDate() }}</span>
+            </div>
+
+            <div class="flex flex-col items-center">
+              <span class="text-2xl text-black font-medium">{{ nombresDia[seleccionado.getDay()] }}</span>
+              <span class="text-5xl text-black font-bold">{{ seleccionado.getDate() }}</span>
+            </div>
+
+            <div class="flex flex-col items-center">
+              <span class="text-2xl text-gray-400 font-medium">{{ nombresDia[siguiente.getDay()] }}</span>
+              <span class="text-5xl text-gray-400 font-semibold">{{ siguiente.getDate() }}</span>
+            </div>
+
+            <button @click="diaSiguiente">
+              <div class="size-20 relative flex items-center justify-center rounded-[2.625rem] border border-black bg-white">
+                <svg width="80" height="70" viewBox="0 0 83 82" fill="none" class="rotate-180">
+                  <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
+                </svg>
+              </div>
+            </button>
+          </div>
+          <div class="gap-y-{20%}">
+            <div class="linea-der"></div>
+            <div class="linea-der"></div>
+            <div class="linea-der"></div>
+          </div>
+
+
+        </div>
+
       </div>
     </div>
+
   </div>
 </template>
 
-<style></style>
+<style scoped>
+.cal-contenido {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 6.25rem);
+  margin-top: 6.25rem;
+}
+
+#calendario {
+  width: 71.5rem;
+  height: 37.5rem;
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0rem 0.25rem 0.66875rem 0.3125rem rgba(0, 0, 0, 0.25);
+  border: 0.3125rem solid #2E9CE0;
+  display: flex;
+  flex-direction: row;
+}
+
+.divisor-v {
+  width: 0.08125rem;
+  background: black;
+  align-self: center;
+  flex-shrink: 0;
+  height: 90%;
+  justify-content: center;
+}
+.izq {
+  width: 35%;
+}
+.der {
+  width: 65%;
+  display: flex;
+  flex-direction: column;
+  padding: 3%;
+  font-family: 'Lexend', sans-serif;
+  font-weight: 200;
+}
+.linea-der {
+  margin-top: 20%;
+  align-self: center;
+  width: 100%;
+  border-top: 0.08125rem solid black;
+  
+}
+.cal-nav-btn {
+  display: flex;
+  justify-content: flex-start;
+}
+.cal-nav-der {
+  transform: rotate(180deg);
+}
+.cal-titulo {
+  color: #000;
+  text-align: center;
+  font-family: Lexend;
+  font-size: 1.7rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+.calDia {
+  text-align: center;
+  font-family: 'Lexend', sans-serif;
+  font-size: 1.5625rem;
+  padding: 0.3125rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  gap: 1.25rem;
+}
+
+.calgGrid {
+  row-gap: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0 1rem;
+  flex: 1;
+  align-content: start;
+}
+
+
+</style>

@@ -107,14 +107,14 @@ async function testearSubmit() {
 .boton-atras {
   color: #000;
   font-family: 'Lexend', 'sans-serif';
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 400;
   line-height: normal;
-  margin: 20px;
+  margin: 1.25rem;
   cursor: pointer;
-  width: 178px;
-  height: 64px;
-  border-radius: 30px;
+  width: 11.125rem;
+  height: 4rem;
+  border-radius: 1.875rem;
   background: #2E9CE0;
   border: none;
   display: flex;
@@ -125,29 +125,29 @@ async function testearSubmit() {
 }
 
 .boton-atras.svg {
-  stroke-width: 2px;
+  stroke-width: 0.125rem;
   stroke: #000;
-  width: 16.125px;
+  width: 1.007813rem;
   height: 0;
 }
 .contenedor {
-  margin: 30px auto;
+  margin: 1.875rem auto;
   margin-top: 0;
-  padding: 32px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  padding: 2rem;
+  border: 0.0625rem solid #ccc;
+  border-radius: 0.5rem;
   background-color: white;
-  box-shadow: 0 1px 29.7px 11px rgba(0, 0, 0, 0.13);
-  width: 450px;
-  height: 540px;
+  box-shadow: 0 0.0625rem 1.85625rem 0.6875rem rgba(0, 0, 0, 0.13);
+  width: 28.125rem;
+  height: 33.75rem;
   align-items: center;
 }
 
 h1 {
   font-family: 'Lexend';
   font-weight: 400;
-  margin-bottom: 18px;
-  font-size: 40px;
+  margin-bottom: 1.125rem;
+  font-size: 2.5rem;
   text-align: center;
   line-height: normal;
 }
@@ -155,34 +155,34 @@ h1 {
 .campo {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
   }
 
 input {
-  padding: 10px 15px;
-  border: 1px solid black;
-  border-radius: 4px;
-  font-size: 16px;
+  padding: 0.625rem 0.9375rem;
+  border: 0.0625rem solid black;
+  border-radius: 0.25rem;
+  font-size: 1rem;
 }
 
 input:focus {
-  outline: 2px solid #4a90e2;
+  outline: 0.125rem solid #4a90e2;
   border-color: transparent;
 }
 
 .iniciar {
   width: 100%;
-  padding: 10px;
-  margin-top: 8px;
+  padding: 0.625rem;
+  margin-top: 0.5rem;
   background: #4a90e2;
   color: black;
   border: none;
-  border-radius: 30px;
-  font-size: 35px;
+  border-radius: 1.875rem;
+  font-size: 2.1875rem;
   cursor: pointer;
   font-weight: 400;
   font-family: 'Lexend', sans-serif;
-  height: 80px;
+  height: 5rem;
 }
 
 button:hover {
@@ -191,48 +191,48 @@ button:hover {
 
 .error {
   color: red;
-  font-size: 13px;
-  margin-bottom: 8px;
+  font-size: 0.8125rem;
+  margin-bottom: 0.5rem;
 }
 
 .registro-link {
-  margin-top: 16px;
+  margin-top: 1rem;
   text-align: center;
-  font-size: 15px;
-  gap: 20px;
+  font-size: 0.9375rem;
+  gap: 1.25rem;
 }
 .olvido-contraseña {
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 .texto-sesion1, .texto-sesion2 {
   font-family: 'Inter', sans-serif;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 200;
   color: #000000;
   cursor: pointer;
-  border: 1.5px solid #000000;
-  border-radius: 40px;
-  padding: 3px;
+  border: 0.09375rem solid #000000;
+  border-radius: 2.5rem;
+  padding: 0.1875rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  margin: 10px;
+  gap: 0.3125rem;
+  margin: 0.625rem;
   background-color: transparent;
   width: 100%;
   margin-left: 0;
 }
 
 .texto-sesion1 img {
-  width: 35px;
-  height: 35px;
+  width: 2.1875rem;
+  height: 2.1875rem;
   object-fit: contain;
   mix-blend-mode: multiply;
 }
 .texto-sesion2 img {
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
   object-fit: contain;
   mix-blend-mode: multiply;
 }
@@ -244,7 +244,7 @@ button:hover {
 .separador {
   color: black;
   text-align: center;
-  margin-bottom: 10px;
-  font-size: 15.7px;
+  margin-bottom: 0.625rem;
+  font-size: 0.98125rem;
 }
 </style>

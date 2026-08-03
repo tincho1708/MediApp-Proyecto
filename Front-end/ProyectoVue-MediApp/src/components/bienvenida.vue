@@ -42,21 +42,21 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 
 .contenido {
   min-height: 100vh;
-  padding-top: 116px;
+  padding-top: 7.25rem;
   background: linear-gradient(180deg, #EAFAFF 0%, #44A6D4 100%);
   display: flex;
   align-items: center;
-  padding-left: 60px;
-  padding-right: 60px;
-  gap: 60px;
+  padding-left: 3.75rem;
+  padding-right: 3.75rem;
+  gap: 3.75rem;
 }
 
 .columna-izq {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-bottom: 60px;
+  gap: 1.25rem;
+  margin-bottom: 3.75rem;
 }
 
 .columna-der {
@@ -64,43 +64,43 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 60px;
+  margin-bottom: 3.75rem;
 }
 
 .texto {
   font-family: 'Lexend', sans-serif;
-  font-size: 50px;
+  font-size: 3.125rem;
   font-weight: 700;
   color: #000000;
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem;
 }
 
 .texto-sesion1, .texto-sesion2 {
   font-family: 'Inter', sans-serif;
-  font-size: 30px;
+  font-size: 1.875rem;
   font-weight: 400;
   color: #000000;
   cursor: pointer;
-  border: 2px solid #000000;
-  border-radius: 40px;
-  padding: 16px;
+  border: 0.125rem solid #000000;
+  border-radius: 2.5rem;
+  padding: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 
 .texto-sesion1 img {
-  width: 47px;
-  height: 47px;
+  width: 2.9375rem;
+  height: 2.9375rem;
   object-fit: contain;
   mix-blend-mode: multiply;
 }
 
 .texto-sesion2 img {
-  width: 35px;
-  height: 35px;
+  width: 2.1875rem;
+  height: 2.1875rem;
   object-fit: contain;
   mix-blend-mode: multiply;
 }
@@ -111,7 +111,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 
 .sin-cuenta {
   font-family: 'Inter', sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   color: #000000;
   text-align: center;
 }
@@ -124,15 +124,15 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 .contenedor1 {
   background-color: #D9D9D9;
   width: 100%;
-  max-width: 530px;
-  border-radius: 20px;
-  border: 8px solid #ccc;
+  max-width: 33.125rem;
+  border-radius: 1.25rem;
+  border: 0.5rem solid #ccc;
   overflow: hidden
 }
 
 .contenedor1 img {
   width: 100%;
-  height: 500px;
+  height: 31.25rem;
   object-fit: contain;
   display: block;
 }
@@ -147,7 +147,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   justify-content: space-between;
   background-color: #FFFFFF;
   box-sizing: border-box;
-  padding: 8px 24px;
+  padding: 0.5rem 1.5rem;
   z-index: 100;
 }
 
@@ -158,48 +158,48 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 }
 
 .navbar-logo img {
-  width: 100px;
-  height: 100px;
+  width: 6.25rem;
+  height: 6.25rem;
 }
 
 .navbar-logo span {
   font-family: 'Lexend', sans-serif;
-  font-size: 43px;
+  font-size: 2.6875rem;
   font-weight: 700;
   background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-left: -14px;
-  margin-top: 7px;
+  margin-left: -0.875rem;
+  margin-top: 0.4375rem;
 }
 
 .navbar-acciones {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .boton1 {
   font-family: 'Lexend', sans-serif;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
   background-color: white;
-  border: 1px solid #2E9CE0;
-  border-radius: 12px;
+  border: 0.0625rem solid #2E9CE0;
+  border-radius: 0.75rem;
   cursor: pointer;
-  padding: 10px 24px;
+  padding: 0.625rem 1.5rem;
   color: #000000;
 }
 .boton2 {
   font-family: 'Lexend', sans-serif;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
   background-color: #2E9CE0;
   border: none;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   cursor: pointer;
-  padding: 10px 24px;
+  padding: 0.625rem 1.5rem;
   color: #000000;
 }
 
