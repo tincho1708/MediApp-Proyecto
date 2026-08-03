@@ -8,6 +8,7 @@ import Chatbot from './components/chatbot.vue'
 import Calendario from '@/components/calendario.vue'
 import CalendarioUsuario from '@/components/calendario-usuario.vue'
 import PrincipalUsuario from './components/principal-usuario.vue'
+import MediPlus from './components/MediPlus.vue'
 
 const vista = ref('bienvenida')
 </script>
@@ -47,7 +48,8 @@ const vista = ref('bienvenida')
       key="principal"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-chatbot="vista = 'chatbot'"
-      @ir-a-calendario="vista = 'calendario'"/>
+      @ir-a-calendario="vista = 'calendario'"
+      @ir-a-MediPlus="vista = 'MediPlus'"/>
 
     <Chatbot
       v-else-if="vista === 'chatbot'"
@@ -61,6 +63,7 @@ const vista = ref('bienvenida')
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
       @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-MediPlus="vista = 'MediPlus'"
       @ir-a-principal-usuario="vista = 'principalUsuario'"/>
 
       <Calendario-Usuario
@@ -78,6 +81,13 @@ const vista = ref('bienvenida')
       @ir-a-principal="vista = 'Principal'"
       @ir-a-chatbot="vista = 'chatbot'"
       @ir-a-calendario-usuario="vista = 'calendarioUsuario'"/>
+
+    <MediPlus
+      v-else-if="vista === 'MediPlus'"
+      key="MediPlus"
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-principal="vista = 'Principal'"/>
   </Transition> 
 
 </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus'])
 
 const esta = ref(false)
 
@@ -73,7 +73,7 @@ const celdas = computed(() => {
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
         <button class="campoo">Mis pacientes</button>
         <button class="campoo">Notificaciones</button>
-        <button class="boton-plus">MediApp+</button>
+        <button class="boton-plus" @click="emit('ir-a-MediPlus')">MediApp+</button>
 
         <button @click.stop="esta = !esta" class="barra">
           <div class="w-12 h-9 relative">
