@@ -59,6 +59,31 @@ class PacienteResponse(BaseModel):
         from_attributes = True
 
 
+# --- Especialidad ---
+
+class EspecialidadResponse(BaseModel):
+    id_especialidad: int
+    nombre_especialidad: str
+
+    class Config:
+        from_attributes = True
+
+
+# --- Medico público (buscador) ---
+
+class MedicoPublicoResponse(BaseModel):
+    id: int
+    nombre: str
+    apellido: str
+    telefono: Optional[str]
+    mail: str
+    especialidad_id: Optional[int]
+    especialidad: Optional[EspecialidadResponse]
+
+    class Config:
+        from_attributes = True
+
+
 # --- Auth responses ---
 
 class Token(BaseModel):
