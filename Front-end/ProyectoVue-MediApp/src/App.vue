@@ -5,8 +5,11 @@ import Bienvenida from './components/bienvenida.vue'
 import Registrar from './components/registrar.vue'
 import IniciarSesion from './components/inicio-sesion.vue'
 import Chatbot from './components/chatbot.vue'
-import CalendarioMedico from './components/calendario-medico.vue'
-import PrincipalUsuario from './components/principal-paciente.vue'
+import Calendario from '@/components/calendario.vue'
+import CalendarioUsuario from '@/components/calendario-usuario.vue'
+import PrincipalUsuario from './components/principal-usuario.vue'
+import MediPlus from './components/MediPlus.vue'
+import ReservarTurno from './components/reservar-turno.vue'
 
 const vista = ref('bienvenida')
 </script>
@@ -14,14 +17,14 @@ const vista = ref('bienvenida')
 <template>
 
    <Transition name="fade">
-
+    
     <Bienvenida
       v-if="vista === 'bienvenida'"
       key="bienvenida"
       @ir-a-registro="vista = 'registrar'"
       @ir-a-login="vista = 'iniciarSesion'"
-      @ir-a-principal="vista = 'Principal'"
     />
+
 
     <Registrar
       v-else-if="vista === 'registrar'"
@@ -29,6 +32,7 @@ const vista = ref('bienvenida')
       @ir-a-login="vista = 'iniciarSesion'"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"
     />
 
     <IniciarSesion
@@ -37,6 +41,7 @@ const vista = ref('bienvenida')
       @bienvenida="vista = 'bienvenida'"
       @ir-a-registro="vista = 'registrar'"
       @ir-a-principal="vista = 'Principal'"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"
       />
 
     <Principal
@@ -44,28 +49,58 @@ const vista = ref('bienvenida')
       key="principal"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-chatbot="vista = 'chatbot'"
-      @ir-a-calendario="vista = 'calendarioMedico'"/>
+      @ir-a-calendario="vista = 'calendario'"
+      @ir-a-MediPlus="vista = 'MediPlus'"/>
 
     <Chatbot
       v-else-if="vista === 'chatbot'"
       key="chatbot"
       @ir-a-bienvenida="vista = 'bienvenida'"
-      @ir-a-principal="vista = 'Principal'"/>
+      @ir-a-principal="vista = 'Principal'"
+      @ir-a-reservar-turno="vista = 'reservarTurno'"/>
 
-    <CalendarioMedico
-      v-else-if="vista === 'calendarioMedico'"
-      key="calendarioMedico"
+    <Calendario
+      v-else-if="vista === 'calendario'"
+      key="calendario"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
-      @ir-a-chatbot="vista = 'chatbot'"/>
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-MediPlus="vista = 'MediPlus'"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"/>
 
+      <Calendario-Usuario
+      v-else-if="vista === 'calendarioUsuario'"
+      key="calendarioUsuario"
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-reservar-turno="vista = 'reservarTurno'"/>
+      
+      
     <PrincipalUsuario
       v-else-if="vista === 'principalUsuario'"
       key="principalUsuario"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
-      @ir-a-chatbot="vista = 'chatbot'"/>
-  </Transition>
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-calendario-usuario="vista = 'calendarioUsuario'"
+      @ir-a-reservar-turno="vista = 'reservarTurno'"/>
+
+    <MediPlus
+      v-else-if="vista === 'MediPlus'"
+      key="MediPlus"
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-principal="vista = 'Principal'"/>
+
+    <ReservarTurno
+      v-else-if="vista === 'reservarTurno'"
+      key="reservarTurno"
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-calendario-usuario="vista = 'calendarioUsuario'"/>
+  </Transition> 
 
 </template>
 

@@ -1,76 +1,27 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario-usuario', 'ir-a-reservar-turno'])
-
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-calendario-usuario'])
 const esta = ref(false)
 
 function cerrarAlClickFuera() { esta.value = false }
 
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
-
-const hoy = new Date()
-const mesActual = ref(hoy.getMonth())
-const añoActual = ref(hoy.getFullYear())
-
-const nombresMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-
-function mesAnterior() {
-  if (mesActual.value === 0) {
-    mesActual.value = 11
-    añoActual.value--
-  } else {
-    mesActual.value--
-  }
-}
-
-function mesSiguiente() {
-  if (mesActual.value === 11) {
-    mesActual.value = 0
-    añoActual.value++
-  } else {
-    mesActual.value++
-  }
-}
-
-const celdas = computed(() => {
-  const ultimoDia = new Date(añoActual.value, mesActual.value + 1, 0).getDate()
-  const primerDia = new Date(añoActual.value, mesActual.value, 1).getDay()
-  const offset = (primerDia + 6) % 7
-  const resultado = []
-
-  for (let i = 0; i < offset; i++) {
-    resultado.push({ otroMes: true })
-  }
-
-  for (let d = 1; d <= ultimoDia; d++) {
-    resultado.push({
-      dia: d,
-      hoy: d === hoy.getDate() && mesActual.value === hoy.getMonth() && añoActual.value === hoy.getFullYear(),
-    })
-  }
-
-  let siguiente = 1
-  while (resultado.length % 7 !== 0) {
-    resultado.push({ dia: siguiente, otroMes: true })
-    siguiente++
-  }
-
-  return resultado
-})
 </script>
 
 <template>
-  <div>
+<div>
     <div class="navbar">
-      <div class="navbar-logo">
-        <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
-        <span>App</span>
-      </div>
+      <button  @click="emit('ir-a-principal-usuario')">
+        <div class="navbar-logo" style="cursor:pointer">
+          <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
+          <span>App</span>
+        </div>
+      </button>
 
       <div class="navbar-acciones">
-        <button class="campoo" @click="emit('ir-a-reservar-turno')">Reservar Turno</button>
+        <button class="campoo">Reservar Turno</button>
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
         <button class="campoo">Profesionales</button>
         <button class="campoo">Notificaciones</button>
@@ -119,69 +70,8 @@ const celdas = computed(() => {
         </div>
       </div>
     </div>
-
-    <div class="bienvenida">Bienvenido, Matias</div>
-
-    <div class="main-layout">
-      <div class="main-izquierdo" style="margin-left: 2.5rem; height: 30.25rem;">
-
-        <div class="w-[40.9375rem] h-full bg-white rounded-[1.25rem] shadow-[0rem_0.25rem_0.66875rem_0.3125rem_rgba(0,0,0,0.25)] border-[0.3125rem] border-sky-500" style="padding: 1.25rem;">
-          <div style="display: flex; align-items: center; gap: 0.625rem;">
-            <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="16" cy="8" r="7" stroke="black" stroke-width="3"/>
-              <path d="M2 42V32c0-8.284 6.716-15 15-15 2.24 0 4.37.49 6.28 1.37" stroke="black" stroke-width="3" stroke-linecap="round"/>
-              <circle cx="30" cy="30" r="10" stroke="black" stroke-width="3" fill="white"/>
-              <path d="M30 24.5V30l4 2.8" stroke="black" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div style="color: black; font-size: 1.975rem; font-weight: 400; font-family: 'Lexend', sans-serif;">Proximos turnos</div>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="div-derecho" style="margin-top: 0;">
-        <div class="calendario">
-          <div class="cal-header">
-            <button class="cal-nav-btn" @click="mesAnterior">
-              <svg width="50" height="50" viewBox="0 0 83 82" fill="none">
-                <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
-              </svg>
-            </button>
-            <span class="cal-titulo">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
-            <button class="cal-nav-btn" @click="mesSiguiente">
-              <svg width="50" height="50" viewBox="0 0 83 82" fill="none" style="transform:rotate(180deg)">
-                <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
-              </svg>
-            </button>
-          </div>
-
-          <div class="cal-grid">
-            <div class="cal-nombre-dia">LU</div>
-            <div class="cal-nombre-dia">MA</div>
-            <div class="cal-nombre-dia">MI</div>
-            <div class="cal-nombre-dia">JU</div>
-            <div class="cal-nombre-dia">VI</div>
-            <div class="cal-nombre-dia">SA</div>
-            <div class="cal-nombre-dia">DO</div>
-
-            <div
-              v-for="(celda, i) in celdas"
-              :key="i"
-              class="cal-dia"
-              :class="{
-                'cal-hoy': celda.hoy,
-                'cal-otro-mes': celda.otroMes
-              }"
-            >
-              {{ celda.dia }}
-            </div>
-          </div>
-
-          <button class="cal-ver-completo" @click="emit('ir-a-calendario-usuario')">Ver calendario completo</button>
-        </div>
-      </div>
-    </div>
-  </div>
+</div>
 </template>
 
-<style></style>
+<style>
+</style>

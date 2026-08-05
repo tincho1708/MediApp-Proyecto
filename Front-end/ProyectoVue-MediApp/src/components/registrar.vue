@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const emit = defineEmits(['ir-a-login', 'ir-a-bienvenida', 'ir-a-principal'])
+const emit = defineEmits(['ir-a-login', 'ir-a-bienvenida', 'ir-a-principal', 'ir-a-principal-usuario'])
 
 const form = ref({
   nombre: '',
@@ -43,7 +43,7 @@ async function testearSubmit() {
   }
 
   cargando.value = true
-  const url = tipoUsuario.value === 'Medico'
+  const url = tipoUsuario.value === 'Medico' || tipoUsuario.value === 'Paciente'
     ? '/auth/medicos/registro'
     : '/auth/pacientes/registro'
 
@@ -55,8 +55,15 @@ async function testearSubmit() {
     })
     const data = await res.json()
 
-    if (res.ok) {
+    if (res.ok && tipoUsuario.value === 'Paciente') {
       exito.value = data.message
+      emit('ir-a-principal-usuario')
+
+    }
+    else if (res.ok && tipoUsuario.value === 'Medico') {
+      exito.value = data.message
+      emit('ir-a-principal')
+
     } else {
       error.value = data.detail || 'Error al registrarse'
     }
@@ -129,7 +136,7 @@ async function testearSubmit() {
   color: #000;
   text-align: center;
   font-family: 'Lexend', 'sans-serif';
-  font-size: 56px;
+  font-size: 3.5rem;
   font-weight: 400;
   line-height: normal;
   text-align: center;
@@ -139,14 +146,14 @@ async function testearSubmit() {
 .boton-atras {
   color: #000;
   font-family: 'Lexend', 'sans-serif';
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 400;
   line-height: normal;
-  margin: 20px;
+  margin: 1.25rem;
   cursor: pointer;
-  width: 178px;
-  height: 64px;
-  border-radius: 30px;
+  width: 11.125rem;
+  height: 4rem;
+  border-radius: 1.875rem;
   background: #2E9CE0;
   border: none;
   display: flex;
@@ -156,9 +163,9 @@ async function testearSubmit() {
   gap: 10%;
 }
 .boton-atras.svg {
-  stroke-width: 2px;
+  stroke-width: 0.125rem;
   stroke: #000;
-  width: 16.125px;
+  width: 1.007813rem;
   height: 0;
 }
 
@@ -166,25 +173,25 @@ async function testearSubmit() {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 .separador {
-  width: 2px;
-  height: 36px;
+  width: 0.125rem;
+  height: 2.25rem;
   background: #000;
-  margin: 0 8px;
+  margin: 0 0.5rem;
 }
 
 .boton1, .boton2 {
   font-family: 'Lexend', sans-serif;
   background-color: #bbb;
   border: none;
-  width: 200px;
-  height: 50px;
-  font-size: 25px;
+  width: 12.5rem;
+  height: 3.125rem;
+  font-size: 1.5625rem;
   cursor: pointer;
-  border-radius: 40px;
+  border-radius: 2.5rem;
   color: #000000;
 }
 
@@ -194,15 +201,15 @@ boton1.activo, .boton2.activo {
 }
 
 .contenedor {
-  max-width: 480px;
+  max-width: 30rem;
   width: 90%;
-  margin: 12px auto;
+  margin: 0.75rem auto;
   padding: 2rem;
-  border: 1px solid #ccc;
-  border-radius: 29px;
+  border: 0.0625rem solid #ccc;
+  border-radius: 1.8125rem;
   background-color: #FFFFFF;
   overflow: hidden;
-  box-shadow: 0 1px 29.7px 11px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0.0625rem 1.85625rem 0.6875rem rgba(0, 0, 0, 0.25);
 }
 
 form {
@@ -214,40 +221,40 @@ form {
   font-family: 'Lexend', sans-serif;
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 label {
-  margin-bottom: 4.8px;
-  font-size: 14.4px;
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
 }
 
 input {
-  padding: 8px 12px;
-  border-radius: 44px;
-  border: 2px solid #000; 
-  font-size: 16px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 2.75rem;
+  border: 0.125rem solid #000; 
+  font-size: 1rem;
   width: 100%;
   min-width: 0;
 }
 
 input:focus {
-  outline: 2px solid #4a90e2;
+  outline: 0.125rem solid #4a90e2;
   border-color: transparent;
 }
 
 .submit {
   width: 100%;
-  padding: 10.4px;
-  margin-top: 8px;
+  padding: 0.65rem;
+  margin-top: 0.5rem;
   background: #4a90e2;
   color: black;
   border: none;
-  border-radius: 20px;
-  font-size: 24px;
+  border-radius: 1.25rem;
+  font-size: 1.5rem;
   font-family: 'Lexend', sans-serif;
   cursor: pointer;
-  height: 50px;
+  height: 3.125rem;
 }
 
 button:hover {
@@ -256,21 +263,21 @@ button:hover {
 
 .error {
   color: red;
-  font-size: 13.6px;
-  margin-bottom: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
 }
 
 .exito {
   color: #2e7d32;
-  font-size: 14px;
-  margin-bottom: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
   text-align: center;
 }
 
 .login-link {
-  margin-top: 16px;
+  margin-top: 1rem;
   text-align: center;
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 

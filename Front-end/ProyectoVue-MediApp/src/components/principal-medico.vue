@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus'])
 
 const esta = ref(false)
 
@@ -73,13 +73,13 @@ const celdas = computed(() => {
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
         <button class="campoo">Mis pacientes</button>
         <button class="campoo">Notificaciones</button>
-        <button class="boton-plus">MediApp+</button>
+        <button class="boton-plus" @click="emit('ir-a-MediPlus')">MediApp+</button>
 
         <button @click.stop="esta = !esta" class="barra">
           <div class="w-12 h-9 relative">
             <div class="w-12 border-t-2 border-black absolute left-0 top-0"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-4"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-8"></div>
+            <div class="w-12 border-t-2 border-black absolute left-0 top-[1rem]"></div>
+            <div class="w-12 border-t-2 border-black absolute left-0 top-[2rem]"></div>
           </div>
         </button>
 
@@ -123,7 +123,7 @@ const celdas = computed(() => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="21" height="22" viewBox="0 0 31 32" fill="none" style="flex-shrink: 0;">
                   <path d="M3.44444 32C2.49722 32 1.68663 31.6521 1.01267 30.9564C0.338704 30.2607 0.00114815 29.4234 0 28.4444V3.55556C0 2.57778 0.337556 1.74104 1.01267 1.04533C1.68778 0.34963 2.49837 0.00118519 3.44444 0H15.5V3.55556H3.44444V28.4444H15.5V32H3.44444ZM22.3889 24.8889L20.0208 22.3111L24.4125 17.7778H10.3333V14.2222H24.4125L20.0208 9.68889L22.3889 7.11111L31 16L22.3889 24.8889Z" fill="#FF2A2A"/>
                 </svg>
-                Cerrar sesion
+                <button @click="emit('ir-a-bienvenida')">Cerrar sesion</button>
               </div>
             </div>
           </button>
@@ -145,7 +145,7 @@ const celdas = computed(() => {
             </div>
             <div class="texto-agenda-hoy">
               3/5
-              <div class="text-[15px]">Turnos Restantes</div>
+              <div class="text-[0.9375rem]">Turnos Restantes</div>
             </div>
           </div>
 
@@ -166,7 +166,7 @@ const celdas = computed(() => {
 
             <div class="turno-fila" style="margin-top: 0.1rem;">
               09:30
-              <div class="w-1.5 h-10 bg-indigo-400 rounded-[20px]"></div>
+              <div class="w-1.5 h-10 bg-indigo-400 rounded-[1.25rem]"></div>
               <div class="turno-info">
                 <div class="turno-nombre">Juan liguori knoll</div>
                 <div class="turno-detalle">Orientacion vocacional</div>
@@ -177,7 +177,7 @@ const celdas = computed(() => {
 
             <div class="turno-fila">
               09:30
-              <div class="w-1.5 h-10 bg-red-400 rounded-[20px]"></div>
+              <div class="w-1.5 h-10 bg-red-400 rounded-[1.25rem]"></div>
               <div class="turno-info">
                 <div class="turno-nombre">Juan liguori knoll</div>
                 <div class="turno-detalle">Orientacion vocacional</div>
@@ -188,7 +188,7 @@ const celdas = computed(() => {
 
             <div class="turno-fila">
               09:30
-              <div class="w-1.5 h-10 bg-green-400 rounded-[20px]"></div>
+              <div class="w-1.5 h-10 bg-green-400 rounded-[1.25rem]"></div>
               <div class="turno-info">
                 <div class="turno-nombre">Juan liguori knoll</div>
                 <div class="turno-detalle">Orientacion vocacional</div>
@@ -247,7 +247,7 @@ const celdas = computed(() => {
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 .navbar {
-  height: 100px;
+  height: 6.25rem;
   position: fixed;
   top: 0;
   left: 0;
@@ -257,7 +257,7 @@ const celdas = computed(() => {
   justify-content: space-between;
   background-color: #FFFFFF;
   box-sizing: border-box;
-  padding: 8px 24px;
+  padding: 0.5rem 1.5rem;
   z-index: 100;
 }
 
@@ -268,41 +268,41 @@ const celdas = computed(() => {
 }
 
 .navbar-logo img {
-  width: 110px;
-  height: 110px;
+  width: 6.875rem;
+  height: 6.875rem;
 }
 
 .navbar-logo span {
   font-family: 'Lexend', sans-serif;
-  font-size: 43px;
+  font-size: 2.6875rem;
   font-weight: 700;
   background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-left: -14px;
-  margin-top: 7px;
+  margin-left: -0.875rem;
+  margin-top: 0.4375rem;
 }
 
 .navbar-acciones {
   display: flex;
   align-items: center;
   flex-direction: row;
-  gap: 50px;
+  gap: 3.125rem;
 }
 
 .campoo {
-  width: 190px;
-  height: 70px;
+  width: 11.875rem;
+  height: 4.375rem;
   background: #D8F0FF;
-  border-radius: 20px;
+  border-radius: 1.25rem;
   color: #000;
   text-align: center;
   font-family: 'Lexend', sans-serif;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 400;
   line-height: normal;
-  border: 1px #2E9CE0 solid;
+  border: 0.0625rem #2E9CE0 solid;
   cursor: pointer;
 }
 
@@ -312,19 +312,19 @@ const celdas = computed(() => {
 }
 
 .boton-plus {
-  width: 190px;
-  height: 70px;
+  width: 11.875rem;
+  height: 4.375rem;
   background: #D8F0FF;
-  border-radius: 20px;
+  border-radius: 1.25rem;
   color: #000;
   text-align: center;
   font-family: 'Lexend', sans-serif;
-  font-size: 25px;
+  font-size: 1.5625rem;
   font-weight: 400;
   line-height: normal;
-  border: 1px #2E9CE0 solid;
+  border: 0.0625rem #2E9CE0 solid;
   cursor: pointer;
-  box-shadow: 0 0 11.3px 1px rgba(35, 106, 205, 0.67);
+  box-shadow: 0 0 0.70625rem 0.0625rem rgba(35, 106, 205, 0.67);
 }
 
 .boton-plus:hover {
@@ -334,11 +334,11 @@ const celdas = computed(() => {
 
 .barra {
   background: none;
-  border: 8px solid transparent;
+  border: 0.5rem solid transparent;
   cursor: pointer;
-  padding: 5px;
-  margin-right: 20px;
-  border-radius: 8px;
+  padding: 0.3125rem;
+  margin-right: 1.25rem;
+  border-radius: 0.5rem;
 }
 
 .barra:hover {
@@ -348,15 +348,15 @@ const celdas = computed(() => {
 
 .barra-desplegable {
   position: fixed;
-  top: 100px;
+  top: 6.25rem;
   right: 0;
-  height: 350px;
-  width: 220px;
+  height: 21.875rem;
+  width: 13.75rem;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 24px 16px;
-  box-shadow: -8px 0 24px rgba(99, 102, 241, 0.35);
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  box-shadow: -0.5rem 0 1.5rem rgba(99, 102, 241, 0.35);
   transform: translateX(100%);
   transition: transform 0.3s ease;
   pointer-events: none;
@@ -401,16 +401,16 @@ const celdas = computed(() => {
   font-family: 'Lexend', sans-serif;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .bienvenida {
   color: #000;
   font-family: 'Lexend', sans-serif;
-  font-size: 58px;
+  font-size: 3.625rem;
   font-weight: 400;
   line-height: normal;
-  margin-top: 120px;
+  margin-top: 7.5rem;
   text-align: center;
 }
 
@@ -418,7 +418,7 @@ const celdas = computed(() => {
   display: flex;
   align-items: stretch;
   gap: 4%;
-  margin-top: 40px;
+  margin-top: 2.5rem;
 }
 
 .main-izquierdo {
@@ -428,48 +428,48 @@ const celdas = computed(() => {
 .superior {
   display: flex;
   flex-direction: row;
-  margin-top: 20px;
-  margin-left: 65px;
-  gap: 20px;
+  margin-top: 1.25rem;
+  margin-left: 4.0625rem;
+  gap: 1.25rem;
   width: 50%;
 }
 
 .cuadros {
-  flex: 0 0 255px;
-  width: 258px;
-  height: 177px;
+  flex: 0 0 15.9375rem;
+  width: 16.125rem;
+  height: 11.0625rem;
   overflow: hidden;
-  border-radius: 20px;
-  border: 3px solid #2E9CE0;
+  border-radius: 1.25rem;
+  border: 0.1875rem solid #2E9CE0;
   background: #FFF;
-  box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
-  margin-left: 18.5px;
-  padding: 10px 15px;
+  box-shadow: 0 0.25rem 0.66875rem 0.3125rem rgba(0, 0, 0, 0.25);
+  margin-left: 1.15625rem;
+  padding: 0.625rem 0.9375rem;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .cuadros-titulo {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
   font-family: 'Lexend', sans-serif;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
 }
 
 .cuadros svg {
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
   fill: black;
-  margin-top: -4px;
+  margin-top: -0.25rem;
 }
 
 .texto-agenda-hoy {
   font-family: 'Lexend', sans-serif;
-  font-size: 48px;
+  font-size: 3rem;
   font-weight: 500;
   color: #000;
   flex: 1;
@@ -477,7 +477,7 @@ const celdas = computed(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 200px;
+  width: 12.5rem;
   margin-left: 3%;
 }
 
@@ -495,22 +495,22 @@ const celdas = computed(() => {
 }
 
 .cuadro1 {
-  border-radius: 20px;
-  border: 5px solid #2E9CE0;
+  border-radius: 1.25rem;
+  border: 0.3125rem solid #2E9CE0;
   background: #FFF;
-  box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
-  width: 552px;
-  height: 267px;
-  margin-left: 80px;
-  margin-top: 20px;
-  padding: 20px;
+  box-shadow: 0 0.25rem 0.66875rem 0.3125rem rgba(0, 0, 0, 0.25);
+  width: 34.5rem;
+  height: 16.6875rem;
+  margin-left: 5rem;
+  margin-top: 1.25rem;
+  padding: 1.25rem;
 }
 
 .cuadro1-titulo {
   display: flex;
-  gap: 10px;
+  gap: 0.625rem;
   font-family: 'Lexend', sans-serif;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 500;
   color: #000;
 }
@@ -518,7 +518,7 @@ const celdas = computed(() => {
 .turno-fila {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   font-family: 'Lexend', sans-serif;
   font-size: 1.5rem;
   font-weight: 400;
@@ -543,24 +543,24 @@ const celdas = computed(() => {
 
 .separador {
   border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.6);
-  margin: 6px 0;
+  border-top: 0.0625rem solid rgba(0, 0, 0, 0.6);
+  margin: 0.375rem 0;
 }
 
 .div-derecho {
   flex-shrink: 0;
-  margin-top: 20px;
-  margin-right: 80px;
+  margin-top: 1.25rem;
+  margin-right: 5rem;
   display: flex;
 }
 
 .calendario {
-  border-radius: 20px;
-  border: 5px solid #2E9CE0;
+  border-radius: 1.25rem;
+  border: 0.3125rem solid #2E9CE0;
   background: #FFF;
-  box-shadow: 0 4px 10.7px 5px rgba(0, 0, 0, 0.25);
-  width: 650px;
-  padding-bottom: 16px;
+  box-shadow: 0 0.25rem 0.66875rem 0.3125rem rgba(0, 0, 0, 0.25);
+  width: 40.625rem;
+  padding-bottom: 1rem;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -569,15 +569,15 @@ const celdas = computed(() => {
 .cal-header {
   display: flex;
   align-items: center;
-  padding: 20px 20px 10px;
+  padding: 1.25rem 1.25rem 0.625rem;
 }
 
 .cal-nav-btn {
-  width: 56px;
-  height: 56px;
+  width: 3.5rem;
+  height: 3.5rem;
   background: white;
-  border: 1px solid black;
-  border-radius: 14px;
+  border: 0.0625rem solid black;
+  border-radius: 0.875rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -589,14 +589,14 @@ const celdas = computed(() => {
   flex: 1;
   text-align: center;
   font-family: 'Lexend', sans-serif;
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 500;
 }
 
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  padding: 0 16px;
+  padding: 0 1rem;
   flex: 1;
   align-content: start;
 }
@@ -604,16 +604,16 @@ const celdas = computed(() => {
 .cal-nombre-dia {
   text-align: center;
   font-family: 'Lexend', sans-serif;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
-  padding: 10px 0 6px;
+  padding: 0.625rem 0 0.375rem;
 }
 
 .cal-dia {
   text-align: center;
   font-family: 'Lexend', sans-serif;
-  font-size: 20px;
-  padding: 5px 0;
+  font-size: 1.25rem;
+  padding: 0.3125rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -631,16 +631,16 @@ const celdas = computed(() => {
 
 .cal-ver-completo {
   display: block;
-  width: calc(100% - 40px);
-  margin: auto 20px 16px;
-  padding: 14px;
+  width: calc(100% - 2.5rem);
+  margin: auto 1.25rem 1rem;
+  padding: 0.875rem;
   background: #2E9CE0;
   color: #000;
   font-family: 'Lexend', sans-serif;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 500;
   border: none;
-  border-radius: 16px;
+  border-radius: 1rem;
   cursor: pointer;
 }
 </style>

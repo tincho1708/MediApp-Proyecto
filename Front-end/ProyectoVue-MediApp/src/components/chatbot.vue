@@ -8,5 +8,5 @@ const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal'])
   </div>
 </template>
 
-<style>
+<style scoped>
 </style>
