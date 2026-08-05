@@ -9,6 +9,8 @@ import Calendario from '@/components/calendario.vue'
 import CalendarioUsuario from '@/components/calendario-usuario.vue'
 import PrincipalUsuario from './components/principal-usuario.vue'
 import MediPlus from './components/MediPlus.vue'
+import ReservarTurno from './components/reservar-turno.vue'
+import { R } from 'vue-router/dist/useApi-D6ckOsFy.js'
 
 const vista = ref('bienvenida')
 </script>
@@ -55,7 +57,8 @@ const vista = ref('bienvenida')
       v-else-if="vista === 'chatbot'"
       key="chatbot"
       @ir-a-bienvenida="vista = 'bienvenida'"
-      @ir-a-principal="vista = 'Principal'"/>
+      @ir-a-principal="vista = 'Principal'"
+      @ir-a-reservar-turno="vista = 'reservarTurno'"/>
 
     <Calendario
       v-else-if="vista === 'calendario'"
@@ -71,7 +74,8 @@ const vista = ref('bienvenida')
       key="calendarioUsuario"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal-usuario="vista = 'principalUsuario'"
-      @ir-a-chatbot="vista = 'chatbot'"/>
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-reservar-turno="vista = 'reservarTurno'"/>
       
       
     <PrincipalUsuario
@@ -80,7 +84,8 @@ const vista = ref('bienvenida')
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
       @ir-a-chatbot="vista = 'chatbot'"
-      @ir-a-calendario-usuario="vista = 'calendarioUsuario'"/>
+      @ir-a-calendario-usuario="vista = 'calendarioUsuario'"
+      @ir-a-reservar-turno="vista = 'reservarTurno'"/>
 
     <MediPlus
       v-else-if="vista === 'MediPlus'"
@@ -88,6 +93,14 @@ const vista = ref('bienvenida')
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-chatbot="vista = 'chatbot'"
       @ir-a-principal="vista = 'Principal'"/>
+
+    <ReservarTurno
+      v-else-if="vista === 'reservarTurno'"
+      key="reservarTurno"
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-calendario-usuario="vista = 'calendarioUsuario'"/>
   </Transition> 
 
 </template>

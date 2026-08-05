@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-reservar-turno', 'ir-a-calendario-usuario'])
 
 const esta = ref(false)
 
@@ -96,7 +96,7 @@ function diaSiguiente() {
       </button>
 
       <div class="navbar-acciones">
-        <button class="campoo">Reservar Turno</button>
+        <button class="campoo" @click="emit('ir-a-reservar-turno')">Reservar Turno</button>
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
         <button class="campoo">Profesionales</button>
         <button class="campoo">Notificaciones</button>
