@@ -73,10 +73,13 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
     <div style="margin-top: 7.5rem; margin-left: 2.5rem; margin-right: 2.5rem; display: flex; flex-direction: column;">
 
-      <div class="w-fit text-zinc-900 text-5xl font-normal font-['Inter'] leading-[74.99px] pb-2 border-b-2 border-black">Reservar turno</div>
+      <div class="w-full max-w-[64rem] mx-auto">
+        <div class="w-fit text-[2.4rem] font-normal font-['Inter'] leading-[74.99px] pb-2 border-b-2 border-black">Reservar turno</div>
+      </div>
 
       <div class="flex items-center gap-4 mt-8 mb-6 w-full max-w-[64rem] mx-auto font-['Inter']">
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4">gracias
+          
           <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl bg-sky-500 text-white">1</div>
           <span class="text-2xl whitespace-nowrap text-black">Profesional</span>
         </div>
