@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-calendario-usuario'])
 const esta = ref(false)
@@ -69,6 +69,69 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
           </button>
         </div>
       </div>
+    </div>
+
+    <div style="margin-top: 7.5rem; margin-left: 2.5rem; margin-right: 2.5rem; display: flex; flex-direction: column;">
+
+      <div class="w-fit text-zinc-900 text-5xl font-normal font-['Inter'] leading-[74.99px] pb-2 border-b-2 border-black">Reservar turno</div>
+
+      <div class="flex items-center gap-4 mt-8 mb-6 w-full max-w-[64rem] mx-auto font-['Inter']">
+        <div class="flex items-center gap-4">
+          <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl bg-sky-500 text-white">1</div>
+          <span class="text-2xl whitespace-nowrap text-black">Profesional</span>
+        </div>
+        <div class="flex-1 h-px bg-zinc-300 min-w-[3rem]"></div>
+        <div class="flex items-center gap-4">
+          <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl border-2 border-zinc-300 text-zinc-400">2</div>
+          <span class="text-2xl whitespace-nowrap text-zinc-400">Fecha y hora</span>
+        </div>
+        <div class="flex-1 h-px bg-zinc-300 min-w-[3rem]"></div>
+        <div class="flex items-center gap-4">
+          <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl border-2 border-zinc-300 text-zinc-400">3</div>
+          <span class="text-2xl whitespace-nowrap text-zinc-400">Confirmar</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-[1.5rem] shadow-[0px_4px_30.100000381469727px_8px_rgba(0,0,0,0.46)] border border-sky-500 p-8 w-full max-w-[64rem] mx-auto flex flex-col gap-6 font-['Inter']">
+
+        <div>
+          <h2 class="text-xl mb-3">Especialidad</h2>
+          <div class="flex flex-wrap gap-3">
+            <span class="px-5 py-2 rounded-full bg-sky-100">Psicología</span>
+            <span class="px-5 py-2 rounded-full bg-sky-100">Clinica general</span>
+            <span class="px-5 py-2 rounded-full bg-sky-100">Nutricion</span>
+            <span class="px-5 py-2 rounded-full bg-sky-100">Traumatología</span>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-xl mb-3">Profesional</h2>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-3 border-2 border-sky-200 rounded-2xl p-2.5">
+              <div class="size-10 shrink-0 rounded-full bg-zinc-200"></div>
+              <div class="flex-1 flex flex-col gap-1.5">
+                <div class="h-2.5 w-44 rounded bg-zinc-200"></div>
+                <div class="h-2 w-24 rounded bg-zinc-100"></div>
+                <div class="h-2 w-56 rounded bg-zinc-100"></div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 border-2 border-sky-200 rounded-2xl p-2.5">
+              <div class="size-10 shrink-0 rounded-full bg-zinc-200"></div>
+              <div class="flex-1 flex flex-col gap-1.5">
+                <div class="h-2.5 w-44 rounded bg-zinc-200"></div>
+                <div class="h-2 w-24 rounded bg-zinc-100"></div>
+                <div class="h-2 w-56 rounded bg-zinc-100"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end mt-2">
+          <button class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600">Continuar</button>
+        </div>
+
+      </div>
+
     </div>
 </div>
 </template>
