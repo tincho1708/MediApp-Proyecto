@@ -1,19 +1,33 @@
-import resend
+import smtplib
 import os
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from dotenv import load_dotenv
 
 load_dotenv()
 
-resend.api_key = os.getenv("RESEND_API_KEY")
+GMAIL_USER = os.getenv("GMAIL_USER")
+GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 BASE_URL = os.getenv("VERIFICATION_BASE_URL", "http://localhost:8000")
 
 
+def _send(to: str, subject: str, html: str):
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = GMAIL_USER
+    msg["To"] = to
+    msg.attach(MIMEText(html, "html"))
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+        server.sendmail(GMAIL_USER, to, msg.as_string())
+
+
 def send_pin_email(to: str, nombre: str, pin: str):
-    resend.Emails.send({
-        "from": "onboarding@resend.dev",
-        "to": to,
-        "subject": "Tu PIN de verificación - MediApp",
-        "html": f"""
+    _send(
+        to=to,
+        subject="Tu PIN de verificación - MediApp",
+        html=f"""
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>Hola {nombre}, ya casi terminás</h2>
             <p>Ingresá este PIN en la aplicación para confirmar tu cuenta. Expira en <strong>10 minutos</strong>.</p>
@@ -27,17 +41,15 @@ def send_pin_email(to: str, nombre: str, pin: str):
             </p>
         </div>
         """
-    })
+    )
 
 
 def send_verification_email(to: str, nombre: str, token: str, user_type: str):
     verify_url = f"{BASE_URL}/auth/{user_type}/verificar?token={token}"
-
-    resend.Emails.send({
-        "from": "onboarding@resend.dev",
-        "to": to,
-        "subject": "Verificá tu cuenta en MediApp",
-        "html": f"""
+    _send(
+        to=to,
+        subject="Verificá tu cuenta en MediApp",
+        html=f"""
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>Hola {nombre}, bienvenido/a a MediApp</h2>
             <p>Para activar tu cuenta hacé clic en el botón de abajo. El enlace expira en 24 horas.</p>
@@ -51,4 +63,4 @@ def send_verification_email(to: str, nombre: str, token: str, user_type: str):
             </p>
         </div>
         """
-    })
+    )

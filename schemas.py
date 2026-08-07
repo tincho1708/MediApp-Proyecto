@@ -84,6 +84,34 @@ class MedicoPublicoResponse(BaseModel):
         from_attributes = True
 
 
+# --- Turnos ---
+
+class TurnoCreate(BaseModel):
+    medico_id: int
+    fecha_hora: datetime.datetime
+    notas: Optional[str] = None
+
+
+class EstadoTurnoResponse(BaseModel):
+    id: int
+    estado: str
+
+    class Config:
+        from_attributes = True
+
+
+class TurnoResponse(BaseModel):
+    id_turno: int
+    fecha_hora: datetime.datetime
+    notas: Optional[str]
+    id_pacientes: int
+    id_medicos: int
+    estado: EstadoTurnoResponse
+
+    class Config:
+        from_attributes = True
+
+
 # --- Auth responses ---
 
 class Token(BaseModel):
