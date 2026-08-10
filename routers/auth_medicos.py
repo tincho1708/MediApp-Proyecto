@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import uuid
@@ -42,21 +43,33 @@ def registrar_medico(data: MedicoRegister, db: Session = Depends(get_db)):
     return {"message": "Registro exitoso. Revisá tu mail para verificar tu cuenta."}
 
 
-@router.get("/verificar", response_model=Message)
+def _html(titulo: str, mensaje: str, color: str = "#2563eb") -> HTMLResponse:
+    return HTMLResponse(content=f"""
+    <html><head><meta charset="utf-8"><title>{titulo}</title></head>
+    <body style="font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f3f4f6;">
+      <div style="text-align:center;padding:40px;background:white;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.1);max-width:400px;">
+        <h2 style="color:{color};">{titulo}</h2>
+        <p style="color:#374151;">{mensaje}</p>
+      </div>
+    </body></html>
+    """)
+
+
+@router.get("/verificar")
 def verificar_email_medico(token: str, db: Session = Depends(get_db)):
     medico = db.query(Medico).filter(Medico.verification_token == token).first()
     if not medico:
-        raise HTTPException(status_code=400, detail="Token inválido")
+        return _html("Token inválido", "El enlace no es válido.", "#dc2626")
     if medico.verification_token_expires < datetime.utcnow():
-        raise HTTPException(status_code=400, detail="El token expiró. Registrate de nuevo.")
+        return _html("Enlace expirado", "El enlace expiró. Registrate de nuevo.", "#dc2626")
     if medico.email_verificado:
-        return {"message": "El mail ya fue verificado anteriormente."}
+        return _html("Ya verificado", "Tu cuenta ya fue verificada anteriormente.")
 
     medico.email_verificado = True
     medico.verification_token = None
     medico.verification_token_expires = None
     db.commit()
-    return {"message": "Mail verificado correctamente. Ya podés iniciar sesión."}
+    return _html("¡Cuenta verificada!", "Tu cuenta fue verificada correctamente. Ya podés iniciar sesión.")
 
 
 @router.post("/login", response_model=Token)
