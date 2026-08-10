@@ -102,11 +102,11 @@ async function testearSubmit() {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 .boton-atras {
   color: #000;
-  font-family: 'Lexend', 'sans-serif';
+  font-family: 'Inter', 'sans-serif';
   font-size: 1.25rem;
   font-weight: 400;
   line-height: normal;
@@ -144,7 +144,7 @@ async function testearSubmit() {
 }
 
 h1 {
-  font-family: 'Lexend';
+  font-family: 'Inter';
   font-weight: 400;
   margin-bottom: 1.125rem;
   font-size: 2.5rem;
@@ -181,7 +181,7 @@ input:focus {
   font-size: 2.1875rem;
   cursor: pointer;
   font-weight: 400;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   height: 5rem;
 }
 

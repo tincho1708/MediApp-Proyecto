@@ -38,7 +38,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 .contenido {
   min-height: 100vh;
@@ -68,7 +68,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 }
 
 .texto {
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 3.125rem;
   font-weight: 700;
   color: #000000;
@@ -163,7 +163,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 }
 
 .navbar-logo span {
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 2.6875rem;
   font-weight: 700;
   background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
@@ -181,7 +181,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 }
 
 .boton1 {
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.125rem;
   font-weight: 700;
   background-color: white;
@@ -192,7 +192,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   color: #000000;
 }
 .boton2 {
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.125rem;
   font-weight: 700;
   background-color: #2E9CE0;
