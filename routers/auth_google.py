@@ -141,7 +141,7 @@ def verificar_pin(data: PinVerificacionRequest, db: Session = Depends(get_db)):
     db.commit()
 
     token = create_access_token({"sub": str(usuario.id), "tipo": data.tipo})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre}
 
 
 @router.post("/login")
@@ -163,4 +163,4 @@ def login_google(data: GoogleLoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Cuenta pendiente de verificación de PIN")
 
     token = create_access_token({"sub": str(usuario.id), "tipo": data.tipo})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre}

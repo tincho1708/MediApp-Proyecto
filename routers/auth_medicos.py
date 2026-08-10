@@ -81,4 +81,4 @@ def login_medico(data: MedicoLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Debés verificar tu mail antes de iniciar sesión")
 
     token = create_access_token({"sub": str(medico.id), "tipo": "medico"})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "nombre": medico.nombre}

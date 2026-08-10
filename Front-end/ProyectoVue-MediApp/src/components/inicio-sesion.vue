@@ -31,12 +31,12 @@ async function testearSubmit() {
       const data = await res.json()
 
       if (res.ok && tipo === 'Medico') {
-        localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, email: form.value.email }))
+        localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, email: form.value.email, nombre: data.nombre }))
         emit('ir-a-principal')
         return
       }
       if (res.ok && tipo === 'Paciente') {
-        localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, email: form.value.email }))
+        localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, email: form.value.email, nombre: data.nombre }))
         emit('ir-a-principal-usuario')
         return
       }
