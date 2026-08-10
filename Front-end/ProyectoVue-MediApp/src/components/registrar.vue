@@ -130,12 +130,12 @@ async function testearSubmit() {
 
 <style scoped>
 
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 .titulo {
   color: #000;
   text-align: center;
-  font-family: 'Lexend', 'sans-serif';
+  font-family: 'Inter', 'sans-serif';
   font-size: 3.5rem;
   font-weight: 400;
   line-height: normal;
@@ -145,7 +145,7 @@ async function testearSubmit() {
 
 .boton-atras {
   color: #000;
-  font-family: 'Lexend', 'sans-serif';
+  font-family: 'Inter', 'sans-serif';
   font-size: 1.25rem;
   font-weight: 400;
   line-height: normal;
@@ -184,8 +184,8 @@ async function testearSubmit() {
 }
 
 .boton1, .boton2 {
-  font-family: 'Lexend', sans-serif;
-  background-color: #bbb;
+  font-family: 'Inter', sans-serif;
+  background-color: #D9D9D9;
   border: none;
   width: 12.5rem;
   height: 3.125rem;
@@ -218,7 +218,7 @@ form {
 
 
 .campo {
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
@@ -252,7 +252,7 @@ input:focus {
   border: none;
   border-radius: 1.25rem;
   font-size: 1.5rem;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   cursor: pointer;
   height: 3.125rem;
 }

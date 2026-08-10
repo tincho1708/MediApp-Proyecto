@@ -73,7 +73,7 @@ const celdas = computed(() => {
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
         <button class="campoo">Mis pacientes</button>
         <button class="campoo">Notificaciones</button>
-        <button class="boton-plus" @click="emit('ir-a-MediPlus')">MediApp+</button>
+        <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+</button>
 
         <button @click.stop="esta = !esta" class="barra">
           <div class="w-12 h-9 relative">
@@ -244,10 +244,10 @@ const celdas = computed(() => {
 </template>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 .navbar {
-  height: 6.25rem;
+  height: 6.0085rem;
   position: fixed;
   top: 0;
   left: 0;
@@ -273,7 +273,7 @@ const celdas = computed(() => {
 }
 
 .navbar-logo span {
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 2.6875rem;
   font-weight: 700;
   background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
@@ -288,26 +288,24 @@ const celdas = computed(() => {
   display: flex;
   align-items: center;
   flex-direction: row;
-  gap: 3.125rem;
+  gap: 2.125rem;
 }
 
 .campoo {
-  width: 11.875rem;
+  width: 13.875rem;
   height: 4.375rem;
-  background: #D8F0FF;
   border-radius: 1.25rem;
   color: #000;
   text-align: center;
-  font-family: 'Lexend', sans-serif;
-  font-size: 1.25rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.675rem;
   font-weight: 400;
   line-height: normal;
-  border: 0.0625rem #2E9CE0 solid;
   cursor: pointer;
 }
 
 .campoo:hover {
-  background-color: #2E9CE0;
+  background-color: #C6E9FF;
   transition: background-color 0.2s ease;
 }
 
@@ -318,7 +316,7 @@ const celdas = computed(() => {
   border-radius: 1.25rem;
   color: #000;
   text-align: center;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.5625rem;
   font-weight: 400;
   line-height: normal;
@@ -398,7 +396,7 @@ const celdas = computed(() => {
   color: #000;
   font-size: 1.375rem;
   font-weight: 400;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -406,7 +404,7 @@ const celdas = computed(() => {
 
 .bienvenida {
   color: #000;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 3.625rem;
   font-weight: 400;
   line-height: normal;
@@ -455,7 +453,7 @@ const celdas = computed(() => {
   flex-direction: row;
   align-items: center;
   gap: 0.375rem;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
   font-weight: 500;
 }
@@ -468,7 +466,7 @@ const celdas = computed(() => {
 }
 
 .texto-agenda-hoy {
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 3rem;
   font-weight: 500;
   color: #000;
@@ -482,7 +480,7 @@ const celdas = computed(() => {
 }
 
 .proximo-turno-hora {
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 4.5rem;
   font-weight: 400;
   color: #000;
@@ -509,7 +507,7 @@ const celdas = computed(() => {
 .cuadro1-titulo {
   display: flex;
   gap: 0.625rem;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.125rem;
   font-weight: 500;
   color: #000;
@@ -519,7 +517,7 @@ const celdas = computed(() => {
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.5rem;
   font-weight: 400;
   color: rgba(0, 0, 0, 0.75);
@@ -588,7 +586,7 @@ const celdas = computed(() => {
 .cal-titulo {
   flex: 1;
   text-align: center;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.75rem;
   font-weight: 500;
 }
@@ -603,7 +601,7 @@ const celdas = computed(() => {
 
 .cal-nombre-dia {
   text-align: center;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.9375rem;
   font-weight: 600;
   padding: 0.625rem 0 0.375rem;
@@ -611,7 +609,7 @@ const celdas = computed(() => {
 
 .cal-dia {
   text-align: center;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.25rem;
   padding: 0.3125rem 0;
   display: flex;
@@ -636,7 +634,7 @@ const celdas = computed(() => {
   padding: 0.875rem;
   background: #2E9CE0;
   color: #000;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.125rem;
   font-weight: 500;
   border: none;

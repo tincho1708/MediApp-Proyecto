@@ -285,7 +285,7 @@ function diaSiguiente() {
   display: flex;
   flex-direction: column;
   padding: 3%;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 200;
 }
 .linea-der {
@@ -305,7 +305,7 @@ function diaSiguiente() {
 .cal-titulo {
   color: #000;
   text-align: center;
-  font-family: Lexend;
+  font-family: Inter;
   font-size: 1.7rem;
   font-style: normal;
   font-weight: 400;
@@ -313,7 +313,7 @@ function diaSiguiente() {
 }
 .calDia {
   text-align: center;
-  font-family: 'Lexend', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.5625rem;
   padding: 0.3125rem 0;
   display: flex;

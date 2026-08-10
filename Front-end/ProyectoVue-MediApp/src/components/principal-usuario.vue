@@ -133,7 +133,7 @@ const celdas = computed(() => {
               <circle cx="30" cy="30" r="10" stroke="black" stroke-width="3" fill="white"/>
               <path d="M30 24.5V30l4 2.8" stroke="black" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <div style="color: black; font-size: 1.975rem; font-weight: 400; font-family: 'Lexend', sans-serif;">Proximos turnos</div>
+            <div style="color: black; font-size: 1.975rem; font-weight: 400; font-family: 'Inter', sans-serif;">Proximos turnos</div>
           </div>
         </div>
 
