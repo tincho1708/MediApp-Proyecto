@@ -84,6 +84,23 @@ class MedicoPublicoResponse(BaseModel):
         from_attributes = True
 
 
+# --- Horarios ---
+
+DIAS = {0: "Lunes", 1: "Martes", 2: "Miércoles", 3: "Jueves", 4: "Viernes", 5: "Sábado", 6: "Domingo"}
+
+class HorarioResponse(BaseModel):
+    id: int
+    dia_semana: int
+    hora: int
+
+    class Config:
+        from_attributes = True
+
+
+class HorarioUpdate(BaseModel):
+    horarios: list[dict]  # [{"dia_semana": 0, "hora": 9}, ...]
+
+
 # --- Turnos ---
 
 class TurnoCreate(BaseModel):

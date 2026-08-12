@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session, joinedload
 from typing import Optional, List
 
 from database import get_db
-from models import Medico, Especialidad
-from schemas import MedicoPublicoResponse, EspecialidadResponse
+from models import Medico, Especialidad, HorarioMedico
+from schemas import MedicoPublicoResponse, EspecialidadResponse, HorarioResponse, HorarioUpdate
+from deps import solo_medico
 
 router = APIRouter(tags=["Médicos"])
 
@@ -34,6 +35,33 @@ def buscar_medicos(
         query = query.filter(Medico.especialidad_id == especialidad_id)
 
     return query.order_by(Medico.apellido, Medico.nombre).all()
+
+
+@router.get("/medicos/{medico_id}/horarios", response_model=List[HorarioResponse])
+def obtener_horarios(medico_id: int, db: Session = Depends(get_db)):
+    return db.query(HorarioMedico).filter(
+        HorarioMedico.id_medico == medico_id
+    ).order_by(HorarioMedico.dia_semana, HorarioMedico.hora).all()
+
+
+@router.put("/medicos/mis-horarios", response_model=List[HorarioResponse])
+def actualizar_horarios(
+    data: HorarioUpdate,
+    db: Session = Depends(get_db),
+    user: dict = Depends(solo_medico),
+):
+    medico_id = int(user["sub"])
+    db.query(HorarioMedico).filter(HorarioMedico.id_medico == medico_id).delete()
+    for h in data.horarios:
+        dia = h.get("dia_semana")
+        hora = h.get("hora")
+        if dia is None or hora is None or not (0 <= dia <= 6) or not (0 <= hora <= 23):
+            raise HTTPException(status_code=400, detail="Horario inválido")
+        db.add(HorarioMedico(id_medico=medico_id, dia_semana=dia, hora=hora))
+    db.commit()
+    return db.query(HorarioMedico).filter(
+        HorarioMedico.id_medico == medico_id
+    ).order_by(HorarioMedico.dia_semana, HorarioMedico.hora).all()
 
 
 @router.get("/medicos/{medico_id}", response_model=MedicoPublicoResponse)
