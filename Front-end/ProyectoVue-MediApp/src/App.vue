@@ -10,7 +10,6 @@ import CalendarioUsuario from '@/components/calendario-usuario.vue'
 import PrincipalUsuario from './components/principal-usuario.vue'
 import MediPlus from './components/MediPlus.vue'
 import ReservarTurno from './components/reservar-turno.vue'
-import { R } from 'vue-router/dist/useApi-D6ckOsFy.js'
 
 const vista = ref('bienvenida')
 </script>

@@ -3,6 +3,9 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus'])
 
+const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+const nombreUsuario = sesion.nombre || 'Usuario'
+
 const esta = ref(false)
 
 function cerrarAlClickFuera() { esta.value = false }
@@ -131,7 +134,7 @@ const celdas = computed(() => {
       </div>
     </div>
 
-    <div class="bienvenida">Bienvenido, Matías</div>
+    <div class="bienvenida">Bienvenido, {{ nombreUsuario }}</div>
 
     <div class="main-layout">
       <div class="main-izquierdo">
@@ -288,7 +291,7 @@ const celdas = computed(() => {
   display: flex;
   align-items: center;
   flex-direction: row;
-  gap: 2.125rem;
+  gap: 2rem;
 }
 
 .campoo {
@@ -298,7 +301,7 @@ const celdas = computed(() => {
   color: #000;
   text-align: center;
   font-family: 'Inter', sans-serif;
-  font-size: 1.675rem;
+  font-size: 1.45rem;
   font-weight: 400;
   line-height: normal;
   cursor: pointer;

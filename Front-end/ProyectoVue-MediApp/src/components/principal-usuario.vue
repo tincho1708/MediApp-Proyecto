@@ -3,6 +3,9 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario-usuario', 'ir-a-reservar-turno'])
 
+const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+const nombreUsuario = sesion.nombre || 'Usuario'
+
 const esta = ref(false)
 
 function cerrarAlClickFuera() { esta.value = false }
@@ -120,7 +123,7 @@ const celdas = computed(() => {
       </div>
     </div>
 
-    <div class="bienvenida">Bienvenido, Matias</div>
+    <div class="bienvenida">Bienvenido, {{ nombreUsuario }}</div>
 
     <div class="main-layout">
       <div class="main-izquierdo" style="margin-left: 2.5rem; height: 30.25rem;">

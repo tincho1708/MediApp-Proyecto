@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-calendario-usuario'])
 const esta = ref(false)
@@ -8,6 +8,153 @@ function cerrarAlClickFuera() { esta.value = false }
 
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
+
+type Especialidad = {
+  id_especialidad: number
+  nombre_especialidad: string
+}
+
+type Medico = {
+  id: number
+  nombre: string
+  apellido: string
+  telefono: string | null
+  mail: string
+  especialidad_id: number | null
+  especialidad: Especialidad | null
+}
+
+const medicos = ref<Medico[]>([])
+const cargandoMedicos = ref(true)
+const errorMedicos = ref('')
+
+const especialidadSeleccionada = ref<number | null>(null)
+const medicoSeleccionado = ref<Medico | null>(null)
+
+async function cargarMedicos() {
+  cargandoMedicos.value = true
+  errorMedicos.value = ''
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/medicos`)
+    if (!res.ok) throw new Error()
+    medicos.value = await res.json()
+  } catch {
+    errorMedicos.value = 'No se pudieron cargar los profesionales. Intentá de nuevo más tarde.'
+  } finally {
+    cargandoMedicos.value = false
+  }
+}
+
+onMounted(cargarMedicos)
+
+const especialidadesDisponibles = computed<Especialidad[]>(() => {
+  const vistas = new Map<number, Especialidad>()
+  for (const m of medicos.value) {
+    if (m.especialidad && !vistas.has(m.especialidad.id_especialidad)) {
+      vistas.set(m.especialidad.id_especialidad, m.especialidad)
+    }
+  }
+  return [...vistas.values()].sort((a, b) => a.nombre_especialidad.localeCompare(b.nombre_especialidad))
+})
+
+const medicosFiltrados = computed(() => {
+  if (especialidadSeleccionada.value === null) return medicos.value
+  return medicos.value.filter(m => m.especialidad_id === especialidadSeleccionada.value)
+})
+
+function elegirEspecialidad(id: number) {
+  especialidadSeleccionada.value = especialidadSeleccionada.value === id ? null : id
+  if (medicoSeleccionado.value && medicoSeleccionado.value.especialidad_id !== especialidadSeleccionada.value) {
+    medicoSeleccionado.value = null
+  }
+}
+
+function elegirMedico(m: Medico) {
+  medicoSeleccionado.value = medicoSeleccionado.value?.id === m.id ? null : m
+}
+
+const coloresAvatar = ['#E0645C', '#6CC26A', '#E0A75C', '#5C9EE0', '#9C6CE0', '#5CC2B0']
+function colorAvatar(id: number) {
+  return coloresAvatar[id % coloresAvatar.length]
+}
+function iniciales(m: Medico) {
+  return `${m.nombre.charAt(0)}${m.apellido.charAt(0)}`.toUpperCase()
+}
+
+const pasoActual = ref(1)
+
+function claseCirculoPaso(n: number) {
+  if (pasoActual.value === n) return 'bg-sky-500 text-white'
+  if (pasoActual.value > n) return 'bg-white border-2 border-sky-500 text-sky-500'
+  return 'border-2 border-zinc-300 text-zinc-400'
+}
+function claseTextoPaso(n: number) {
+  return pasoActual.value >= n ? 'text-black' : 'text-zinc-400'
+}
+
+function continuarAPaso2() {
+  if (medicoSeleccionado.value) pasoActual.value = 2
+}
+function volverAPaso1() {
+  pasoActual.value = 1
+}
+const hoy = new Date()
+const mesActual = ref(hoy.getMonth())
+const añoActual = ref(hoy.getFullYear())
+
+const nombresMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+function mesAnterior() {
+  if (mesActual.value === 0) {
+    mesActual.value = 11
+    añoActual.value--
+  } else {
+    mesActual.value--
+  }
+}
+
+function mesSiguiente() {
+  if (mesActual.value === 11) {
+    mesActual.value = 0
+    añoActual.value++
+  } else {
+    mesActual.value++
+  }
+}
+
+const celdas = computed(() => {
+  const ultimoDia = new Date(añoActual.value, mesActual.value + 1, 0).getDate()
+  const primerDia = new Date(añoActual.value, mesActual.value, 1).getDay()
+  const offset = (primerDia + 6) % 7
+  const ultimoDiaMesAnterior = new Date(añoActual.value, mesActual.value, 0).getDate()
+  const resultado = []
+
+  for (let i = offset; i > 0; i--) {
+    resultado.push({ dia: ultimoDiaMesAnterior - i + 1, otroMes: true })
+  }
+
+  for (let d = 1; d <= ultimoDia; d++) {
+    resultado.push({
+      dia: d,
+      hoy: d === hoy.getDate() && mesActual.value === hoy.getMonth() && añoActual.value === hoy.getFullYear(),
+    })
+  }
+
+  let siguiente = 1
+  while (resultado.length % 7 !== 0) {
+    resultado.push({ dia: siguiente, otroMes: true })
+    siguiente++
+  }
+
+  return resultado
+})
+
+const diaSeleccionado = ref<number | null>(null)
+
+function elegirDia(celda: { dia?: number; otroMes?: boolean }) {
+  if (celda.otroMes || celda.dia === undefined) return
+  diaSeleccionado.value = celda.dia
+}
 </script>
 
 <template>
@@ -78,60 +225,102 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
       </div>
 
       <div class="flex items-center gap-4 mt-8 mb-6 w-full max-w-[64rem] mx-auto font-['Inter']">
-        <div class="flex items-center gap-4">gracias
-          
-          <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl bg-sky-500 text-white">1</div>
-          <span class="text-2xl whitespace-nowrap text-black">Profesional</span>
+        <div class="flex items-center gap-4">
+          <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl transition-colors" :class="claseCirculoPaso(1)">1</div>
+          <span class="text-2xl whitespace-nowrap transition-colors" :class="claseTextoPaso(1)">Profesional</span>
         </div>
         <div class="flex-1 h-px bg-zinc-300 min-w-[3rem]"></div>
         <div class="flex items-center gap-4">
-          <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl border-2 border-zinc-300 text-zinc-400">2</div>
-          <span class="text-2xl whitespace-nowrap text-zinc-400">Fecha y hora</span>
+          <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl transition-colors" :class="claseCirculoPaso(2)">2</div>
+          <span class="text-2xl whitespace-nowrap transition-colors" :class="claseTextoPaso(2)">Fecha y hora</span>
         </div>
         <div class="flex-1 h-px bg-zinc-300 min-w-[3rem]"></div>
         <div class="flex items-center gap-4">
-          <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl border-2 border-zinc-300 text-zinc-400">3</div>
-          <span class="text-2xl whitespace-nowrap text-zinc-400">Confirmar</span>
+          <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl transition-colors" :class="claseCirculoPaso(3)">3</div>
+          <span class="text-2xl whitespace-nowrap transition-colors" :class="claseTextoPaso(3)">Confirmar</span>
         </div>
       </div>
 
       <div class="bg-white rounded-[1.5rem] shadow-[0px_4px_30.100000381469727px_8px_rgba(0,0,0,0.46)] border border-sky-500 p-8 w-full max-w-[64rem] mx-auto flex flex-col gap-6 font-['Inter']">
 
-        <div>
-          <h2 class="text-xl mb-3">Especialidad</h2>
-          <div class="flex flex-wrap gap-3">
-            <span class="px-5 py-2 rounded-full bg-sky-100">Psicología</span>
-            <span class="px-5 py-2 rounded-full bg-sky-100">Clinica general</span>
-            <span class="px-5 py-2 rounded-full bg-sky-100">Nutricion</span>
-            <span class="px-5 py-2 rounded-full bg-sky-100">Traumatología</span>
-          </div>
-        </div>
-
-        <div>
-          <h2 class="text-xl mb-3">Profesional</h2>
-          <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-3 border-2 border-sky-200 rounded-2xl p-2.5">
-              <div class="size-10 shrink-0 rounded-full bg-zinc-200"></div>
-              <div class="flex-1 flex flex-col gap-1.5">
-                <div class="h-2.5 w-44 rounded bg-zinc-200"></div>
-                <div class="h-2 w-24 rounded bg-zinc-100"></div>
-                <div class="h-2 w-56 rounded bg-zinc-100"></div>
+        <Transition name="fade" mode="out-in">
+          <div v-if="pasoActual === 1" key="paso1" class="flex flex-col gap-6">
+            <div v-if="especialidadesDisponibles.length">
+              <h2 class="text-xl mb-3">Especialidad</h2>
+              <div class="flex flex-wrap gap-3">
+                <button
+                  v-for="esp in especialidadesDisponibles" :key="esp.id_especialidad"
+                  @click="elegirEspecialidad(esp.id_especialidad)"
+                  class="px-5 py-2 rounded-full transition-colors"
+                  :class="especialidadSeleccionada === esp.id_especialidad ? 'bg-sky-500 text-white' : 'bg-sky-100 hover:bg-sky-200'"
+                >{{ esp.nombre_especialidad }}</button>
               </div>
             </div>
-            <div class="flex items-center gap-3 border-2 border-sky-200 rounded-2xl p-2.5">
-              <div class="size-10 shrink-0 rounded-full bg-zinc-200"></div>
-              <div class="flex-1 flex flex-col gap-1.5">
-                <div class="h-2.5 w-44 rounded bg-zinc-200"></div>
-                <div class="h-2 w-24 rounded bg-zinc-100"></div>
-                <div class="h-2 w-56 rounded bg-zinc-100"></div>
+
+            <div>
+              <h2 class="text-xl mb-3">Profesional</h2>
+
+              <p v-if="cargandoMedicos" class="text-zinc-400">Cargando profesionales...</p>
+              <p v-else-if="errorMedicos" class="text-red-500">{{ errorMedicos }}</p>
+              <p v-else-if="!medicosFiltrados.length" class="text-zinc-400">No hay profesionales disponibles para esta especialidad.</p>
+
+              <div v-else class="flex flex-col gap-2">
+                <button
+                  v-for="m in medicosFiltrados" :key="m.id"
+                  @click="elegirMedico(m)"
+                  class="flex items-center gap-3 border-2 rounded-2xl p-2.5 text-left transition-colors"
+                  :class="medicoSeleccionado?.id === m.id ? 'border-sky-500 bg-sky-50' : 'border-sky-200 hover:border-sky-400'"
+                >
+                  <div class="size-10 shrink-0 rounded-full flex items-center justify-center text-white text-sm font-medium" :style="{ backgroundColor: colorAvatar(m.id) }">{{ iniciales(m) }}</div>
+                  <div class="flex-1">
+                    <div class="font-medium">{{ m.nombre }} {{ m.apellido }}</div>
+                    <div class="text-sm text-zinc-500">{{ m.especialidad?.nombre_especialidad ?? 'Sin especialidad' }}</div>
+                    <div class="text-sm text-zinc-500">{{ m.mail }}</div>
+                  </div>
+                </button>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="flex justify-end mt-2">
-          <button class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600">Continuar</button>
-        </div>
+            <div class="flex justify-end mt-2">
+              <button
+                @click="continuarAPaso2"
+                class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                :disabled="!medicoSeleccionado"
+              >Continuar</button>
+            </div>
+          </div>
+
+          <div v-else key="paso2" class="flex flex-col gap-6">
+            <div>
+              <h2 class="text-xl mb-3">Fecha</h2>
+              <div class="w-full mx-auto rounded-2xl border-2 border-sky-200 p-7">
+                <div class="flex items-center justify-between mb-4">
+                  <button @click="mesAnterior" class="size-11 rounded-xl border border-zinc-300 flex items-center justify-center text-lg hover:bg-sky-50">←</button>
+                  <span class="text-3xl font-medium">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
+                  <button @click="mesSiguiente" class="size-11 rounded-xl border border-zinc-300 flex items-center justify-center text-lg hover:bg-sky-50">→</button>
+                </div>
+                <div class="grid grid-cols-7 gap-y-4 text-center">
+                  <button
+                    v-for="(celda, i) in celdas" :key="i"
+                    @click="elegirDia(celda)"
+                    :disabled="celda.otroMes"
+                    class="py-1 rounded-lg text-xl transition-colors"
+                    :class="[
+                      celda.otroMes ? 'text-zinc-300 cursor-default' : 'text-black font-medium hover:bg-sky-100',
+                      !celda.otroMes && celda.dia === diaSeleccionado ? 'bg-sky-500 text-white hover:bg-sky-500' : '',
+                      !celda.otroMes && celda.hoy && celda.dia !== diaSeleccionado ? 'text-sky-500 font-semibold' : ''
+                    ]"
+                  >{{ celda.dia }}</button>
+                </div>
+              </div>
+            </div>
+            <div class="w-fit text-[1.5rem] font-normal font-['Inter'] pb-1 border-b-2 border-black">Horarios Disponibles</div>
+            <div class="flex w-full justify-start mt-2">
+              <button @click="volverAPaso1" class="px-6 py-3 rounded-xl border-2 border-sky-500 text-sky-600 hover:bg-sky-50">Atrás</button>
+            </div>
+          </div>
+
+        </Transition>
 
       </div>
 
