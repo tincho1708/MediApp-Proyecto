@@ -32,6 +32,7 @@ class Medico(Base):
     pin_expires = Column(DateTime, nullable=True)
 
     especialidad = relationship("Especialidad", back_populates="medicos")
+    horarios = relationship("HorarioMedico", back_populates="medico", cascade="all, delete-orphan")
     turnos = relationship("Turno", back_populates="medico")
     resenas = relationship("Resena", back_populates="medico")
     recomendaciones_dadas = relationship("Recomienda", foreign_keys="Recomienda.id_medico", back_populates="medico")
@@ -81,6 +82,17 @@ class Turno(Base):
     paciente = relationship("Paciente", back_populates="turnos")
     medico = relationship("Medico", back_populates="turnos")
     estado = relationship("EstadoTurno", back_populates="turnos")
+
+
+class HorarioMedico(Base):
+    __tablename__ = "horario_medico"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_medico = Column(Integer, ForeignKey("medicos.id"), nullable=False)
+    dia_semana = Column(Integer, nullable=False)  # 0=lunes, 6=domingo
+    hora = Column(Integer, nullable=False)  # 9, 10, 11, ... 16
+
+    medico = relationship("Medico", back_populates="horarios")
 
 
 class Resena(Base):

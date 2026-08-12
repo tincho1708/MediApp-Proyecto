@@ -4,7 +4,7 @@ from typing import List
 from datetime import datetime
 
 from database import get_db
-from models import Turno, EstadoTurno, Medico, Paciente
+from models import Turno, EstadoTurno, Medico, Paciente, HorarioMedico
 from schemas import TurnoCreate, TurnoResponse
 from deps import get_current_user, solo_paciente, solo_medico
 
@@ -31,6 +31,16 @@ def solicitar_turno(
 
     if data.fecha_hora <= datetime.utcnow():
         raise HTTPException(status_code=400, detail="La fecha debe ser futura")
+
+    dia_semana = data.fecha_hora.weekday()
+    hora = data.fecha_hora.hour
+    disponible = db.query(HorarioMedico).filter(
+        HorarioMedico.id_medico == data.medico_id,
+        HorarioMedico.dia_semana == dia_semana,
+        HorarioMedico.hora == hora,
+    ).first()
+    if not disponible:
+        raise HTTPException(status_code=400, detail="El médico no está disponible en ese horario")
 
     solapado = db.query(Turno).join(EstadoTurno).filter(
         Turno.id_medicos == data.medico_id,

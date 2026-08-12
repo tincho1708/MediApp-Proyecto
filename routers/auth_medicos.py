@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import uuid
 
 from database import get_db
-from models import Medico
+from models import Medico, HorarioMedico
 from schemas import MedicoRegister, MedicoLogin, MedicoResponse, Token, Message
 from auth_utils import hash_password, verify_password, create_access_token
 from email_utils import send_verification_email
@@ -32,6 +32,10 @@ def registrar_medico(data: MedicoRegister, db: Session = Depends(get_db)):
     )
     db.add(medico)
     db.flush()
+
+    for dia in range(5):
+        for hora in range(9, 17):
+            db.add(HorarioMedico(id_medico=medico.id, dia_semana=dia, hora=hora))
 
     try:
         send_verification_email(data.mail, data.nombre, token, "medicos")
