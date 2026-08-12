@@ -99,7 +99,7 @@ function diaSiguiente() {
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
         <button class="campoo">Mis pacientes</button>
         <button class="campoo">Notificaciones</button>
-        <button class="boton-plus">MediApp+</button>
+        <button class="campoo">MediApp+</button>
 
         <button @click.stop="esta = !esta" class="barra">
           <div class="w-12 h-9 relative">
