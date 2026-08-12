@@ -93,10 +93,20 @@ function claseTextoPaso(n: number) {
 }
 
 function continuarAPaso2() {
-  if (medicoSeleccionado.value) pasoActual.value = 2
+  if (!medicoSeleccionado.value) return
+  pasoActual.value = 2
+  cargarHorarios(medicoSeleccionado.value.id)
 }
 function volverAPaso1() {
   pasoActual.value = 1
+}
+
+function continuarAPaso3() {
+  if (!diaSeleccionado.value || !horaSeleccionada.value) return
+  pasoActual.value = 3
+}
+function volverAPaso2() {
+  pasoActual.value = 2
 }
 const hoy = new Date()
 const mesActual = ref(hoy.getMonth())
@@ -154,6 +164,58 @@ const diaSeleccionado = ref<number | null>(null)
 function elegirDia(celda: { dia?: number; otroMes?: boolean }) {
   if (celda.otroMes || celda.dia === undefined) return
   diaSeleccionado.value = celda.dia
+  horaSeleccionada.value = null
+}
+
+// --- Horarios disponibles del médico ---
+// El backend guarda horarios semanales fijos (dia_semana 0=Lunes ... 6=Domingo, igual que Date.weekday() de Python).
+
+type Horario = {
+  id: number
+  dia_semana: number
+  hora: number
+}
+
+const horarios = ref<Horario[]>([])
+const cargandoHorarios = ref(false)
+const errorHorarios = ref('')
+const horaSeleccionada = ref<number | null>(null)
+
+async function cargarHorarios(medicoId: number) {
+  cargandoHorarios.value = true
+  errorHorarios.value = ''
+  horarios.value = []
+  horaSeleccionada.value = null
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/medicos/${medicoId}/horarios`)
+    if (!res.ok) throw new Error()
+    horarios.value = await res.json()
+  } catch {
+    errorHorarios.value = 'No se pudieron cargar los horarios. Intentá de nuevo más tarde.'
+  } finally {
+    cargandoHorarios.value = false
+  }
+}
+
+const diaSemanaSeleccionado = computed(() => {
+  if (diaSeleccionado.value === null) return null
+  const fecha = new Date(añoActual.value, mesActual.value, diaSeleccionado.value)
+  return (fecha.getDay() + 6) % 7
+})
+
+const horariosDelDia = computed(() => {
+  if (diaSemanaSeleccionado.value === null) return []
+  return horarios.value
+    .filter(h => h.dia_semana === diaSemanaSeleccionado.value)
+    .sort((a, b) => a.hora - b.hora)
+})
+
+function horaTexto(h: Horario) {
+  return `${String(h.hora).padStart(2, '0')}:00`
+}
+
+function elegirHora(h: Horario) {
+  horaSeleccionada.value = horaSeleccionada.value === h.hora ? null : h.hora
 }
 </script>
 
@@ -290,7 +352,7 @@ function elegirDia(celda: { dia?: number; otroMes?: boolean }) {
             </div>
           </div>
 
-          <div v-else key="paso2" class="flex flex-col gap-6">
+          <div v-else-if="pasoActual === 2" key="paso2" class="flex flex-col gap-6">
             <div>
               <h2 class="text-xl mb-3">Fecha</h2>
               <div class="w-full mx-auto rounded-2xl border-2 border-sky-200 p-7">
@@ -304,7 +366,7 @@ function elegirDia(celda: { dia?: number; otroMes?: boolean }) {
                     v-for="(celda, i) in celdas" :key="i"
                     @click="elegirDia(celda)"
                     :disabled="celda.otroMes"
-                    class="py-1 rounded-lg text-xl transition-colors"
+                    class="size-11 mx-auto rounded-lg text-xl transition-colors"
                     :class="[
                       celda.otroMes ? 'text-zinc-300 cursor-default' : 'text-black font-medium hover:bg-sky-100',
                       !celda.otroMes && celda.dia === diaSeleccionado ? 'bg-sky-500 text-white hover:bg-sky-500' : '',
@@ -314,9 +376,40 @@ function elegirDia(celda: { dia?: number; otroMes?: boolean }) {
                 </div>
               </div>
             </div>
-            <div class="w-fit text-[1.5rem] font-normal font-['Inter'] pb-1 border-b-2 border-black">Horarios Disponibles</div>
+            <div>
+              <div class="w-fit text-[1.5rem] font-normal font-['Inter'] pb-1 mb-4 border-b-2 border-black">Horarios Disponibles</div>
+
+              <p v-if="!diaSeleccionado" class="text-zinc-400">Elegí un día en el calendario para ver los horarios.</p>
+              <p v-else-if="cargandoHorarios" class="text-zinc-400">Cargando horarios...</p>
+              <p v-else-if="errorHorarios" class="text-red-500">{{ errorHorarios }}</p>
+              <p v-else-if="!horariosDelDia.length" class="text-zinc-400">No hay horarios disponibles para este día.</p>
+
+              <div v-else class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));">
+                <button
+                  v-for="h in horariosDelDia" :key="h.id"
+                  @click="elegirHora(h)"
+                  class="px-7 py-3.5 rounded-xl border-2 text-lg font-medium text-center transition-colors"
+                  :class="horaSeleccionada === h.hora ? 'bg-sky-500 border-sky-500 text-white' : 'border-sky-500 text-sky-600 hover:bg-sky-50'"
+                >{{ horaTexto(h) }}</button>
+              </div>
+            </div>
+
+            <div class="flex w-full justify-between mt-2">
+              <button @click="volverAPaso1" class="px-6 py-3 bg-sky-100 rounded-xl border-2 border-sky-500 text-sky-600 hover:bg-sky-50">Atrás</button>
+              <button @click="continuarAPaso3"
+                v-if="diaSeleccionado && horaSeleccionada"
+                class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600"
+              >Continuar</button>
+            </div>
+          </div>
+
+          <div v-else key="paso3" class="flex flex-col gap-6">
+            <div>
+              
+            </div>
+
             <div class="flex w-full justify-start mt-2">
-              <button @click="volverAPaso1" class="px-6 py-3 rounded-xl border-2 border-sky-500 text-sky-600 hover:bg-sky-50">Atrás</button>
+              <button @click="volverAPaso2" class="px-6 py-3 bg-sky-100 rounded-xl border-2 border-sky-500 text-sky-600 hover:bg-sky-50">Atrás</button>
             </div>
           </div>
 
