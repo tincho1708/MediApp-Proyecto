@@ -129,6 +129,20 @@ class TurnoResponse(BaseModel):
         from_attributes = True
 
 
+# --- Notificaciones ---
+
+class NotificacionResponse(BaseModel):
+    id: int
+    id_turno: int
+    mensaje: str
+    leida: bool
+    fecha: datetime.datetime
+    turno: TurnoResponse
+
+    class Config:
+        from_attributes = True
+
+
 # --- Auth responses ---
 
 class Token(BaseModel):

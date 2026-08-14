@@ -33,6 +33,7 @@ class Medico(Base):
 
     especialidad = relationship("Especialidad", back_populates="medicos")
     horarios = relationship("HorarioMedico", back_populates="medico", cascade="all, delete-orphan")
+    notificaciones = relationship("Notificacion", back_populates="medico")
     turnos = relationship("Turno", back_populates="medico")
     resenas = relationship("Resena", back_populates="medico")
     recomendaciones_dadas = relationship("Recomienda", foreign_keys="Recomienda.id_medico", back_populates="medico")
@@ -93,6 +94,20 @@ class HorarioMedico(Base):
     hora = Column(Integer, nullable=False)  # 9, 10, 11, ... 16
 
     medico = relationship("Medico", back_populates="horarios")
+
+
+class Notificacion(Base):
+    __tablename__ = "notificaciones"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_medico = Column(Integer, ForeignKey("medicos.id"), nullable=False)
+    id_turno = Column(Integer, ForeignKey("turno.id_turno"), nullable=False)
+    mensaje = Column(String(500), nullable=False)
+    leida = Column(Boolean, default=False)
+    fecha = Column(DateTime, default=datetime.datetime.utcnow)
+
+    medico = relationship("Medico", back_populates="notificaciones")
+    turno = relationship("Turno")
 
 
 class Resena(Base):
