@@ -143,10 +143,13 @@ const celdas = computed(() => {
     resultado.push({ dia: ultimoDiaMesAnterior - i + 1, otroMes: true })
   }
 
+  const inicioHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
+
   for (let d = 1; d <= ultimoDia; d++) {
     resultado.push({
       dia: d,
       hoy: d === hoy.getDate() && mesActual.value === hoy.getMonth() && añoActual.value === hoy.getFullYear(),
+      pasado: new Date(añoActual.value, mesActual.value, d) < inicioHoy,
     })
   }
 
@@ -161,8 +164,8 @@ const celdas = computed(() => {
 
 const diaSeleccionado = ref<number | null>(null)
 
-function elegirDia(celda: { dia?: number; otroMes?: boolean }) {
-  if (celda.otroMes || celda.dia === undefined) return
+function elegirDia(celda: { dia?: number; otroMes?: boolean; pasado?: boolean }) {
+  if (celda.otroMes || celda.pasado || celda.dia === undefined) return
   diaSeleccionado.value = celda.dia
   horaSeleccionada.value = null
 }
@@ -203,19 +206,77 @@ const diaSemanaSeleccionado = computed(() => {
   return (fecha.getDay() + 6) % 7
 })
 
-const horariosDelDia = computed(() => {
-  if (diaSemanaSeleccionado.value === null) return []
-  return horarios.value
-    .filter(h => h.dia_semana === diaSemanaSeleccionado.value)
-    .sort((a, b) => a.hora - b.hora)
+const esHoySeleccionado = computed(() => {
+  return diaSeleccionado.value === hoy.getDate()
+    && mesActual.value === hoy.getMonth()
+    && añoActual.value === hoy.getFullYear()
 })
 
-function horaTexto(h: Horario) {
-  return `${String(h.hora).padStart(2, '0')}:00`
+const horariosDelDia = computed(() => {
+  if (diaSemanaSeleccionado.value === null) return []
+  let lista = horarios.value.filter(h => h.dia_semana === diaSemanaSeleccionado.value)
+  if (esHoySeleccionado.value) {
+    lista = lista.filter(h => h.hora > hoy.getHours())
+  }
+  return lista.sort((a, b) => a.hora - b.hora)
+})
+
+function formatearHora(hora: number) {
+  return `${String(hora).padStart(2, '0')}:00`
 }
+function horaTexto(h: Horario) {
+  return formatearHora(h.hora)
+}
+
+const resumenFechaHora = computed(() => {
+  if (diaSeleccionado.value === null || horaSeleccionada.value === null) return ''
+  return `${diaSeleccionado.value} de ${nombresMes[mesActual.value].toLowerCase()} - ${formatearHora(horaSeleccionada.value)}`
+})
 
 function elegirHora(h: Horario) {
   horaSeleccionada.value = horaSeleccionada.value === h.hora ? null : h.hora
+}
+
+// --- Confirmar reserva ---
+
+const fechaHoraISO = computed(() => {
+  if (diaSeleccionado.value === null || horaSeleccionada.value === null) return null
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${añoActual.value}-${pad(mesActual.value + 1)}-${pad(diaSeleccionado.value)}T${pad(horaSeleccionada.value)}:00:00`
+})
+
+const reservando = ref(false)
+const errorReserva = ref('')
+const turnoConfirmado = ref(false)
+
+async function confirmarReserva() {
+  if (!medicoSeleccionado.value || !fechaHoraISO.value) return
+  reservando.value = true
+  errorReserva.value = ''
+  try {
+    const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sesion.token}`,
+      },
+      body: JSON.stringify({
+        medico_id: medicoSeleccionado.value.id,
+        fecha_hora: fechaHoraISO.value,
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      errorReserva.value = data.detail || 'No se pudo reservar el turno.'
+      return
+    }
+    turnoConfirmado.value = true
+  } catch {
+    errorReserva.value = 'No se pudo conectar al servidor.'
+  } finally {
+    reservando.value = false
+  }
 }
 </script>
 
@@ -337,7 +398,6 @@ function elegirHora(h: Horario) {
                   <div class="flex-1">
                     <div class="font-medium">{{ m.nombre }} {{ m.apellido }}</div>
                     <div class="text-sm text-zinc-500">{{ m.especialidad?.nombre_especialidad ?? 'Sin especialidad' }}</div>
-                    <div class="text-sm text-zinc-500">{{ m.mail }}</div>
                   </div>
                 </button>
               </div>
@@ -365,7 +425,7 @@ function elegirHora(h: Horario) {
                   <button
                     v-for="(celda, i) in celdas" :key="i"
                     @click="elegirDia(celda)"
-                    :disabled="celda.otroMes"
+                    :disabled="celda.otroMes || celda.pasado"
                     class="size-11 mx-auto rounded-lg text-xl transition-colors"
                     :class="[
                       celda.otroMes ? 'text-zinc-300 cursor-default' : 'text-black font-medium hover:bg-sky-100',
@@ -404,13 +464,45 @@ function elegirHora(h: Horario) {
           </div>
 
           <div v-else key="paso3" class="flex flex-col gap-6">
-            <div>
-              
+            <div v-if="turnoConfirmado" class="flex flex-col items-center gap-4 py-6">
+              <div class="size-16 rounded-full bg-sky-500 text-white flex items-center justify-center text-3xl">✓</div>
+              <p class="text-xl font-medium">¡Reservaste el turno!</p>
+              <p class="text-zinc-500 text-center">Le avisamos a {{ medicoSeleccionado?.nombre }} {{ medicoSeleccionado?.apellido }} para que lo confirme.</p>
+              <button @click="emit('ir-a-principal-usuario')" class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600">Volver al inicio</button>
             </div>
 
-            <div class="flex w-full justify-start mt-2">
-              <button @click="volverAPaso2" class="px-6 py-3 bg-sky-100 rounded-xl border-2 border-sky-500 text-sky-600 hover:bg-sky-50">Atrás</button>
-            </div>
+            <template v-else>
+              <div class="flex items-center justify-center" v-if="medicoSeleccionado">
+                <div class="w-[920px] h-48 bg-blue-100 rounded-[33px]" style="display: flex; flex-direction: row; gap: 1.5rem;">
+
+                  <div>
+                    <div
+                      style="width: 5rem; height: 5rem; border-radius: 9999px; margin-top: 55px; margin-left: 20px;"
+                      class="flex items-center justify-center text-white text-2xl font-medium"
+                      :style="{ backgroundColor: colorAvatar(medicoSeleccionado.id) }"
+                    >{{ iniciales(medicoSeleccionado) }}</div>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 2rem;">
+                    <div style="width: 100%; height: 3rem; color: black; font-size: 32px; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}</div>
+                    <div style="width: 100%; height: 3rem; color: rgba(0, 0, 0, 0.63); font-size: 15px; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ medicoSeleccionado.especialidad?.nombre_especialidad ?? 'Sin especialidad' }}</div>
+                    <div style="width: 100%; height: 100%; color: rgba(0, 0, 0, 0.63); font-size: 18px; font-family: Inter; font-weight: 400; text-decoration: underline; word-wrap: break-word">{{ resumenFechaHora }}</div>
+                  </div>
+
+                </div>
+              </div>
+
+              <p v-if="errorReserva" class="text-red-500 text-center">{{ errorReserva }}</p>
+
+              <div class="flex w-full justify-between mt-2">
+                <button @click="volverAPaso2" class="px-6 py-3 bg-sky-100 rounded-xl border-2 border-sky-500 text-sky-600 hover:bg-sky-50">Atrás</button>
+                <button
+                  @click="confirmarReserva"
+                  class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                  :disabled="!medicoSeleccionado || reservando"
+                >{{ reservando ? 'Reservando...' : 'Continuar' }}</button>
+              </div>
+            </template>
           </div>
 
         </Transition>
