@@ -237,7 +237,6 @@ function elegirHora(h: Horario) {
   horaSeleccionada.value = horaSeleccionada.value === h.hora ? null : h.hora
 }
 
-// --- Confirmar reserva ---
 
 const fechaHoraISO = computed(() => {
   if (diaSeleccionado.value === null || horaSeleccionada.value === null) return null
@@ -414,8 +413,7 @@ async function confirmarReserva() {
 
           <div v-else-if="pasoActual === 2" key="paso2" class="flex flex-col gap-6">
             <div>
-              <h2 class="text-xl mb-3">Fecha</h2>
-              <div class="w-full mx-auto rounded-2xl border-2 border-sky-200 p-7">
+              <div class="w-full mx-auto rounded-2xl p-7">
                 <div class="flex items-center justify-between mb-4">
                   <button @click="mesAnterior" class="size-11 rounded-xl border border-zinc-300 flex items-center justify-center text-lg hover:bg-sky-50">←</button>
                   <span class="text-3xl font-medium">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
@@ -448,14 +446,14 @@ async function confirmarReserva() {
                 <button
                   v-for="h in horariosDelDia" :key="h.id"
                   @click="elegirHora(h)"
-                  class="px-7 py-3.5 rounded-xl border-2 text-lg font-medium text-center transition-colors"
-                  :class="horaSeleccionada === h.hora ? 'bg-sky-500 border-sky-500 text-white' : 'border-sky-500 text-sky-600 hover:bg-sky-50'"
+                  class="px-7 bg-sky-200 py-3.5 rounded-xl  text-lg font-medium text-center transition-colors"
+                  :class="horaSeleccionada === h.hora ? 'bg-sky-500 border-sky-500 text-white' : 'border-sky-500 text-sky-600'"
                 >{{ horaTexto(h) }}</button>
               </div>
             </div>
 
             <div class="flex w-full justify-between mt-2">
-              <button @click="volverAPaso1" class="px-6 py-3 bg-sky-100 rounded-xl border-2 border-sky-500 text-sky-600 hover:bg-sky-50">Atrás</button>
+              <button @click="volverAPaso1" class="px-6 py-3 bg-sky-100 rounded-xl hover:bg-sky-200">Atrás</button>
               <button @click="continuarAPaso3"
                 v-if="diaSeleccionado && horaSeleccionada"
                 class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600"
@@ -465,8 +463,7 @@ async function confirmarReserva() {
 
           <div v-else key="paso3" class="flex flex-col gap-6">
             <div v-if="turnoConfirmado" class="flex flex-col items-center gap-4 py-6">
-              <div class="size-16 rounded-full bg-sky-500 text-white flex items-center justify-center text-3xl">✓</div>
-              <p class="text-xl font-medium">¡Reservaste el turno!</p>
+              <p class="text-xl font-medium">¡Turno Reservado!</p>
               <p class="text-zinc-500 text-center">Le avisamos a {{ medicoSeleccionado?.nombre }} {{ medicoSeleccionado?.apellido }} para que lo confirme.</p>
               <button @click="emit('ir-a-principal-usuario')" class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600">Volver al inicio</button>
             </div>
@@ -497,7 +494,7 @@ async function confirmarReserva() {
               <p v-if="errorReserva" class="text-red-500 text-center">{{ errorReserva }}</p>
 
               <div class="flex w-full justify-between mt-2">
-                <button @click="volverAPaso2" class="px-6 py-3 bg-sky-100 rounded-xl border-2 border-sky-500 text-sky-600 hover:bg-sky-50">Atrás</button>
+              <button @click="volverAPaso2" class="px-6 py-3 bg-sky-100 rounded-xl hover:bg-sky-200">Atrás</button>
                 <button
                   @click="confirmarReserva"
                   class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed"

@@ -276,9 +276,11 @@ const celdas = computed(() => {
 }
 
 .navbar-logo span {
-  font-family: 'Inter', sans-serif;
-  font-size: 2.6875rem;
-  font-weight: 700;
+  font-family: Inter;
+  font-size: 2.625rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
   background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -301,7 +303,7 @@ const celdas = computed(() => {
   color: #000;
   text-align: center;
   font-family: 'Inter', sans-serif;
-  font-size: 1.45rem;
+  font-size: 1.675rem;
   font-weight: 400;
   line-height: normal;
   cursor: pointer;
