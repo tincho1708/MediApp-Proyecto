@@ -198,7 +198,7 @@ async function resolverTurno(accion: 'aceptar' | 'rechazar') {
       </div>
     </div>
     
-    <div class="titulo-pagina w-fit text-zinc-900 text-5xl font-semibold font-['Inter'] pb-2 mb-6 border-b-2 border-black">Solicitudes</div>
+    <div class="titulo-pagina w-fit text-zinc-900 text-4xl font-semibold font-['Inter'] pb-2 mb-6 border-b-2 border-black">Solicitudes</div>
 
     <div class="contenido-pagina">
 
