@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus', 'ir-a-solicitudes'])
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const nombreUsuario = sesion.nombre || 'Usuario'
@@ -75,7 +75,7 @@ const celdas = computed(() => {
       <div class="navbar-acciones">
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
         <button class="campoo">Mis pacientes</button>
-        <button class="campoo">Notificaciones</button>
+        <button class="campoo" @click="emit('ir-a-solicitudes')">Solicitudes</button>
         <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+</button>
 
         <button @click.stop="esta = !esta" class="barra">
@@ -364,7 +364,7 @@ const celdas = computed(() => {
   transition: transform 0.3s ease;
   pointer-events: none;
   border-radius: 1.3125rem;
-  background: #DEDEDE;
+  background: #E8E8E8;
   margin-top: 1%;
 }
 

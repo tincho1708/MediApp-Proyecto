@@ -247,6 +247,7 @@ const fechaHoraISO = computed(() => {
 const reservando = ref(false)
 const errorReserva = ref('')
 const turnoConfirmado = ref(false)
+const motivoConsulta = ref('')
 
 async function confirmarReserva() {
   if (!medicoSeleccionado.value || !fechaHoraISO.value) return
@@ -263,6 +264,7 @@ async function confirmarReserva() {
       body: JSON.stringify({
         medico_id: medicoSeleccionado.value.id,
         fecha_hora: fechaHoraISO.value,
+        notas: motivoConsulta.value || null,
       }),
     })
     const data = await res.json()
@@ -490,7 +492,7 @@ async function confirmarReserva() {
               </div>
 
               <div class="justify-start text-zinc-900 text-xl font-normal font-['Inter'] leading-10">Motivo de la consulta</div>
-              <textarea placeholder="Motivo de la consulta..." class="w-[945px] h-30 bg-white rounded-[33px] border border-stone-300 p-6 pl-8 pt-5 text-left align-top resize-none"></textarea>
+              <textarea v-model="motivoConsulta" placeholder="Motivo de la consulta..." class="w-[945px] h-30 bg-white rounded-[33px] border border-stone-300 p-6 pl-8 pt-5 text-left align-top resize-none"></textarea>
               <p v-if="errorReserva" class="text-red-500 text-center">{{ errorReserva }}</p>
 
               <div class="flex w-full justify-between mt-2">

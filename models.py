@@ -75,6 +75,7 @@ class Turno(Base):
     id_turno = Column(Integer, primary_key=True, index=True)
     notas = Column(Text, nullable=True)
     fecha_hora = Column(DateTime, nullable=False)
+    creado_en = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
     id_pacientes = Column(Integer, ForeignKey("pacientes.id"), nullable=False)
     id_medicos = Column(Integer, ForeignKey("medicos.id"), nullable=False)
     id_estado = Column(Integer, ForeignKey("estado_turno.id"), nullable=False)

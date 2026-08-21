@@ -117,13 +117,24 @@ class EstadoTurnoResponse(BaseModel):
         from_attributes = True
 
 
+class PacienteBasico(BaseModel):
+    id: int
+    nombre: str
+    apellido: str
+
+    class Config:
+        from_attributes = True
+
+
 class TurnoResponse(BaseModel):
     id_turno: int
     fecha_hora: datetime.datetime
     notas: Optional[str]
+    creado_en: datetime.datetime
     id_pacientes: int
     id_medicos: int
     estado: EstadoTurnoResponse
+    paciente: PacienteBasico
 
     class Config:
         from_attributes = True
