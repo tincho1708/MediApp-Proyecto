@@ -24,9 +24,9 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
   boton2.style.transition = 'background-color 0.3s'
   if (tipo === 'Medico') {
     boton1.style.backgroundColor = '#4a90e2'
-    boton2.style.backgroundColor = '#ccc'
+    boton2.style.backgroundColor = '#C7E9FF'
   } else {
-    boton1.style.backgroundColor = '#ccc'
+    boton1.style.backgroundColor = '#C7E9FF'
     boton2.style.backgroundColor = '#4a90e2'
   }
 }
@@ -185,7 +185,7 @@ async function testearSubmit() {
 
 .boton1, .boton2 {
   font-family: 'Inter', sans-serif;
-  background-color: #D9D9D9;
+  background-color: #C7E9FF;
   border: none;
   width: 12.5rem;
   height: 3.125rem;
@@ -196,7 +196,7 @@ async function testearSubmit() {
 }
 
 boton1.activo, .boton2.activo {
-  background-color: #4a90e2;
+  background-color: #2E9CE0;
   color: #fff;
 }
 

@@ -114,7 +114,7 @@ async function resolverTurno(accion: 'aceptar' | 'rechazar') {
     })
     const data = await res.json()
     if (!res.ok) {
-      errorAccion.value = data.detail || 'No se pudo actualizar la solicitud.'
+      errorAccion.value = data.detail || 'No se pudo solicitar el turno.'
       return
     }
     turnos.value = turnos.value.map(t => (t.id_turno === data.id_turno ? data : t))
