@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const emit = defineEmits(['ir-a-login', 'ir-a-bienvenida', 'ir-a-principal', 'ir-a-principal-usuario'])
 
@@ -31,6 +31,74 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
   }
 }
 
+// --- Paso 2 (solo médico): elegir especialidades ---
+
+type Especialidad = { id_especialidad: number; nombre_especialidad: string }
+
+const paso = ref<1 | 2>(1)
+const medicoId = ref<number | null>(null)
+const setupToken = ref('')
+
+const especialidades = ref<Especialidad[]>([])
+const cargandoEspecialidades = ref(false)
+const errorEspecialidades = ref('')
+const busquedaEspecialidad = ref('')
+const especialidadesSeleccionadas = ref<number[]>([])
+const MAX_ESPECIALIDADES = 3
+
+const especialidadesFiltradas = computed(() => {
+  const q = busquedaEspecialidad.value.trim().toLowerCase()
+  if (!q) return especialidades.value
+  return especialidades.value.filter(e => e.nombre_especialidad.toLowerCase().includes(q))
+})
+
+async function cargarEspecialidades() {
+  cargandoEspecialidades.value = true
+  errorEspecialidades.value = ''
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/especialidades`)
+    if (!res.ok) throw new Error()
+    especialidades.value = await res.json()
+  } catch {
+    errorEspecialidades.value = 'No se pudieron cargar las especialidades. Intentá de nuevo más tarde.'
+  } finally {
+    cargandoEspecialidades.value = false
+  }
+}
+
+function toggleEspecialidad(id: number) {
+  const i = especialidadesSeleccionadas.value.indexOf(id)
+  if (i !== -1) {
+    especialidadesSeleccionadas.value.splice(i, 1)
+    return
+  }
+  if (especialidadesSeleccionadas.value.length >= MAX_ESPECIALIDADES) return
+  especialidadesSeleccionadas.value.push(id)
+}
+
+async function confirmarEspecialidades() {
+  if (!especialidadesSeleccionadas.value.length || !medicoId.value) return
+  cargando.value = true
+  errorEspecialidades.value = ''
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/medicos/registro/especialidades`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ setup_token: setupToken.value, especialidad_ids: especialidadesSeleccionadas.value }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      errorEspecialidades.value = data.detail || 'No se pudieron guardar las especialidades.'
+      return
+    }
+    emit('ir-a-login')
+  } catch {
+    errorEspecialidades.value = 'No se pudo conectar al servidor.'
+  } finally {
+    cargando.value = false
+  }
+}
+
 async function testearSubmit() {
   error.value = ''
   if (!tipoUsuario.value) {
@@ -43,7 +111,7 @@ async function testearSubmit() {
   }
 
   cargando.value = true
-  const url = tipoUsuario.value === 'Medico' || tipoUsuario.value === 'Paciente'
+  const url = tipoUsuario.value === 'Medico'
     ? '/auth/medicos/registro'
     : '/auth/pacientes/registro'
 
@@ -61,8 +129,10 @@ async function testearSubmit() {
 
     }
     else if (res.ok && tipoUsuario.value === 'Medico') {
-      exito.value = data.message
-      emit('ir-a-principal')
+      medicoId.value = data.medico_id
+      setupToken.value = data.setup_token
+      paso.value = 2
+      cargarEspecialidades()
 
     } else {
       error.value = data.detail || 'Error al registrarse'
@@ -85,7 +155,7 @@ async function testearSubmit() {
   </button>
   <div class="titulo">Crear cuenta</div>
 
-  <div class="contenedor">
+  <div class="contenedor" v-if="paso === 1">
 
     <div class="tipo-usuario">
       <button class="boton1"@click="seleccionar('Medico')">Medico</button>
@@ -111,18 +181,51 @@ async function testearSubmit() {
       </div>
 
       <p v-if="error" class="error">{{ error }}</p>
-      <p v-if="exito" class="exito">{{ exito }}</p>
 
-      <button v-if="!exito" class="submit" type="submit" :disabled="cargando">
+      <button class="submit" type="submit" :disabled="cargando">
         {{ cargando ? 'Creando cuenta...' : 'Crear cuenta' }}
       </button>
-      <button v-if="exito" class="submit" type="button" @click="emit('ir-a-login')">Ir a iniciar sesión</button>
 
       <p class="login-link">¿Ya tienes cuenta? <a href="#" class="underline" @click.prevent="emit('ir-a-login')">Inicia sesión</a></p>
     </form>
 
-    
+
   </div>
+  </div>
+
+  <div class="contenedor" v-else>
+    <div class="font-['Inter']">
+      <div class="text-2xl text-black mb-3">Especialidad:</div>
+      <input
+        v-model="busquedaEspecialidad"
+        type="text"
+        placeholder="Buscar especialidad..."
+        class="w-full px-4 py-2 mb-4 rounded-full border border-zinc-400 focus:outline-sky-500"
+      />
+
+      <p v-if="cargandoEspecialidades" class="text-zinc-400 text-center">Cargando especialidades...</p>
+      <p v-else-if="errorEspecialidades" class="error">{{ errorEspecialidades }}</p>
+
+      <div v-else class="flex flex-wrap gap-3 mb-4">
+        <button
+          v-for="e in especialidadesFiltradas" :key="e.id_especialidad"
+          type="button"
+          @click="toggleEspecialidad(e.id_especialidad)"
+          :disabled="!especialidadesSeleccionadas.includes(e.id_especialidad) && especialidadesSeleccionadas.length >= MAX_ESPECIALIDADES"
+          class="px-5 py-2 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          :class="especialidadesSeleccionadas.includes(e.id_especialidad) ? 'bg-sky-500 text-white' : 'bg-sky-100 hover:bg-sky-200'"
+        >{{ e.nombre_especialidad }}</button>
+      </div>
+
+      <p class="text-sm text-zinc-400 mb-4">Podés elegir hasta {{ MAX_ESPECIALIDADES }} especialidades ({{ especialidadesSeleccionadas.length }}/{{ MAX_ESPECIALIDADES }})</p>
+
+      <button
+        class="submit"
+        type="button"
+        :disabled="cargando || !especialidadesSeleccionadas.length"
+        @click="confirmarEspecialidades"
+      >{{ cargando ? 'Guardando...' : 'Continuar' }}</button>
+    </div>
   </div>
   </div>
 </template>

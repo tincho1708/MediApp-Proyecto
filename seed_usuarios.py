@@ -1,25 +1,29 @@
 from database import SessionLocal
-from models import Medico, Paciente
+from models import Medico, Paciente, Especialidad
 from auth_utils import hash_password
 
 db = SessionLocal()
 
 medicos = [
-    Medico(
-        nombre="Carlos",
-        apellido="García",
-        mail="carlos.garcia@mediapp.com",
-        password_hash=hash_password("Test1234"),
-        especialidad_id=1,
-        email_verificado=True,
+    (
+        Medico(
+            nombre="Carlos",
+            apellido="García",
+            mail="carlos.garcia@mediapp.com",
+            password_hash=hash_password("Test1234"),
+            email_verificado=True,
+        ),
+        [1],
     ),
-    Medico(
-        nombre="Laura",
-        apellido="Martínez",
-        mail="laura.martinez@mediapp.com",
-        password_hash=hash_password("Test1234"),
-        especialidad_id=2,
-        email_verificado=True,
+    (
+        Medico(
+            nombre="Laura",
+            apellido="Martínez",
+            mail="laura.martinez@mediapp.com",
+            password_hash=hash_password("Test1234"),
+            email_verificado=True,
+        ),
+        [2],
     ),
 ]
 
@@ -41,9 +45,10 @@ pacientes = [
 ]
 
 try:
-    for m in medicos:
+    for m, especialidad_ids in medicos:
         existe = db.query(Medico).filter(Medico.mail == m.mail).first()
         if not existe:
+            m.especialidades = db.query(Especialidad).filter(Especialidad.id_especialidad.in_(especialidad_ids)).all()
             db.add(m)
             print(f"Médico creado: {m.mail}")
         else:

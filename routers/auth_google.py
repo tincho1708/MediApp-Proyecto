@@ -10,7 +10,7 @@ from jose import jwt
 from dotenv import load_dotenv
 
 from database import get_db
-from models import Medico, Paciente
+from models import Medico, Paciente, Especialidad
 from auth_utils import create_access_token
 from email_utils import send_pin_email
 
@@ -97,11 +97,13 @@ def registro_google(data: GoogleRegistroRequest, db: Session = Depends(get_db)):
         pin = generar_pin()
         usuario = Medico(
             nombre=nombre, apellido=apellido, mail=email,
-            especialidad_id=data.especialidad_id,
             google_id=google_id, email_verificado=False,
             pin_verificacion=pin,
             pin_expires=datetime.utcnow() + timedelta(minutes=10),
         )
+        especialidad = db.query(Especialidad).filter(Especialidad.id_especialidad == data.especialidad_id).first()
+        if especialidad:
+            usuario.especialidades = [especialidad]
     else:
         if db.query(Paciente).filter(Paciente.mail == email).first():
             raise HTTPException(status_code=400, detail="Ya existe una cuenta con ese mail")

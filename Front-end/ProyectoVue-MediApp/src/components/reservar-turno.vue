@@ -20,8 +20,7 @@ type Medico = {
   apellido: string
   telefono: string | null
   mail: string
-  especialidad_id: number | null
-  especialidad: Especialidad | null
+  especialidades: Especialidad[]
 }
 
 const medicos = ref<Medico[]>([])
@@ -50,8 +49,8 @@ onMounted(cargarMedicos)
 const especialidadesDisponibles = computed<Especialidad[]>(() => {
   const vistas = new Map<number, Especialidad>()
   for (const m of medicos.value) {
-    if (m.especialidad && !vistas.has(m.especialidad.id_especialidad)) {
-      vistas.set(m.especialidad.id_especialidad, m.especialidad)
+    for (const esp of m.especialidades) {
+      if (!vistas.has(esp.id_especialidad)) vistas.set(esp.id_especialidad, esp)
     }
   }
   return [...vistas.values()].sort((a, b) => a.nombre_especialidad.localeCompare(b.nombre_especialidad))
@@ -59,12 +58,12 @@ const especialidadesDisponibles = computed<Especialidad[]>(() => {
 
 const medicosFiltrados = computed(() => {
   if (especialidadSeleccionada.value === null) return medicos.value
-  return medicos.value.filter(m => m.especialidad_id === especialidadSeleccionada.value)
+  return medicos.value.filter(m => m.especialidades.some(e => e.id_especialidad === especialidadSeleccionada.value))
 })
 
 function elegirEspecialidad(id: number) {
   especialidadSeleccionada.value = especialidadSeleccionada.value === id ? null : id
-  if (medicoSeleccionado.value && medicoSeleccionado.value.especialidad_id !== especialidadSeleccionada.value) {
+  if (medicoSeleccionado.value && !medicoSeleccionado.value.especialidades.some(e => e.id_especialidad === especialidadSeleccionada.value)) {
     medicoSeleccionado.value = null
   }
 }
@@ -79,6 +78,9 @@ function colorAvatar(id: number) {
 }
 function iniciales(m: Medico) {
   return `${m.nombre.charAt(0)}${m.apellido.charAt(0)}`.toUpperCase()
+}
+function especialidadesTexto(m: Medico) {
+  return m.especialidades.length ? m.especialidades.map(e => e.nombre_especialidad).join(', ') : 'Sin especialidad'
 }
 
 const pasoActual = ref(1)
@@ -170,8 +172,7 @@ function elegirDia(celda: { dia?: number; otroMes?: boolean; pasado?: boolean })
   horaSeleccionada.value = null
 }
 
-// --- Horarios disponibles del médico ---
-// El backend guarda horarios semanales fijos (dia_semana 0=Lunes ... 6=Domingo, igual que Date.weekday() de Python).
+
 
 type Horario = {
   id: number
@@ -398,7 +399,7 @@ async function confirmarReserva() {
                   <div class="size-10 shrink-0 rounded-full flex items-center justify-center text-white text-sm font-medium" :style="{ backgroundColor: colorAvatar(m.id) }">{{ iniciales(m) }}</div>
                   <div class="flex-1">
                     <div class="font-medium">{{ m.nombre }} {{ m.apellido }}</div>
-                    <div class="text-sm text-zinc-500">{{ m.especialidad?.nombre_especialidad ?? 'Sin especialidad' }}</div>
+                    <div class="text-sm text-zinc-500">{{ especialidadesTexto(m) }}</div>
                   </div>
                 </button>
               </div>
@@ -484,7 +485,7 @@ async function confirmarReserva() {
 
                   <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 2rem;">
                     <div style="width: 100%; height: 3rem; color: black; font-size: 32px; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}</div>
-                    <div style="width: 100%; height: 3rem; color: rgba(0, 0, 0, 0.63); font-size: 15px; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ medicoSeleccionado.especialidad?.nombre_especialidad ?? 'Sin especialidad' }}</div>
+                    <div style="width: 100%; height: 3rem; color: rgba(0, 0, 0, 0.63); font-size: 15px; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ especialidadesTexto(medicoSeleccionado) }}</div>
                     <div style="width: 100%; height: 100%; color: rgba(0, 0, 0, 0.63); font-size: 18px; font-family: Inter; font-weight: 400; text-decoration: underline; word-wrap: break-word">{{ resumenFechaHora }}</div>
                   </div>
 

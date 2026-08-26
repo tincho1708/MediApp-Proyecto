@@ -13,6 +13,61 @@ function cerrarAlClickFuera() { esta.value = false }
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
+type Turno = {
+  id_turno: number
+  fecha_hora: string
+  estado: { estado: string }
+  medico: {
+    nombre: string
+    apellido: string
+    especialidades: { nombre_especialidad: string }[]
+  }
+}
+
+const turnos = ref<Turno[]>([])
+const cargandoTurnos = ref(true)
+const errorTurnos = ref('')
+
+const proximosTurnos = computed(() => {
+  const ahora = Date.now()
+  return turnos.value
+    .filter(t => t.estado?.estado === 'aceptado' && new Date(t.fecha_hora).getTime() >= ahora)
+    .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
+    .slice(0, 4)
+})
+
+async function cargarTurnos() {
+  cargandoTurnos.value = true
+  errorTurnos.value = ''
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos/mis-turnos`, {
+      headers: { Authorization: `Bearer ${sesion.token}` },
+    })
+    if (!res.ok) throw new Error()
+    turnos.value = await res.json()
+  } catch {
+    errorTurnos.value = 'No se pudieron cargar los turnos.'
+  } finally {
+    cargandoTurnos.value = false
+  }
+}
+
+onMounted(cargarTurnos)
+
+function formatearFecha(fechaHora: string) {
+  const f = new Date(fechaHora)
+  return `${f.getDate()}/${f.getMonth() + 1}`
+}
+function formatearHora(fechaHora: string) {
+  const f = new Date(fechaHora)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(f.getHours())}:${pad(f.getMinutes())}`
+}
+function etiquetaTurno(t: Turno) {
+  const especialidad = t.medico.especialidades[0]?.nombre_especialidad
+  return especialidad ? `Turno ${especialidad.toLowerCase()}` : `Turno con ${t.medico.nombre} ${t.medico.apellido}`
+}
+
 const hoy = new Date()
 const mesActual = ref(hoy.getMonth())
 const añoActual = ref(hoy.getFullYear())
@@ -128,18 +183,33 @@ const celdas = computed(() => {
     <div class="main-layout">
       <div class="main-izquierdo" style="margin-left: 2.5rem; height: 30.25rem;">
 
-        <div class="w-[40.9375rem] h-full bg-white rounded-[1.25rem] shadow-[0rem_0.25rem_0.66875rem_0.3125rem_rgba(0,0,0,0.25)] border-[0.3125rem] border-sky-500" style="padding: 1.25rem;">
-          <div style="display: flex; align-items: center; gap: 0.625rem;">
-            <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="w-[40.9375rem] h-full bg-white rounded-[1.25rem] shadow-[0rem_0.25rem_0.66875rem_0.3125rem_rgba(0,0,0,0.25)] border-[0.3125rem] border-sky-500 flex flex-col" style="padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.625rem;" class="shrink-0">
+            <svg  class="mt-1"width="52" height="54" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="16" cy="8" r="7" stroke="black" stroke-width="3"/>
               <path d="M2 42V32c0-8.284 6.716-15 15-15 2.24 0 4.37.49 6.28 1.37" stroke="black" stroke-width="3" stroke-linecap="round"/>
               <circle cx="30" cy="30" r="10" stroke="black" stroke-width="3" fill="white"/>
               <path d="M30 24.5V30l4 2.8" stroke="black" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <div style="color: black; font-size: 1.975rem; font-weight: 400; font-family: 'Inter', sans-serif;">Proximos turnos</div>
+            <div style="color: black; font-size: 2.275rem; font-weight: 400; font-family: 'Inter', sans-serif;">Proximos turnos</div>
+          </div>
+
+          <p v-if="cargandoTurnos" class="text-zinc-400 ml-8 mt-4 text-2xl">Cargando turnos...</p>
+          <p v-else-if="errorTurnos" class="text-red-500 ml-8 mt-4">{{ errorTurnos }}</p>
+          <p v-else-if="!proximosTurnos.length" class="text-zinc-400 ml-8 mt-4">No tenés turnos próximos.</p>
+
+          <div v-else class="flex-1 min-h-0 flex flex-col gap-8 mt-5">
+            <div v-for="t in proximosTurnos" :key="t.id_turno">
+              <div class="flex flex-row items-baseline gap-8 ml-8 text-black font-normal font-['Inter']">
+                <div class="text-4xl w-14 shrink-0">{{ formatearFecha(t.fecha_hora) }}</div>
+                <div class="text-3xl text-black/40 w-20 shrink-0">{{ formatearHora(t.fecha_hora) }}</div>
+                <div class="justify-start text-black text-3xl font-normal font-['Inter'] truncate">{{ etiquetaTurno(t) }}</div>
+              </div>
+              <div class="mx-auto w-[35rem] h-0 mt-5 outline-1 outline-offset-[-0.50px] outline-black/30"></div>
+            </div>
           </div>
         </div>
-
+        
       </div>
 
       <div class="div-derecho" style="margin-top: 0;">
