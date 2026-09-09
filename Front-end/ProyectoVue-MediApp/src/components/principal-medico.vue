@@ -239,7 +239,7 @@ const celdas = computed(() => {
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 .navbar {
-  height: 6.0085rem;
+  height: 5.4rem;
   position: fixed;
   top: 0;
   left: 0;
@@ -282,18 +282,18 @@ const celdas = computed(() => {
   display: flex;
   align-items: center;
   flex-direction: row;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 .campoo {
-  width: 13.875rem;
+  width: 12.875rem;
   height: 4.375rem;
   border-radius: 1.25rem;
   color: #000;
   text-align: center;
   font-family: 'Inter', sans-serif;
-  font-size: 1.675rem;
-  font-weight: 400;
+  font-size: 1.6rem;
+  font-weight: 300;
   line-height: normal;
   cursor: pointer;
 }

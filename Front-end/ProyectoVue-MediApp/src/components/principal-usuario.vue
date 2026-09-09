@@ -196,16 +196,16 @@ const celdas = computed(() => {
 
           <p v-if="cargandoTurnos" class="text-zinc-400 ml-8 mt-4 text-2xl">Cargando turnos...</p>
           <p v-else-if="errorTurnos" class="text-red-500 ml-8 mt-4">{{ errorTurnos }}</p>
-          <p v-else-if="!proximosTurnos.length" class="text-zinc-400 ml-8 mt-4">No tenés turnos próximos.</p>
+          <p v-else-if="!proximosTurnos.length" class="text-zinc-400 text-[1.7rem]ml-8 mt-4">No tenés turnos próximos.</p>
 
           <div v-else class="flex-1 min-h-0 flex flex-col gap-8 mt-5">
             <div v-for="t in proximosTurnos" :key="t.id_turno">
               <div class="flex flex-row items-baseline gap-8 ml-8 text-black font-normal font-['Inter']">
-                <div class="text-4xl w-14 shrink-0">{{ formatearFecha(t.fecha_hora) }}</div>
-                <div class="text-3xl text-black/40 w-20 shrink-0">{{ formatearHora(t.fecha_hora) }}</div>
-                <div class="justify-start text-black text-3xl font-normal font-['Inter'] truncate">{{ etiquetaTurno(t) }}</div>
+                <div class="text-[1.7rem] w-14 shrink-0">{{ formatearFecha(t.fecha_hora) }}</div>
+                <div class="text-[1.7rem] text-black/40 w-20 shrink-0">{{ formatearHora(t.fecha_hora) }}</div>
+                <div class="justify-start text-black text-[1.7rem] font-normal font-['Inter'] truncate">{{ etiquetaTurno(t) }}</div>
               </div>
-              <div class="mx-auto w-[35rem] h-0 mt-5 outline-1 outline-offset-[-0.50px] outline-black/30"></div>
+              <div class="mx-auto w-[35rem] h-0 mt-2 outline-1 outline-offset-[-0.50px] outline-black/30"></div>
             </div>
           </div>
         </div>
