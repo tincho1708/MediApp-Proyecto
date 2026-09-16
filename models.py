@@ -30,17 +30,18 @@ class Medico(Base):
     nombre = Column(String(100), nullable=False)
     apellido = Column(String(100), nullable=False)
     mail = Column(String(255), unique=True, nullable=False)
+    setup_token = Column(String(255), nullable=True)
     password_hash = Column(String(255), nullable=True)
     email_verificado = Column(Boolean, default=False)
     verification_token = Column(String(255), nullable=True)
     verification_token_expires = Column(DateTime, nullable=True)
-    setup_token = Column(String(255), nullable=True)
     google_id = Column(String(255), unique=True, nullable=True)
     pin_verificacion = Column(String(6), nullable=True)
     pin_expires = Column(DateTime, nullable=True)
 
     especialidades = relationship("Especialidad", secondary=medico_especialidad, back_populates="medicos")
     horarios = relationship("HorarioMedico", back_populates="medico", cascade="all, delete-orphan")
+    notificaciones = relationship("Notificacion", back_populates="medico")
     turnos = relationship("Turno", back_populates="medico")
     resenas = relationship("Resena", back_populates="medico")
     recomendaciones_dadas = relationship("Recomienda", foreign_keys="Recomienda.id_medico", back_populates="medico")
@@ -102,6 +103,20 @@ class HorarioMedico(Base):
     hora = Column(Integer, nullable=False)  # 9, 10, 11, ... 16
 
     medico = relationship("Medico", back_populates="horarios")
+
+
+class Notificacion(Base):
+    __tablename__ = "notificaciones"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_medico = Column(Integer, ForeignKey("medicos.id"), nullable=False)
+    id_turno = Column(Integer, ForeignKey("turno.id_turno"), nullable=False)
+    mensaje = Column(String(500), nullable=False)
+    leida = Column(Boolean, default=False)
+    fecha = Column(DateTime, default=datetime.datetime.utcnow)
+
+    medico = relationship("Medico", back_populates="notificaciones")
+    turno = relationship("Turno")
 
 
 class Resena(Base):

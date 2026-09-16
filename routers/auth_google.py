@@ -2,15 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from pydantic import BaseModel
-from typing import Optional
 import httpx
 import random
 import os
+import uuid
 from jose import jwt
 from dotenv import load_dotenv
 
 from database import get_db
-from models import Medico, Paciente, Especialidad
+from models import Medico, Paciente, HorarioMedico
 from auth_utils import create_access_token
 from email_utils import send_pin_email
 
@@ -59,7 +59,6 @@ def generar_pin() -> str:
 class GoogleRegistroRequest(BaseModel):
     id_token: str
     tipo: str  # "medico" o "paciente"
-    especialidad_id: Optional[int] = None
 
 
 class PinVerificacionRequest(BaseModel):
@@ -79,8 +78,6 @@ class GoogleLoginRequest(BaseModel):
 def registro_google(data: GoogleRegistroRequest, db: Session = Depends(get_db)):
     if data.tipo not in ("medico", "paciente"):
         raise HTTPException(status_code=400, detail="Tipo debe ser 'medico' o 'paciente'")
-    if data.tipo == "medico" and not data.especialidad_id:
-        raise HTTPException(status_code=400, detail="Los médicos deben indicar su especialidad")
 
     payload = verify_auth0_token(data.id_token)
     email = payload.get("email")
@@ -91,31 +88,34 @@ def registro_google(data: GoogleRegistroRequest, db: Session = Depends(get_db)):
     if not email:
         raise HTTPException(status_code=400, detail="No se pudo obtener el email de Google")
 
+    pin = generar_pin()
     if data.tipo == "medico":
         if db.query(Medico).filter(Medico.mail == email).first():
             raise HTTPException(status_code=400, detail="Ya existe una cuenta con ese mail")
-        pin = generar_pin()
+        setup_token = str(uuid.uuid4())
         usuario = Medico(
             nombre=nombre, apellido=apellido, mail=email,
             google_id=google_id, email_verificado=False,
+            setup_token=setup_token,
             pin_verificacion=pin,
             pin_expires=datetime.utcnow() + timedelta(minutes=10),
         )
-        especialidad = db.query(Especialidad).filter(Especialidad.id_especialidad == data.especialidad_id).first()
-        if especialidad:
-            usuario.especialidades = [especialidad]
+        db.add(usuario)
+        db.flush()
+        for dia in range(5):
+            for hora in range(9, 17):
+                db.add(HorarioMedico(id_medico=usuario.id, dia_semana=dia, hora=hora))
     else:
         if db.query(Paciente).filter(Paciente.mail == email).first():
             raise HTTPException(status_code=400, detail="Ya existe una cuenta con ese mail")
-        pin = generar_pin()
         usuario = Paciente(
             nombre=nombre, apellido=apellido, mail=email,
             google_id=google_id, email_verificado=False,
             pin_verificacion=pin,
             pin_expires=datetime.utcnow() + timedelta(minutes=10),
         )
+        db.add(usuario)
 
-    db.add(usuario)
     db.commit()
     send_pin_email(email, nombre, pin)
     return {"message": "Cuenta creada. Te enviamos un PIN de 6 dígitos al mail para confirmar."}
@@ -143,7 +143,13 @@ def verificar_pin(data: PinVerificacionRequest, db: Session = Depends(get_db)):
     db.commit()
 
     token = create_access_token({"sub": str(usuario.id), "tipo": data.tipo})
-    return {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre}
+    response = {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre}
+
+    if data.tipo == "medico" and usuario.setup_token:
+        response["setup_token"] = usuario.setup_token
+        response["medico_id"] = usuario.id
+
+    return response
 
 
 @router.post("/login")

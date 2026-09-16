@@ -27,20 +27,6 @@ class MedicoLogin(BaseModel):
     password: str
 
 
-class MedicoResponse(BaseModel):
-    id: int
-    nombre: str
-    apellido: str
-    dni: str
-    telefono: Optional[str]
-    mail: str
-    especialidades: List[EspecialidadResponse]
-    email_verificado: bool
-
-    class Config:
-        from_attributes = True
-
-
 class RegistroMedicoResponse(BaseModel):
     message: str
     medico_id: int
@@ -52,27 +38,14 @@ class EspecialidadesSetup(BaseModel):
     especialidad_ids: List[int] = Field(min_length=1, max_length=3)
 
 
-# --- Paciente ---
-
-class PacienteRegister(BaseModel):
-    nombre: str
-    telefono: Optional[str] = None
-    mail: EmailStr
-    password: str
-
-
-class PacienteLogin(BaseModel):
-    mail: EmailStr
-    password: str
-
-
-class PacienteResponse(BaseModel):
+class MedicoResponse(BaseModel):
     id: int
     nombre: str
     apellido: str
-    dni: str
+    dni: Optional[str]
     telefono: Optional[str]
     mail: str
+    especialidades: List[EspecialidadResponse]
     email_verificado: bool
 
     class Config:
@@ -93,9 +66,34 @@ class MedicoPublicoResponse(BaseModel):
         from_attributes = True
 
 
-# --- Horarios ---
+# --- Paciente ---
 
-DIAS = {0: "Lunes", 1: "Martes", 2: "Miércoles", 3: "Jueves", 4: "Viernes", 5: "Sábado", 6: "Domingo"}
+class PacienteRegister(BaseModel):
+    nombre: str
+    telefono: Optional[str] = None
+    mail: EmailStr
+    password: str
+
+
+class PacienteLogin(BaseModel):
+    mail: EmailStr
+    password: str
+
+
+class PacienteResponse(BaseModel):
+    id: int
+    nombre: str
+    apellido: str
+    dni: Optional[str]
+    telefono: Optional[str]
+    mail: str
+    email_verificado: bool
+
+    class Config:
+        from_attributes = True
+
+
+# --- Horarios ---
 
 class HorarioResponse(BaseModel):
     id: int
@@ -148,13 +146,27 @@ class MedicoBasico(BaseModel):
 class TurnoResponse(BaseModel):
     id_turno: int
     fecha_hora: datetime.datetime
+    creado_en: Optional[datetime.datetime]
     notas: Optional[str]
-    creado_en: datetime.datetime
     id_pacientes: int
     id_medicos: int
     estado: EstadoTurnoResponse
     paciente: PacienteBasico
     medico: MedicoBasico
+
+    class Config:
+        from_attributes = True
+
+
+# --- Notificaciones ---
+
+class NotificacionResponse(BaseModel):
+    id: int
+    id_turno: int
+    mensaje: str
+    leida: bool
+    fecha: datetime.datetime
+    turno: TurnoResponse
 
     class Config:
         from_attributes = True

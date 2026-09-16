@@ -4,7 +4,7 @@ from typing import List
 from datetime import datetime
 
 from database import get_db
-from models import Turno, EstadoTurno, Medico, Paciente, HorarioMedico
+from models import Turno, EstadoTurno, Medico, Paciente, HorarioMedico, Notificacion
 from schemas import TurnoCreate, TurnoResponse
 from deps import get_current_user, solo_paciente, solo_medico
 
@@ -59,6 +59,16 @@ def solicitar_turno(
         id_estado=estado_pendiente.id,
     )
     db.add(turno)
+    db.flush()
+
+    paciente = db.query(Paciente).filter(Paciente.id == paciente_id).first()
+    fecha_str = data.fecha_hora.strftime("%d/%m/%Y a las %H:%M")
+    notificacion = Notificacion(
+        id_medico=data.medico_id,
+        id_turno=turno.id_turno,
+        mensaje=f"{paciente.nombre} {paciente.apellido} solicitó un turno para el {fecha_str}.",
+    )
+    db.add(notificacion)
     db.commit()
     db.refresh(turno)
     return db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades)).filter(Turno.id_turno == turno.id_turno).first()
