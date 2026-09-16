@@ -1,6 +1,8 @@
 # MediBot
 
-Asistente de IA de MediApp. Groq (llama-3.3-70b) con tool calling contra la base de datos del proyecto.
+Asistente de IA de MediApp. Groq con tool calling contra la base de datos del proyecto.
+
+**Guía actualizada de arranque, cambios y pruebas:** [MEDIBOT_PRUEBAS.md](MEDIBOT_PRUEBAS.md).
 
 ## Qué cambió
 
@@ -25,12 +27,13 @@ En el `.env` de la raíz agregá:
 
 ```
 GROQ_API_KEY=tu_key_de_groq
-GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_MODEL=openai/gpt-oss-20b
 ```
 
 No hace falta instalar nada: la llamada a Groq usa `httpx`, que ya estaba en `requirements.txt`.
 
-Creá las tablas:
+Solo si las tablas no existen y no usás Alembic, creá las tablas con el SQL.
+En esta instalación ya existen; no hace falta ejecutar este paso:
 
 ```bash
 psql "$DATABASE_URL" -f migracion_medibot.sql
@@ -122,7 +125,7 @@ Como paciente:
 |---|---|
 | `Falta configurar GROQ_API_KEY` | No está en el `.env`, o no reiniciaste uvicorn |
 | 401 en el front | El token venció (`ACCESS_TOKEN_EXPIRE_MINUTES` está en 30 por defecto) |
-| `MediBot no pudo procesar la consulta` | Groq rechazó la llamada. El detalle sale por consola del backend |
+| `MediBot no pudo procesar la consulta` | Groq rechazó la llamada. Se registra el código HTTP sin volcar datos del chat |
 | Responde pero dice que no encuentra pacientes | Los turnos tienen que estar en estado `aceptado`, no `pendiente` |
 | Error de CORS | El front tiene que correr en `localhost:5173` o `localhost:3000` |
 

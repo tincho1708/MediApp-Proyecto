@@ -18,7 +18,7 @@ const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const token = sesion.token as string | undefined
 const esMedico = sesion.tipo === 'Medico'
 
-const API = import.meta.env.VITE_API_URL
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
 /* ---------------- menú lateral ---------------- */
 
@@ -35,6 +35,8 @@ type Conversacion = { id: number; titulo: string; creado_en: string }
 const mensajes = ref<Mensaje[]>([])
 const borrador = ref('')
 const pensando = ref(false)
+const cargandoConversacion = ref(false)
+const ocupado = computed(() => pensando.value || cargandoConversacion.value)
 const error = ref('')
 const conversacionId = ref<number | null>(null)
 
@@ -67,7 +69,15 @@ function ajustarAltura() {
 
 async function enviar(texto?: string) {
   const contenido = (texto ?? borrador.value).trim()
-  if (!contenido || pensando.value) return
+  if (!contenido || ocupado.value) return
+  if (!token) {
+    error.value = 'Iniciá sesión para usar MediBot.'
+    return
+  }
+  if (contenido.length > 4000) {
+    error.value = 'El mensaje puede tener hasta 4000 caracteres.'
+    return
+  }
 
   error.value = ''
   mensajes.value.push({ role: 'user', content: contenido })
@@ -84,7 +94,7 @@ async function enviar(texto?: string) {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        messages: mensajes.value,
+        messages: [{ role: 'user', content: contenido }],
         conversacion_id: conversacionId.value,
       }),
     })
@@ -136,11 +146,13 @@ async function togglePanel() {
 }
 
 async function abrirConversacion(id: number) {
+  if (ocupado.value) return
+  cargandoConversacion.value = true
   try {
     const res = await fetch(`${API}/medibot/conversaciones/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-    if (!res.ok) return
+    if (!res.ok) throw new Error('No se pudo abrir esa conversación.')
     const data = await res.json()
     mensajes.value = data.map((m: { rol: string; contenido: string }) => ({
       role: m.rol as 'user' | 'assistant',
@@ -151,23 +163,34 @@ async function abrirConversacion(id: number) {
     bajarScroll()
   } catch {
     error.value = 'No se pudo abrir esa conversación.'
+  } finally {
+    cargandoConversacion.value = false
   }
 }
 
 async function borrarConversacion(id: number) {
+  if (ocupado.value) return
+  cargandoConversacion.value = true
   try {
-    await fetch(`${API}/medibot/conversaciones/${id}`, {
+    const res = await fetch(`${API}/medibot/conversaciones/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     })
+    if (!res.ok) throw new Error('No se pudo borrar esa conversación.')
     conversaciones.value = conversaciones.value.filter(c => c.id !== id)
-    if (conversacionId.value === id) nuevaConversacion()
+    if (conversacionId.value === id) {
+      mensajes.value = []
+      conversacionId.value = null
+    }
   } catch {
-    /* si falla, el chat sigue andando igual */
+    error.value = 'No se pudo borrar esa conversación.'
+  } finally {
+    cargandoConversacion.value = false
   }
 }
 
 function nuevaConversacion() {
+  if (ocupado.value) return
   mensajes.value = []
   conversacionId.value = null
   error.value = ''
@@ -314,11 +337,12 @@ function formatear(texto: string) {
           v-model="borrador"
           rows="1"
           placeholder="Escribe algo..."
-          :disabled="pensando"
+          :disabled="ocupado"
+          maxlength="4000"
           @input="ajustarAltura"
           @keydown="teclado"
         ></textarea>
-        <button class="enviar" :disabled="!borrador.trim() || pensando" @click="enviar()" aria-label="Enviar mensaje">
+        <button class="enviar" :disabled="!borrador.trim() || ocupado" @click="enviar()" aria-label="Enviar mensaje">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
             <path d="M12 4l7 7h-5v9h-4v-9H5z" />
           </svg>
@@ -327,7 +351,7 @@ function formatear(texto: string) {
 
       <div class="acciones-pie">
         <button class="link" @click="togglePanel">Ver chats anteriores</button>
-        <button v-if="!vacio" class="link" @click="nuevaConversacion">Empezar de nuevo</button>
+        <button v-if="!vacio" class="link" :disabled="ocupado" @click="nuevaConversacion">Empezar de nuevo</button>
       </div>
     </div>
 
@@ -343,11 +367,11 @@ function formatear(texto: string) {
           Todavía no hablaste con MediBot. Cuando lo hagas, tus conversaciones van a aparecer acá.
         </p>
         <div v-for="c in conversaciones" :key="c.id" class="panel-item">
-          <button class="panel-item-abrir" @click="abrirConversacion(c.id)">
+          <button class="panel-item-abrir" :disabled="ocupado" @click="abrirConversacion(c.id)">
             <span class="panel-item-titulo">{{ c.titulo }}</span>
             <span class="panel-item-fecha">{{ fechaCorta(c.creado_en) }}</span>
           </button>
-          <button class="panel-item-borrar" @click="borrarConversacion(c.id)" aria-label="Borrar conversación">✕</button>
+          <button class="panel-item-borrar" :disabled="ocupado" @click="borrarConversacion(c.id)" aria-label="Borrar conversación">✕</button>
         </div>
       </div>
     </aside>
