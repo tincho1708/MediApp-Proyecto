@@ -1,6 +1,16 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field
+from typing import List, Optional
 import datetime
+
+
+# --- Especialidad ---
+
+class EspecialidadResponse(BaseModel):
+    id_especialidad: int
+    nombre_especialidad: str
+
+    class Config:
+        from_attributes = True
 
 
 # --- Medico ---
@@ -10,7 +20,6 @@ class MedicoRegister(BaseModel):
     telefono: Optional[str] = None
     mail: EmailStr
     password: str
-    especialidad_id: Optional[int] = None
 
 
 class MedicoLogin(BaseModel):
@@ -18,15 +27,40 @@ class MedicoLogin(BaseModel):
     password: str
 
 
+class RegistroMedicoResponse(BaseModel):
+    message: str
+    medico_id: int
+    setup_token: str
+
+
+class EspecialidadesSetup(BaseModel):
+    setup_token: str
+    especialidad_ids: List[int] = Field(min_length=1, max_length=3)
+
+
 class MedicoResponse(BaseModel):
     id: int
     nombre: str
     apellido: str
-    dni: str
+    dni: Optional[str]
     telefono: Optional[str]
     mail: str
-    especialidad_id: Optional[int]
+    especialidades: List[EspecialidadResponse]
     email_verificado: bool
+
+    class Config:
+        from_attributes = True
+
+
+# --- Medico público (buscador) ---
+
+class MedicoPublicoResponse(BaseModel):
+    id: int
+    nombre: str
+    apellido: str
+    telefono: Optional[str]
+    mail: str
+    especialidades: List[EspecialidadResponse]
 
     class Config:
         from_attributes = True
@@ -50,7 +84,7 @@ class PacienteResponse(BaseModel):
     id: int
     nombre: str
     apellido: str
-    dni: str
+    dni: Optional[str]
     telefono: Optional[str]
     mail: str
     email_verificado: bool
@@ -59,34 +93,7 @@ class PacienteResponse(BaseModel):
         from_attributes = True
 
 
-# --- Especialidad ---
-
-class EspecialidadResponse(BaseModel):
-    id_especialidad: int
-    nombre_especialidad: str
-
-    class Config:
-        from_attributes = True
-
-
-# --- Medico público (buscador) ---
-
-class MedicoPublicoResponse(BaseModel):
-    id: int
-    nombre: str
-    apellido: str
-    telefono: Optional[str]
-    mail: str
-    especialidad_id: Optional[int]
-    especialidad: Optional[EspecialidadResponse]
-
-    class Config:
-        from_attributes = True
-
-
 # --- Horarios ---
-
-DIAS = {0: "Lunes", 1: "Martes", 2: "Miércoles", 3: "Jueves", 4: "Viernes", 5: "Sábado", 6: "Domingo"}
 
 class HorarioResponse(BaseModel):
     id: int
@@ -120,6 +127,7 @@ class EstadoTurnoResponse(BaseModel):
 class TurnoResponse(BaseModel):
     id_turno: int
     fecha_hora: datetime.datetime
+    creado_en: Optional[datetime.datetime]
     notas: Optional[str]
     id_pacientes: int
     id_medicos: int

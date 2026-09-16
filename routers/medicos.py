@@ -21,7 +21,7 @@ def buscar_medicos(
     especialidad_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
-    query = db.query(Medico).options(joinedload(Medico.especialidad)).filter(
+    query = db.query(Medico).options(joinedload(Medico.especialidades)).filter(
         Medico.email_verificado == True
     )
 
@@ -32,7 +32,9 @@ def buscar_medicos(
         )
 
     if especialidad_id:
-        query = query.filter(Medico.especialidad_id == especialidad_id)
+        query = query.filter(
+            Medico.especialidades.any(Especialidad.id_especialidad == especialidad_id)
+        )
 
     return query.order_by(Medico.apellido, Medico.nombre).all()
 
@@ -68,7 +70,7 @@ def actualizar_horarios(
 def obtener_medico(medico_id: int, db: Session = Depends(get_db)):
     medico = (
         db.query(Medico)
-        .options(joinedload(Medico.especialidad))
+        .options(joinedload(Medico.especialidades))
         .filter(Medico.id == medico_id, Medico.email_verificado == True)
         .first()
     )
