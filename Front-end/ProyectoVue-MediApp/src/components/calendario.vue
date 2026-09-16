@@ -82,6 +82,56 @@ function diaSiguiente() {
   seleccionado.value = correrDias(1)
 }
 
+type Turno = {
+  id_turno: number
+  fecha_hora: string
+  notas: string | null
+  estado: { estado: string }
+  paciente: { id: number; nombre: string; apellido: string }
+}
+
+const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+const turnos = ref<Turno[]>([])
+
+async function cargarTurnos() {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos/mis-turnos`, {
+      headers: { Authorization: `Bearer ${sesion.token}` },
+    })
+    if (!res.ok) return
+    turnos.value = await res.json()
+  } catch {
+    // silencioso: el calendario simplemente no muestra turnos si falla la carga
+  }
+}
+
+onMounted(cargarTurnos)
+
+function esMismoDia(fechaHora: string, dia: Date) {
+  const f = new Date(fechaHora)
+  return f.getFullYear() === dia.getFullYear() && f.getMonth() === dia.getMonth() && f.getDate() === dia.getDate()
+}
+
+const CANTIDAD_SLOTS = 3
+
+const turnosDelDia = computed(() => {
+  return turnos.value
+    .filter(t => t.estado?.estado === 'aceptado' && esMismoDia(t.fecha_hora, seleccionado.value))
+    .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
+    .slice(0, CANTIDAD_SLOTS)
+})
+
+const slots = computed(() => {
+  const lista: (Turno | null)[] = [...turnosDelDia.value]
+  while (lista.length < CANTIDAD_SLOTS) lista.push(null)
+  return lista
+})
+
+function formatearHoraTurno(fechaHora: string) {
+  const f = new Date(fechaHora)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(f.getHours())}:${pad(f.getMinutes())}`
+}
 </script>
 
 <template>
@@ -224,10 +274,21 @@ function diaSiguiente() {
               </div>
             </button>
           </div>
-          <div class="gap-y-{20%}">
-            <div class="linea-der"></div>
-            <div class="linea-der"></div>
-            <div class="linea-der"></div>
+          <div class="flex-1 flex flex-col justify-center gap-6">
+            <div v-for="(t, i) in slots" :key="i" class="w-full flex flex-col items-center" :class="{ 'mt-[2%]': i > 0 }">
+              <div
+                v-if="t"
+                class="w-[100%] h-24 bg-red-400 rounded-2xl flex items-center justify-between px-6"
+              >
+                <div>
+                  <div class="text-2xl font-medium text-black">{{ t.paciente.nombre }} {{ t.paciente.apellido }}</div>
+                  <div class="text-black/60">{{ t.notas || 'Sin motivo especificado' }}</div>
+                </div>
+                <div class="text-3xl text-black">{{ formatearHoraTurno(t.fecha_hora) }}</div>
+              </div>
+              <div v-else class="w-[100%] h-24"></div>
+              <div class="w-[100%] mt-4 h-0 outline-1 outline-offset-[-0.5px] outline-black/30"></div>
+            </div>
           </div>
 
 

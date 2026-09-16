@@ -227,13 +227,13 @@ async function resolverTurno(accion: 'aceptar' | 'rechazar') {
         </div>
 
         <template v-else>
-          <div class="flex items-center gap-2">
-            <div class="size-14 shrink-0 rounded-full flex items-center justify-center text-white text-2xl font-medium" :style="{ backgroundColor: colorAvatar(turnoSeleccionado.paciente.id) }">{{ iniciales(turnoSeleccionado.paciente) }}</div>
+          <div class="flex items-center gap-4">
+            <div class="size-16 shrink-0 rounded-full flex items-center justify-center text-white text-2xl font-medium" :style="{ backgroundColor: colorAvatar(turnoSeleccionado.paciente.id) }">{{ iniciales(turnoSeleccionado.paciente) }}</div>
             <div class="text-2xl font-semibold font-['Inter']">{{ turnoSeleccionado.paciente.nombre }} {{ turnoSeleccionado.paciente.apellido }}</div>
           </div>
 
-          <div class="mt-4 text-zinc-900 text-xl font-['Inter']">Motivo de la consulta</div>
-          <div class="mt-1 bg-sky-100 rounded-2xl p-5 text-zinc-800 min-h-[10rem]">{{ turnoSeleccionado.notas || 'Sin motivo especificado' }}</div>
+          <div class="mt-6 text-zinc-900 text-xl font-['Inter']">Motivo de la consulta</div>
+          <div class="mt-2 bg-sky-100 rounded-2xl p-5 text-zinc-800 min-h-[10rem]">{{ turnoSeleccionado.notas || 'Sin motivo especificado' }}</div>
 
           <div class="mt-6 text-zinc-500 font-['Inter']">Solicitado hace</div>
           <div class="text-xl font-medium">{{ tiempoRelativo(turnoSeleccionado.creado_en) }}</div>

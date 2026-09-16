@@ -373,7 +373,7 @@ async function confirmarReserva() {
         <div class="w-fit text-[2.4rem] font-normal font-['Inter'] leading-[74.99px] pb-2 border-b-2 border-black">Reservar turno</div>
       </div>
 
-      <div class="flex items-center gap-4 mt-8 mb-6 w-full max-w-[64rem] mx-auto font-['Inter']">
+      <div class="flex items-center gap-2 mt-8 mb-6 w-full max-w-[64rem] mx-auto font-['Inter']">
         <div class="flex items-center gap-4">
           <div class="size-12 shrink-0 rounded-full flex items-center justify-center text-xl transition-colors" :class="claseCirculoPaso(1)">1</div>
           <span class="text-2xl whitespace-nowrap transition-colors" :class="claseTextoPaso(1)">Profesional</span>
@@ -500,20 +500,20 @@ async function confirmarReserva() {
 
             <template v-else>
               <div class="flex items-center justify-center" v-if="medicoSeleccionado">
-                <div class="w-[920px] h-48 bg-blue-100 rounded-[33px]" style="display: flex; flex-direction: row; gap: 1.5rem;">
+                <div class="w-[920px] h-27 bg-blue-100 rounded-[33px]" style="display: flex; flex-direction: row; align-items: center; gap: 1.5rem;">
 
                   <div>
                     <div
-                      style="width: 5rem; height: 5rem; border-radius: 9999px; margin-top: 55px; margin-left: 20px;"
+                      style="width: 5rem; height: 5rem; border-radius: 9999px; margin-left: 20px;"
                       class="flex items-center justify-center text-white text-2xl font-medium"
                       :style="{ backgroundColor: colorAvatar(medicoSeleccionado.id) }"
                     >{{ iniciales(medicoSeleccionado) }}</div>
                   </div>
 
-                  <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 2rem;">
-                    <div style="width: 100%; height: 3rem; color: black; font-size: 32px; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}</div>
-                    <div style="width: 100%; height: 3rem; color: rgba(0, 0, 0, 0.63); font-size: 15px; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ especialidadesTexto(medicoSeleccionado) }}</div>
-                    <div style="width: 100%; height: 100%; color: rgba(0, 0, 0, 0.63); font-size: 18px; font-family: Inter; font-weight: 400; text-decoration: underline; word-wrap: break-word">{{ resumenFechaHora }}</div>
+                  <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <div style="width: 100%; color: black; font-size: 30px; line-height: 1; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}</div>
+                    <div style="width: 100%; color: rgba(0, 0, 0, 0.63); font-size: 13px; line-height: 1.2; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ especialidadesTexto(medicoSeleccionado) }}</div>
+                    <div style="width: 100%; color: rgba(0, 0, 0, 0.63); font-size: 16px; line-height: 1.2; font-family: Inter; font-weight: 400; text-decoration: underline; word-wrap: break-word">{{ resumenFechaHora }}</div>
                   </div>
 
                 </div>
@@ -523,7 +523,7 @@ async function confirmarReserva() {
               <textarea v-model="motivoConsulta" placeholder="Motivo de la consulta..." class="w-[945px] h-30 bg-white rounded-[33px] border border-stone-300 p-6 pl-8 pt-5 text-left align-top resize-none"></textarea>
               <p v-if="errorReserva" class="text-red-500 text-center">{{ errorReserva }}</p>
 
-              <div class="flex w-full justify-between mt-2">
+              <div class="flex w-full justify-between">
               <button @click="volverAPaso2" class="px-6 py-3 bg-sky-100 rounded-xl hover:bg-sky-200">Atrás</button>
                 <button
                   @click="confirmarReserva"

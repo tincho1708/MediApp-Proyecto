@@ -13,6 +13,67 @@ function cerrarAlClickFuera() { esta.value = false }
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
+type Turno = {
+  id_turno: number
+  fecha_hora: string
+  notas: string | null
+  estado: { estado: string }
+  paciente: { id: number; nombre: string; apellido: string }
+}
+
+const turnos = ref<Turno[]>([])
+
+async function cargarTurnos() {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos/mis-turnos`, {
+      headers: { Authorization: `Bearer ${sesion.token}` },
+    })
+    if (!res.ok) return
+    turnos.value = await res.json()
+  } catch {
+    // silencioso: si falla, las cards simplemente no muestran datos
+  }
+}
+
+onMounted(cargarTurnos)
+
+function esMismoDia(fechaHora: string, dia: Date) {
+  const f = new Date(fechaHora)
+  return f.getFullYear() === dia.getFullYear() && f.getMonth() === dia.getMonth() && f.getDate() === dia.getDate()
+}
+
+const turnosAceptados = computed(() => turnos.value.filter(t => t.estado?.estado === 'aceptado'))
+
+const proximoTurno = computed(() => {
+  const ahora = Date.now()
+  return turnosAceptados.value
+    .filter(t => new Date(t.fecha_hora).getTime() >= ahora)
+    .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())[0] ?? null
+})
+
+const turnosHoy = computed(() => {
+  const ahora = new Date()
+  return turnosAceptados.value
+    .filter(t => esMismoDia(t.fecha_hora, ahora))
+    .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
+})
+
+const turnosHoyCompletados = computed(() => {
+  const ahora = Date.now()
+  return turnosHoy.value.filter(t => new Date(t.fecha_hora).getTime() < ahora).length
+})
+
+function formatearHora(fechaHora: string) {
+  const f = new Date(fechaHora)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(f.getHours())}:${pad(f.getMinutes())}`
+}
+
+const coloresAvatar = ['#E0645C', '#6CC26A', '#E0A75C', '#5C9EE0', '#9C6CE0', '#5CC2B0']
+function colorPaciente(id: number) {
+  return coloresAvatar[id % coloresAvatar.length]
+}
+
 const hoy = new Date()
 const mesActual = ref(hoy.getMonth())
 const añoActual = ref(hoy.getFullYear())
@@ -136,8 +197,11 @@ const celdas = computed(() => {
               Agenda de hoy
             </div>
             <div class="texto-agenda-hoy">
-              3/5
-              <div class="text-[0.9375rem]">Turnos Restantes</div>
+              <template v-if="turnosHoy.length">
+                {{ turnosHoyCompletados }}/{{ turnosHoy.length }}
+                <div class="text-[0.9375rem]">Turnos de hoy</div>
+              </template>
+              <div v-else class="text-[1.25rem] text-center">No tenés turnos hoy</div>
             </div>
           </div>
 
@@ -148,7 +212,8 @@ const celdas = computed(() => {
               </svg>
               Próximo turno
             </div>
-            <div class="proximo-turno-hora">09:30</div>
+            <div v-if="proximoTurno" class="proximo-turno-hora">{{ formatearHora(proximoTurno.fecha_hora) }}</div>
+            <div v-else class="text-[1.5rem] text-center mt-4">Sin turnos próximos</div>
           </div>
         </div>
 
@@ -156,36 +221,19 @@ const celdas = computed(() => {
           <div class="cuadro1">
             <div class="cuadro1-titulo">Agenda de hoy</div>
 
-            <div class="turno-fila" style="margin-top: 0.1rem;">
-              09:30
-              <div class="w-1.5 h-10 bg-indigo-400 rounded-[1.25rem]"></div>
-              <div class="turno-info">
-                <div class="turno-nombre">Juan liguori knoll</div>
-                <div class="turno-detalle">Orientacion vocacional</div>
+            <p v-if="!turnosHoy.length" class="text-zinc-400 mt-4">No tenés turnos hoy.</p>
+
+            <template v-for="(t, i) in turnosHoy" :key="t.id_turno">
+              <hr v-if="i > 0" class="separador" />
+              <div class="turno-fila" :style="i === 0 ? 'margin-top: 0.1rem;' : ''">
+                {{ formatearHora(t.fecha_hora) }}
+                <div class="w-1.5 h-10 rounded-[1.25rem]" :style="{ backgroundColor: colorPaciente(t.paciente.id) }"></div>
+                <div class="turno-info">
+                  <div class="turno-nombre">{{ t.paciente.nombre }} {{ t.paciente.apellido }}</div>
+                  <div class="turno-detalle">{{ t.notas || 'Sin motivo especificado' }}</div>
+                </div>
               </div>
-            </div>
-
-            <hr class="separador" />
-
-            <div class="turno-fila">
-              09:30
-              <div class="w-1.5 h-10 bg-red-400 rounded-[1.25rem]"></div>
-              <div class="turno-info">
-                <div class="turno-nombre">Juan liguori knoll</div>
-                <div class="turno-detalle">Orientacion vocacional</div>
-              </div>
-            </div>
-
-            <hr class="separador" />
-
-            <div class="turno-fila">
-              09:30
-              <div class="w-1.5 h-10 bg-green-400 rounded-[1.25rem]"></div>
-              <div class="turno-info">
-                <div class="turno-nombre">Juan liguori knoll</div>
-                <div class="turno-detalle">Orientacion vocacional</div>
-              </div>
-            </div>
+            </template>
           </div>
         </div>
       </div>
