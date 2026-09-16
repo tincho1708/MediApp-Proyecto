@@ -117,6 +117,37 @@ class Resena(Base):
     medico = relationship("Medico", back_populates="resenas")
 
 
+class ConversacionMediBot(Base):
+    __tablename__ = "conversacion_medibot"
+
+    id = Column(Integer, primary_key=True, index=True)
+    # No hay FK porque el usuario puede ser un médico o un paciente.
+    # La combinación usuario_id + tipo_usuario es la que identifica al dueño.
+    usuario_id = Column(Integer, nullable=False, index=True)
+    tipo_usuario = Column(String(20), nullable=False)  # "medico" | "paciente"
+    titulo = Column(String(120), nullable=False, default="Nueva conversación")
+    creado_en = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
+
+    mensajes = relationship(
+        "MensajeMediBot",
+        back_populates="conversacion",
+        cascade="all, delete-orphan",
+        order_by="MensajeMediBot.creado_en",
+    )
+
+
+class MensajeMediBot(Base):
+    __tablename__ = "mensaje_medibot"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_conversacion = Column(Integer, ForeignKey("conversacion_medibot.id", ondelete="CASCADE"), nullable=False, index=True)
+    rol = Column(String(20), nullable=False)  # "user" | "assistant"
+    contenido = Column(Text, nullable=False)
+    creado_en = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
+
+    conversacion = relationship("ConversacionMediBot", back_populates="mensajes")
+
+
 class Recomienda(Base):
     __tablename__ = "recomienda"
 

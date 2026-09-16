@@ -160,6 +160,43 @@ class TurnoResponse(BaseModel):
         from_attributes = True
 
 
+# --- MediBot ---
+
+class MensajeChat(BaseModel):
+    role: str = Field(pattern="^(user|assistant)$")
+    content: str = Field(min_length=1, max_length=4000)
+
+
+class MediBotRequest(BaseModel):
+    messages: List[MensajeChat] = Field(min_length=1, max_length=40)
+    conversacion_id: Optional[int] = None
+
+
+class MediBotResponse(BaseModel):
+    respuesta: str
+    conversacion_id: int
+    herramientas_usadas: List[str] = []
+
+
+class ConversacionResponse(BaseModel):
+    id: int
+    titulo: str
+    creado_en: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+
+class MensajeMediBotResponse(BaseModel):
+    id: int
+    rol: str
+    contenido: str
+    creado_en: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+
 # --- Auth responses ---
 
 class Token(BaseModel):
