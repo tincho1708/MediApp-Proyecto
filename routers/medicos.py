@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from typing import Optional, List
+from datetime import date, datetime, timedelta
 
 from database import get_db
-from models import Medico, Especialidad, HorarioMedico
+from models import Medico, Especialidad, HorarioMedico, Turno, EstadoTurno
 from schemas import MedicoPublicoResponse, EspecialidadResponse, HorarioResponse, HorarioUpdate
 from deps import solo_medico
 
@@ -42,6 +43,21 @@ def obtener_horarios(medico_id: int, db: Session = Depends(get_db)):
     return db.query(HorarioMedico).filter(
         HorarioMedico.id_medico == medico_id
     ).order_by(HorarioMedico.dia_semana, HorarioMedico.hora).all()
+
+
+@router.get("/medicos/{medico_id}/horarios-ocupados", response_model=List[int])
+def obtener_horarios_ocupados(medico_id: int, fecha: date, db: Session = Depends(get_db)):
+    inicio = datetime.combine(fecha, datetime.min.time())
+    fin = inicio + timedelta(days=1)
+
+    turnos = db.query(Turno).join(EstadoTurno).filter(
+        Turno.id_medicos == medico_id,
+        Turno.fecha_hora >= inicio,
+        Turno.fecha_hora < fin,
+        EstadoTurno.estado.in_(["pendiente", "aceptado"]),
+    ).all()
+
+    return [t.fecha_hora.hour for t in turnos]
 
 
 @router.put("/medicos/mis-horarios", response_model=List[HorarioResponse])

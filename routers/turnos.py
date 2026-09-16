@@ -29,7 +29,7 @@ def solicitar_turno(
     if not db.query(Medico).filter(Medico.id == data.medico_id, Medico.email_verificado == True).first():
         raise HTTPException(status_code=404, detail="Médico no encontrado")
 
-    if data.fecha_hora <= datetime.utcnow():
+    if data.fecha_hora <= datetime.now():
         raise HTTPException(status_code=400, detail="La fecha debe ser futura")
 
     dia_semana = data.fecha_hora.weekday()

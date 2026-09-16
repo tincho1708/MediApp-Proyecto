@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-calendario-usuario'])
 const esta = ref(false)
@@ -84,6 +84,14 @@ function especialidadesTexto(m: Medico) {
 }
 
 const pasoActual = ref(1)
+
+const animarCrecerPaso2 = ref(false)
+watch(pasoActual, (valor) => {
+  animarCrecerPaso2.value = false
+  if (valor === 2) {
+    nextTick(() => { animarCrecerPaso2.value = true })
+  }
+})
 
 function claseCirculoPaso(n: number) {
   if (pasoActual.value === n) return 'bg-sky-500 text-white'
@@ -170,6 +178,7 @@ function elegirDia(celda: { dia?: number; otroMes?: boolean; pasado?: boolean })
   if (celda.otroMes || celda.pasado || celda.dia === undefined) return
   diaSeleccionado.value = celda.dia
   horaSeleccionada.value = null
+  if (medicoSeleccionado.value) cargarHorasOcupadas(medicoSeleccionado.value.id, celda.dia)
 }
 
 
@@ -184,6 +193,7 @@ const horarios = ref<Horario[]>([])
 const cargandoHorarios = ref(false)
 const errorHorarios = ref('')
 const horaSeleccionada = ref<number | null>(null)
+const horasOcupadas = ref<number[]>([])
 
 async function cargarHorarios(medicoId: number) {
   cargandoHorarios.value = true
@@ -198,6 +208,19 @@ async function cargarHorarios(medicoId: number) {
     errorHorarios.value = 'No se pudieron cargar los horarios. Intentá de nuevo más tarde.'
   } finally {
     cargandoHorarios.value = false
+  }
+}
+
+async function cargarHorasOcupadas(medicoId: number, dia: number) {
+  horasOcupadas.value = []
+  try {
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const fecha = `${añoActual.value}-${pad(mesActual.value + 1)}-${pad(dia)}`
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/medicos/${medicoId}/horarios-ocupados?fecha=${fecha}`)
+    if (!res.ok) throw new Error()
+    horasOcupadas.value = await res.json()
+  } catch {
+    // si falla, no bloqueamos la selección de horario; el backend igual rechaza el solapamiento al confirmar
   }
 }
 
@@ -216,6 +239,7 @@ const esHoySeleccionado = computed(() => {
 const horariosDelDia = computed(() => {
   if (diaSemanaSeleccionado.value === null) return []
   let lista = horarios.value.filter(h => h.dia_semana === diaSemanaSeleccionado.value)
+  lista = lista.filter(h => !horasOcupadas.value.includes(h.hora))
   if (esHoySeleccionado.value) {
     lista = lista.filter(h => h.hora > hoy.getHours())
   }
@@ -366,7 +390,10 @@ async function confirmarReserva() {
         </div>
       </div>
 
-      <div class="bg-white rounded-[1.5rem] shadow-[0px_4px_30.100000381469727px_8px_rgba(0,0,0,0.46)] border border-sky-500 p-8 w-full max-w-[64rem] mx-auto flex flex-col gap-6 font-['Inter']">
+      <div
+        class="bg-white rounded-[1.5rem] shadow-[0px_4px_30.100000381469727px_8px_rgba(0,0,0,0.46)] border border-sky-500 p-8 w-full max-w-[64rem] mx-auto flex flex-col gap-6 font-['Inter']"
+        :class="{ 'anim-crecer-alto': animarCrecerPaso2 }"
+      >
 
         <Transition name="fade" mode="out-in">
           <div v-if="pasoActual === 1" key="paso1" class="flex flex-col gap-6">
@@ -515,5 +542,20 @@ async function confirmarReserva() {
 </div>
 </template>
 
-<style>
+<style scoped>
+@keyframes crecer-alto {
+  from {
+    max-height: 4rem;
+    opacity: 0.4;
+  }
+  to {
+    max-height: 50rem;
+    opacity: 1;
+  }
+}
+
+.anim-crecer-alto {
+  animation: crecer-alto 0.5s ease-out;
+  overflow: hidden;
+}
 </style>
