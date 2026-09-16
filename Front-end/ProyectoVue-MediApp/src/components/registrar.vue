@@ -81,8 +81,8 @@ async function confirmarEspecialidades() {
   cargando.value = true
   errorEspecialidades.value = ''
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/medicos/registro/especialidades`, {
-      method: 'PUT',
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/medicos/setup-especialidades`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ setup_token: setupToken.value, especialidad_ids: especialidadesSeleccionadas.value }),
     })

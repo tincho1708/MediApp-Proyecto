@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useTurnosMedico } from '@/stores/turnosMedico'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus', 'ir-a-solicitudes'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-mis-pacientes'])
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const nombreUsuario = sesion.nombre || 'Usuario'
@@ -13,29 +14,9 @@ function cerrarAlClickFuera() { esta.value = false }
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
-type Turno = {
-  id_turno: number
-  fecha_hora: string
-  notas: string | null
-  estado: { estado: string }
-  paciente: { id: number; nombre: string; apellido: string }
-}
+const { turnos, cargarTurnosMedico } = useTurnosMedico()
 
-const turnos = ref<Turno[]>([])
-
-async function cargarTurnos() {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos/mis-turnos`, {
-      headers: { Authorization: `Bearer ${sesion.token}` },
-    })
-    if (!res.ok) return
-    turnos.value = await res.json()
-  } catch {
-    // silencioso: si falla, las cards simplemente no muestran datos
-  }
-}
-
-onMounted(cargarTurnos)
+onMounted(() => cargarTurnosMedico())
 
 function esMismoDia(fechaHora: string, dia: Date) {
   const f = new Date(fechaHora)
@@ -63,10 +44,22 @@ const turnosHoyCompletados = computed(() => {
   return turnosHoy.value.filter(t => new Date(t.fecha_hora).getTime() < ahora).length
 })
 
+const proximosTurnos = computed(() => {
+  const ahora = Date.now()
+  return turnosAceptados.value
+    .filter(t => new Date(t.fecha_hora).getTime() >= ahora)
+    .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
+    .slice(0, 3)
+})
+
 function formatearHora(fechaHora: string) {
   const f = new Date(fechaHora)
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${pad(f.getHours())}:${pad(f.getMinutes())}`
+}
+function formatearFecha(fechaHora: string) {
+  const f = new Date(fechaHora)
+  return `${f.getDate()}/${f.getMonth() + 1}`
 }
 
 const coloresAvatar = ['#E0645C', '#6CC26A', '#E0A75C', '#5C9EE0', '#9C6CE0', '#5CC2B0']
@@ -135,7 +128,7 @@ const celdas = computed(() => {
 
       <div class="navbar-acciones">
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
-        <button class="campoo">Mis pacientes</button>
+        <button class="campoo" @click="emit('ir-a-mis-pacientes')">Mis pacientes</button>
         <button class="campoo" @click="emit('ir-a-solicitudes')">Solicitudes</button>
         <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+</button>
 
@@ -219,14 +212,17 @@ const celdas = computed(() => {
 
         <div class="inferior">
           <div class="cuadro1">
-            <div class="cuadro1-titulo">Agenda de hoy</div>
+            <div class="cuadro1-titulo">Proximos turnos</div>
 
-            <p v-if="!turnosHoy.length" class="text-zinc-400 mt-4">No tenés turnos hoy.</p>
+            <p v-if="!proximosTurnos.length" class="text-black mt-4">No tenés turnos próximos.</p>
 
-            <template v-for="(t, i) in turnosHoy" :key="t.id_turno">
+            <template v-for="(t, i) in proximosTurnos" :key="t.id_turno">
               <hr v-if="i > 0" class="separador" />
               <div class="turno-fila" :style="i === 0 ? 'margin-top: 0.1rem;' : ''">
-                {{ formatearHora(t.fecha_hora) }}
+                <div class="flex flex-col items-center leading-tight w-14 shrink-0">
+                  <span class="text-[0.85rem] text-black/70">{{ formatearFecha(t.fecha_hora) }}</span>
+                  <span>{{ formatearHora(t.fecha_hora) }}</span>
+                </div>
                 <div class="w-1.5 h-10 rounded-[1.25rem]" :style="{ backgroundColor: colorPaciente(t.paciente.id) }"></div>
                 <div class="turno-info">
                   <div class="turno-nombre">{{ t.paciente.nombre }} {{ t.paciente.apellido }}</div>
@@ -583,7 +579,7 @@ const celdas = computed(() => {
 
 .separador {
   border: none;
-  border-top: 0.0625rem solid rgba(0, 0, 0, 0.6);
+  border-top: 0.125rem solid rgba(46, 156, 224, 0.5);
   margin: 0.375rem 0;
 }
 

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { useTurnosMedico, type TurnoMedico } from '@/stores/turnosMedico'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-reservar-turno'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-reservar-turno', 'ir-a-mis-pacientes'])
 const esta = ref(false)
 
 function cerrarAlClickFuera() { esta.value = false }
@@ -15,25 +16,9 @@ type Paciente = {
   apellido: string
 }
 
-type Turno = {
-  id_turno: number
-  fecha_hora: string
-  notas: string | null
-  creado_en: string
-  id_pacientes: number
-  id_medicos: number
-  estado: { id: number; estado: string }
-  paciente: Paciente
-}
+type Turno = TurnoMedico
 
-function token() {
-  const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
-  return sesion.token as string | undefined
-}
-
-const turnos = ref<Turno[]>([])
-const cargando = ref(true)
-const errorCarga = ref('')
+const { turnos, cargando, error: errorCarga, cargarTurnosMedico, actualizarEstadoTurno } = useTurnosMedico()
 const turnoSeleccionadoId = ref<number | null>(null)
 
 const turnosPendientes = computed(() =>
@@ -46,23 +31,7 @@ const turnoSeleccionado = computed(() =>
   turnosPendientes.value.find(t => t.id_turno === turnoSeleccionadoId.value) ?? null
 )
 
-async function cargarSolicitudes() {
-  cargando.value = true
-  errorCarga.value = ''
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos/mis-turnos`, {
-      headers: { Authorization: `Bearer ${token()}` },
-    })
-    if (!res.ok) throw new Error()
-    turnos.value = await res.json()
-  } catch {
-    errorCarga.value = 'No se pudieron cargar las solicitudes. Intentá de nuevo más tarde.'
-  } finally {
-    cargando.value = false
-  }
-}
-
-onMounted(cargarSolicitudes)
+onMounted(() => cargarTurnosMedico())
 
 function seleccionarTurno(t: Turno) {
   turnoSeleccionadoId.value = turnoSeleccionadoId.value === t.id_turno ? null : t.id_turno
@@ -108,19 +77,10 @@ async function resolverTurno(accion: 'aceptar' | 'rechazar') {
   procesando.value = true
   errorAccion.value = ''
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos/${turnoSeleccionado.value.id_turno}/${accion}`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${token()}` },
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      errorAccion.value = data.detail || 'No se pudo solicitar el turno.'
-      return
-    }
-    turnos.value = turnos.value.map(t => (t.id_turno === data.id_turno ? data : t))
+    await actualizarEstadoTurno(turnoSeleccionado.value.id_turno, accion)
     turnoSeleccionadoId.value = null
-  } catch {
-    errorAccion.value = 'No se pudo conectar al servidor.'
+  } catch (e) {
+    errorAccion.value = e instanceof Error ? e.message : 'No se pudo conectar al servidor.'
   } finally {
     procesando.value = false
   }
@@ -138,7 +98,7 @@ async function resolverTurno(accion: 'aceptar' | 'rechazar') {
 
       <div class="navbar-acciones">
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
-        <button class="campoo">Mis pacientes</button>
+        <button class="campoo" @click="emit('ir-a-mis-pacientes')">Mis pacientes</button>
         <button class="campoo" @click="emit('ir-a-solicitudes')">Solicitudes</button>
         <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+</button>
 

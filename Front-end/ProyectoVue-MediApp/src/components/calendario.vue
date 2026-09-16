@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useTurnosMedico, type TurnoMedico } from '@/stores/turnosMedico'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-MediPlus', 'ir-a-solicitudes'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-mis-pacientes'])
 
 const esta = ref(false)
 
@@ -82,30 +83,11 @@ function diaSiguiente() {
   seleccionado.value = correrDias(1)
 }
 
-type Turno = {
-  id_turno: number
-  fecha_hora: string
-  notas: string | null
-  estado: { estado: string }
-  paciente: { id: number; nombre: string; apellido: string }
-}
+type Turno = TurnoMedico
 
-const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
-const turnos = ref<Turno[]>([])
+const { turnos, cargarTurnosMedico } = useTurnosMedico()
 
-async function cargarTurnos() {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos/mis-turnos`, {
-      headers: { Authorization: `Bearer ${sesion.token}` },
-    })
-    if (!res.ok) return
-    turnos.value = await res.json()
-  } catch {
-    // silencioso: el calendario simplemente no muestra turnos si falla la carga
-  }
-}
-
-onMounted(cargarTurnos)
+onMounted(() => cargarTurnosMedico())
 
 function esMismoDia(fechaHora: string, dia: Date) {
   const f = new Date(fechaHora)
@@ -147,7 +129,7 @@ function formatearHoraTurno(fechaHora: string) {
 
       <div class="navbar-acciones">
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
-        <button class="campoo">Mis pacientes</button>
+        <button class="campoo" @click="emit('ir-a-mis-pacientes')">Mis pacientes</button>
         <button class="campoo" @click="emit('ir-a-solicitudes')">Solicitudes</button>
         <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+</button>
 

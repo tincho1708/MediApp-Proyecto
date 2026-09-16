@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-bienvenida', 'ir-a-solicitudes', 'ir-a-MediPlus'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-solicitudes', 'ir-a-MediPlus', 'ir-a-mis-pacientes'])
 
 const esta = ref(false)
 
@@ -21,7 +21,7 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
       <div class="navbar-acciones">
         <button class="campoo">MediBot</button>
-        <button class="campoo">Mis pacientes</button>
+        <button class="campoo" @click="emit('ir-a-mis-pacientes')">Mis pacientes</button>
         <button class="campoo" @click="emit('ir-a-solicitudes')">Solicitudes</button>
         <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+</button>
 

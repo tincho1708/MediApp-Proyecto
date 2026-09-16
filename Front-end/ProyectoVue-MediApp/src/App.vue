@@ -11,6 +11,7 @@ import PrincipalUsuario from './components/principal-usuario.vue'
 import MediPlus from './components/MediPlus.vue'
 import ReservarTurno from './components/reservar-turno.vue'
 import Solicitudes from './components/solicitudes.vue'
+import MisPacientes from './components/mispacientes.vue'
 
 const vista = ref('bienvenida')
 </script>
@@ -52,7 +53,8 @@ const vista = ref('bienvenida')
       @ir-a-chatbot="vista = 'chatbot'"
       @ir-a-calendario="vista = 'calendario'"
       @ir-a-MediPlus="vista = 'MediPlus'"
-      @ir-a-solicitudes="vista = 'solicitudes'"/>
+      @ir-a-solicitudes="vista = 'solicitudes'"
+      @ir-a-mis-pacientes="vista = 'misPacientes'"/>
 
     <Chatbot
       v-else-if="vista === 'chatbot'"
@@ -60,7 +62,8 @@ const vista = ref('bienvenida')
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
       @ir-a-reservar-turno="vista = 'reservarTurno'"
-      @ir-a-solicitudes="vista = 'solicitudes'"/>
+      @ir-a-solicitudes="vista = 'solicitudes'"
+      @ir-a-mis-pacientes="vista = 'misPacientes'"/>
 
     <Calendario
       v-else-if="vista === 'calendario'"
@@ -69,7 +72,8 @@ const vista = ref('bienvenida')
       @ir-a-principal="vista = 'Principal'"
       @ir-a-chatbot="vista = 'chatbot'"
       @ir-a-MediPlus="vista = 'MediPlus'"
-      @ir-a-solicitudes="vista = 'solicitudes'"/>
+      @ir-a-solicitudes="vista = 'solicitudes'"
+      @ir-a-mis-pacientes="vista = 'misPacientes'"/>
 
       <Calendario-Usuario
       v-else-if="vista === 'calendarioUsuario'"
@@ -95,7 +99,8 @@ const vista = ref('bienvenida')
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-chatbot="vista = 'chatbot'"
       @ir-a-principal="vista = 'Principal'"
-      @ir-a-solicitudes="vista = 'solicitudes'"/>
+      @ir-a-solicitudes="vista = 'solicitudes'"
+      @ir-a-mis-pacientes="vista = 'misPacientes'"/>
 
     <ReservarTurno
       v-else-if="vista === 'reservarTurno'"
@@ -113,8 +118,20 @@ const vista = ref('bienvenida')
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-chatbot="vista = 'chatbot'"
       @ir-a-calendario="vista = 'calendario'"
-      @ir-a-MediPlus="vista = 'MediPlus'"/>
-  </Transition> 
+      @ir-a-MediPlus="vista = 'MediPlus'"
+      @ir-a-mis-pacientes="vista = 'misPacientes'"/>
+
+    <MisPacientes
+      v-else-if="vista === 'misPacientes'"
+      key="misPacientes"
+      @ir-a-bienvenida="vista = 'bienvenida'"
+      @ir-a-principal="vista = 'Principal'"
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-calendario="vista = 'calendario'"
+      @ir-a-MediPlus="vista = 'MediPlus'"
+      @ir-a-solicitudes="vista = 'solicitudes'"
+      @ir-a-reservar-turno="vista = 'reservarTurno'"/>
+  </Transition>
 
 </template>
 
