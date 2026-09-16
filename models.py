@@ -1,7 +1,15 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, Float
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table, Text, Float
 from sqlalchemy.orm import relationship
 from database import Base
 import datetime
+
+
+medico_especialidad = Table(
+    "medico_especialidad",
+    Base.metadata,
+    Column("id_medico", Integer, ForeignKey("medicos.id"), primary_key=True),
+    Column("id_especialidad", Integer, ForeignKey("especialidad.id_especialidad"), primary_key=True),
+)
 
 
 class Especialidad(Base):
@@ -10,7 +18,7 @@ class Especialidad(Base):
     id_especialidad = Column(Integer, primary_key=True, index=True)
     nombre_especialidad = Column(String(100), nullable=False)
 
-    medicos = relationship("Medico", back_populates="especialidad")
+    medicos = relationship("Medico", secondary=medico_especialidad, back_populates="especialidades")
 
 
 class Medico(Base):
@@ -22,7 +30,7 @@ class Medico(Base):
     nombre = Column(String(100), nullable=False)
     apellido = Column(String(100), nullable=False)
     mail = Column(String(255), unique=True, nullable=False)
-    especialidad_id = Column(Integer, ForeignKey("especialidad.id_especialidad"))
+    setup_token = Column(String(255), nullable=True)
     password_hash = Column(String(255), nullable=True)
     email_verificado = Column(Boolean, default=False)
     verification_token = Column(String(255), nullable=True)
@@ -31,7 +39,7 @@ class Medico(Base):
     pin_verificacion = Column(String(6), nullable=True)
     pin_expires = Column(DateTime, nullable=True)
 
-    especialidad = relationship("Especialidad", back_populates="medicos")
+    especialidades = relationship("Especialidad", secondary=medico_especialidad, back_populates="medicos")
     horarios = relationship("HorarioMedico", back_populates="medico", cascade="all, delete-orphan")
     notificaciones = relationship("Notificacion", back_populates="medico")
     turnos = relationship("Turno", back_populates="medico")
@@ -76,6 +84,7 @@ class Turno(Base):
     id_turno = Column(Integer, primary_key=True, index=True)
     notas = Column(Text, nullable=True)
     fecha_hora = Column(DateTime, nullable=False)
+    creado_en = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
     id_pacientes = Column(Integer, ForeignKey("pacientes.id"), nullable=False)
     id_medicos = Column(Integer, ForeignKey("medicos.id"), nullable=False)
     id_estado = Column(Integer, ForeignKey("estado_turno.id"), nullable=False)
