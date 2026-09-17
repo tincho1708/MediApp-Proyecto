@@ -333,7 +333,7 @@ def _seleccionar_persona(q, modelo, args):
     elif (args.get("nombre") or "").strip():
         q = _filtrar_nombre(q, modelo, args["nombre"])
     else:
-        return None, {"error": "Indicá un nombre o un ID obtenido en una búsqueda."}
+        return None, {"error": "Indicá un nombre obtenido en una búsqueda."}
     total = q.distinct().count()
     personas = q.distinct().order_by(modelo.apellido, modelo.nombre, modelo.id).limit(20).all()
     if not personas:
