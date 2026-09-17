@@ -4,7 +4,7 @@ import Principal from './components/principal-medico.vue'
 import Bienvenida from './components/bienvenida.vue'
 import Registrar from './components/registrar.vue'
 import IniciarSesion from './components/inicio-sesion.vue'
-import Chatbot from './components/chatbot.vue'
+import MediBot from './components/MediBot.vue'
 import Calendario from '@/components/calendario.vue'
 import CalendarioUsuario from '@/components/calendario-usuario.vue'
 import PrincipalUsuario from './components/principal-usuario.vue'
@@ -56,14 +56,18 @@ const vista = ref('bienvenida')
       @ir-a-solicitudes="vista = 'solicitudes'"
       @ir-a-mis-pacientes="vista = 'misPacientes'"/>
 
-    <Chatbot
+    <MediBot
       v-else-if="vista === 'chatbot'"
       key="chatbot"
       @ir-a-bienvenida="vista = 'bienvenida'"
       @ir-a-principal="vista = 'Principal'"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"
       @ir-a-reservar-turno="vista = 'reservarTurno'"
       @ir-a-solicitudes="vista = 'solicitudes'"
-      @ir-a-mis-pacientes="vista = 'misPacientes'"/>
+      @ir-a-mis-pacientes="vista = 'misPacientes'"
+      @ir-a-MediPlus="vista = 'MediPlus'"
+      @ir-a-calendario="vista = 'calendario'"
+      @ir-a-calendario-usuario="vista = 'calendarioUsuario'"/>
 
     <Calendario
       v-else-if="vista === 'calendario'"
