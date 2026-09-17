@@ -18,7 +18,6 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
           <span>App</span>
         </div>
       </button>
-
       <div class="navbar-acciones">
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
         <button class="campoo" @click="emit('ir-a-mis-pacientes')">Mis pacientes</button>

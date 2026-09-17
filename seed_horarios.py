@@ -3,8 +3,8 @@ from models import Medico, HorarioMedico
 
 db = SessionLocal()
 
-DIAS = list(range(5))   # lunes a viernes
-HORAS = list(range(9, 17))  # 9:00 a 16:00
+DIAS = list(range(5))
+HORAS = list(range(9, 17))
 
 try:
     medicos = db.query(Medico).all()

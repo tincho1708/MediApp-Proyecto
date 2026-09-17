@@ -31,8 +31,6 @@ function seleccionar(tipo: 'Medico' | 'Paciente') {
   }
 }
 
-// --- Paso 2 (solo médico): elegir especialidades ---
-
 type Especialidad = { id_especialidad: number; nombre_especialidad: string }
 
 const paso = ref<1 | 2>(1)

@@ -220,7 +220,6 @@ async function cargarHorasOcupadas(medicoId: number, dia: number) {
     if (!res.ok) throw new Error()
     horasOcupadas.value = await res.json()
   } catch {
-    // si falla, no bloqueamos la selección de horario; el backend igual rechaza el solapamiento al confirmar
   }
 }
 

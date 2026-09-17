@@ -104,7 +104,6 @@ async function cargarTurnos() {
     if (!res.ok) return
     turnos.value = await res.json()
   } catch {
-    // silencioso: el calendario simplemente no muestra turnos si falla la carga
   }
 }
 
@@ -191,7 +190,7 @@ function nombreMedicoTurno(t: Turno) {
             </div>
           </button>
 
-          <button href="#" style="margin-top: auto;">
+          <button href="#" style="margin-top: auto;" @click="emit('ir-a-bienvenida')">
             <div class="barra-dentro-cerrar w-50 h-12 rounded-2xl">
               <div class="barra-texto">
                 <svg xmlns="http://www.w3.org/2000/svg" width="21" height="22" viewBox="0 0 31 32" fill="none" style="flex-shrink: 0;">

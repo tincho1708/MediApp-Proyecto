@@ -10,9 +10,8 @@ const emit = defineEmits([
   'ir-a-calendario',
   'ir-a-calendario-usuario',
   'ir-a-reservar-turno',
+  'ir-a-mis-pacientes',
 ])
-
-/* ---------------- sesión ---------------- */
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const token = sesion.token as string | undefined
@@ -20,14 +19,10 @@ const esMedico = sesion.tipo === 'Medico'
 
 const API = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
-/* ---------------- menú lateral ---------------- */
-
 const esta = ref(false)
 function cerrarAlClickFuera() { esta.value = false }
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
-
-/* ---------------- chat ---------------- */
 
 type Mensaje = { role: 'user' | 'assistant'; content: string }
 type Conversacion = { id: number; titulo: string; creado_en: string }
@@ -109,7 +104,6 @@ async function enviar(texto?: string) {
     conversacionId.value = data.conversacion_id
     mensajes.value.push({ role: 'assistant', content: data.respuesta })
   } catch (e) {
-    // Sacamos el mensaje para que lo pueda reintentar sin que quede duplicado.
     mensajes.value.pop()
     borrador.value = contenido
     error.value = e instanceof Error ? e.message : 'No se pudo conectar con MediBot.'
@@ -125,8 +119,6 @@ function teclado(e: KeyboardEvent) {
     enviar()
   }
 }
-
-/* ---------------- historial ---------------- */
 
 async function togglePanel() {
   panelAbierto.value = !panelAbierto.value
@@ -200,8 +192,6 @@ function fechaCorta(iso: string) {
   return new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
 }
 
-/* Formato mínimo: **negrita**, viñetas y saltos de línea.
-   Se escapa el HTML primero para que no se pueda inyectar nada en la página. */
 function formatear(texto: string) {
   const escapado = texto
     .replace(/&/g, '&amp;')
@@ -225,15 +215,16 @@ function formatear(texto: string) {
 
     <div class="navbar-acciones">
       <template v-if="esMedico">
-        <button class="campoo campoo-activo">MediBot</button>
-        <button class="campoo" @click="emit('ir-a-calendario')">Mis pacientes</button>
+        <button class="campoo">MediBot</button>
+        <button class="campoo" @click="emit('ir-a-mis-pacientes')">Mis pacientes</button>
         <button class="campoo" @click="emit('ir-a-solicitudes')">Solicitudes</button>
         <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+</button>
       </template>
       <template v-else>
         <button class="campoo" @click="emit('ir-a-reservar-turno')">Reservar Turno</button>
-        <button class="campoo campoo-activo">MediBot</button>
-        <button class="campoo" @click="emit('ir-a-calendario-usuario')">Mis turnos</button>
+        <button class="campoo">MediBot</button>
+        <button class="campoo">Profesionales</button>
+        <button class="campoo">Notificaciones</button>
       </template>
 
       <button @click.stop="esta = !esta" class="barra">
@@ -281,13 +272,10 @@ function formatear(texto: string) {
     </div>
   </div>
 
-  <!-- ===================== CHAT ===================== -->
-
   <div class="chat">
     <div ref="scroller" class="chat-scroll">
       <div class="chat-ancho">
 
-        <!-- Pantalla inicial -->
         <div v-if="vacio" class="inicio">
           <h1 class="titulo">Preguntale algo a <span>MediBot</span></h1>
           <p class="subtitulo">
@@ -302,7 +290,6 @@ function formatear(texto: string) {
           </div>
         </div>
 
-        <!-- Mensajes -->
         <div v-else class="mensajes">
           <div v-for="(m, i) in mensajes" :key="i">
             <div v-if="m.role === 'user'" class="fila-usuario">
@@ -324,7 +311,6 @@ function formatear(texto: string) {
       </div>
     </div>
 
-    <!-- Barra de escritura -->
     <div class="pie">
       <p v-if="error" class="error">{{ error }}</p>
 
@@ -355,7 +341,6 @@ function formatear(texto: string) {
       </div>
     </div>
 
-    <!-- Historial -->
     <aside :class="['panel', { 'panel-abierto': panelAbierto }]">
       <header class="panel-header">
         <h2>Chats anteriores</h2>
@@ -400,7 +385,6 @@ function formatear(texto: string) {
   min-height: 100%;
 }
 
-/* ---------- pantalla inicial ---------- */
 
 .inicio {
   padding-top: 5rem;
@@ -444,7 +428,6 @@ function formatear(texto: string) {
 
 .sugerencia:hover { background: #fff; }
 
-/* ---------- mensajes ---------- */
 
 .mensajes {
   padding: 2rem 0 1rem;
@@ -503,7 +486,6 @@ function formatear(texto: string) {
   .puntitos i { animation: none; opacity: 0.6; }
 }
 
-/* ---------- pie ---------- */
 
 .pie { padding: 0 1.5rem 1.5rem; }
 
@@ -589,8 +571,6 @@ function formatear(texto: string) {
 
 .link:hover { text-decoration: underline; }
 
-/* ---------- panel de historial ---------- */
-
 .panel {
   position: absolute;
   top: 0;
@@ -667,10 +647,6 @@ function formatear(texto: string) {
 }
 
 .panel-item-borrar:hover { color: #B42318; background: #FEF2F2; }
-
-/* ---------- navbar ---------- */
-
-.campoo-activo { background-color: #C6E9FF; }
 
 @media (max-width: 768px) {
   .titulo { font-size: 2rem; }

@@ -165,7 +165,7 @@ function formatearHoraTurno(fechaHora: string) {
             </div>
           </button>
 
-          <button href="#" style="margin-top: auto;">
+          <button href="#" style="margin-top: auto;" @click="emit('ir-a-bienvenida')">
             <div class="barra-dentro-cerrar w-50 h-12 rounded-2xl">
               <div class="barra-texto">
                 <svg xmlns="http://www.w3.org/2000/svg" width="21" height="22" viewBox="0 0 31 32" fill="none" style="flex-shrink: 0;">

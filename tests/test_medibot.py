@@ -5,7 +5,6 @@ import httpx
 from unittest.mock import patch
 from datetime import datetime, timedelta
 
-# Antes de importar la aplicación: nunca conectar la base del .env en estas pruebas.
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["SECRET_KEY"] = "solo-pruebas-no-utilizar-en-produccion"
 

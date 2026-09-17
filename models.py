@@ -99,8 +99,8 @@ class HorarioMedico(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     id_medico = Column(Integer, ForeignKey("medicos.id"), nullable=False)
-    dia_semana = Column(Integer, nullable=False)  # 0=lunes, 6=domingo
-    hora = Column(Integer, nullable=False)  # 9, 10, 11, ... 16
+    dia_semana = Column(Integer, nullable=False)
+    hora = Column(Integer, nullable=False)
 
     medico = relationship("Medico", back_populates="horarios")
 
@@ -136,10 +136,8 @@ class ConversacionMediBot(Base):
     __tablename__ = "conversacion_medibot"
 
     id = Column(Integer, primary_key=True, index=True)
-    # No hay FK porque el usuario puede ser un médico o un paciente.
-    # La combinación usuario_id + tipo_usuario es la que identifica al dueño.
     usuario_id = Column(Integer, nullable=False, index=True)
-    tipo_usuario = Column(String(20), nullable=False)  # "medico" | "paciente"
+    tipo_usuario = Column(String(20), nullable=False)
     titulo = Column(String(120), nullable=False, default="Nueva conversación")
     creado_en = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
 
@@ -156,7 +154,7 @@ class MensajeMediBot(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     id_conversacion = Column(Integer, ForeignKey("conversacion_medibot.id", ondelete="CASCADE"), nullable=False, index=True)
-    rol = Column(String(20), nullable=False)  # "user" | "assistant"
+    rol = Column(String(20), nullable=False)
     contenido = Column(Text, nullable=False)
     creado_en = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
 

@@ -9,7 +9,7 @@ load_dotenv()
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from database import Base
-import models  # noqa: F401 — ensures all models are registered
+import models
 
 config = context.config
 config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))

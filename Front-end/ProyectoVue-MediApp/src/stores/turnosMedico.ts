@@ -12,10 +12,6 @@ export type TurnoMedico = {
   medico: { id: number; nombre: string; apellido: string; especialidades: { id_especialidad: number; nombre_especialidad: string }[] }
 }
 
-// Estado compartido a nivel de módulo: todas las páginas que importan este
-// composable leen y escriben sobre el mismo array reactivo, así una acción
-// en una pantalla (aceptar/rechazar/cancelar) se ve reflejada al instante
-// en cualquier otra sin tener que volver a pedirle los datos al backend.
 const turnos = ref<TurnoMedico[]>([])
 const cargado = ref(false)
 const cargando = ref(false)

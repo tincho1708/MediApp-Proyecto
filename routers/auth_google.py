@@ -54,25 +54,21 @@ def generar_pin() -> str:
     return str(random.randint(100000, 999999))
 
 
-# --- Schemas ---
-
 class GoogleRegistroRequest(BaseModel):
     id_token: str
-    tipo: str  # "medico" o "paciente"
+    tipo: str
 
 
 class PinVerificacionRequest(BaseModel):
     email: str
     pin: str
-    tipo: str  # "medico" o "paciente"
+    tipo: str
 
 
 class GoogleLoginRequest(BaseModel):
     id_token: str
     tipo: str
 
-
-# --- Endpoints ---
 
 @router.post("/registro", status_code=status.HTTP_201_CREATED)
 def registro_google(data: GoogleRegistroRequest, db: Session = Depends(get_db)):

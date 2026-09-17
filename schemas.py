@@ -3,8 +3,6 @@ from typing import List, Optional
 import datetime
 
 
-# --- Especialidad ---
-
 class EspecialidadResponse(BaseModel):
     id_especialidad: int
     nombre_especialidad: str
@@ -12,8 +10,6 @@ class EspecialidadResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# --- Medico ---
 
 class MedicoRegister(BaseModel):
     nombre: str
@@ -52,8 +48,6 @@ class MedicoResponse(BaseModel):
         from_attributes = True
 
 
-# --- Medico público (buscador) ---
-
 class MedicoPublicoResponse(BaseModel):
     id: int
     nombre: str
@@ -65,8 +59,6 @@ class MedicoPublicoResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# --- Paciente ---
 
 class PacienteRegister(BaseModel):
     nombre: str
@@ -93,8 +85,6 @@ class PacienteResponse(BaseModel):
         from_attributes = True
 
 
-# --- Horarios ---
-
 class HorarioResponse(BaseModel):
     id: int
     dia_semana: int
@@ -105,10 +95,8 @@ class HorarioResponse(BaseModel):
 
 
 class HorarioUpdate(BaseModel):
-    horarios: list[dict]  # [{"dia_semana": 0, "hora": 9}, ...]
+    horarios: list[dict]
 
-
-# --- Turnos ---
 
 class TurnoCreate(BaseModel):
     medico_id: int
@@ -158,8 +146,6 @@ class TurnoResponse(BaseModel):
         from_attributes = True
 
 
-# --- Notificaciones ---
-
 class NotificacionResponse(BaseModel):
     id: int
     id_turno: int
@@ -171,8 +157,6 @@ class NotificacionResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# --- MediBot ---
 
 class MensajeChat(BaseModel):
     role: str = Field(pattern="^(user|assistant)$")
@@ -208,8 +192,6 @@ class MensajeMediBotResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# --- Auth responses ---
 
 class Token(BaseModel):
     access_token: str
