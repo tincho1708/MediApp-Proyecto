@@ -185,13 +185,13 @@ const celdas = computed(() => {
 
         <div class="w-[40.9375rem] h-full bg-white rounded-[1.25rem] shadow-[0rem_0.25rem_0.66875rem_0.3125rem_rgba(0,0,0,0.25)] border-[0.3125rem] border-sky-500 flex flex-col" style="padding: 1.25rem;">
           <div style="display: flex; align-items: center; gap: 0.625rem;" class="shrink-0">
-            <svg  class="mt-1"width="52" height="54" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg  class="mt-1"width="45" height="47" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="16" cy="8" r="7" stroke="black" stroke-width="3"/>
               <path d="M2 42V32c0-8.284 6.716-15 15-15 2.24 0 4.37.49 6.28 1.37" stroke="black" stroke-width="3" stroke-linecap="round"/>
               <circle cx="30" cy="30" r="10" stroke="black" stroke-width="3" fill="white"/>
               <path d="M30 24.5V30l4 2.8" stroke="black" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <div style="color: black; font-size: 2.275rem; font-weight: 400; font-family: 'Inter', sans-serif;">Proximos turnos</div>
+            <div style="color: black; font-size: 2.175rem; font-weight: 400; font-family: 'Inter', sans-serif;">Proximos turnos</div>
           </div>
 
           <p v-if="cargandoTurnos" class="text-zinc-400 ml-8 mt-4 text-2xl">Cargando turnos...</p>

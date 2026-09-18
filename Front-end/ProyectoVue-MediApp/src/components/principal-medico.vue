@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useTurnosMedico } from '@/stores/turnosMedico'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-mis-pacientes'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-mis-pacientes', 'ir-a-configuracion'])
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const nombreUsuario = sesion.nombre || 'Usuario'
@@ -152,7 +152,7 @@ const celdas = computed(() => {
             </div>
           </button>
 
-          <button href="#">
+          <button href="#" @click="emit('ir-a-configuracion')">
             <div id="barra-dentro" class="w-50 h-12 rounded-2xl">
               <div class="barra-texto">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 32 32" fill="none" style="flex-shrink: 0;">

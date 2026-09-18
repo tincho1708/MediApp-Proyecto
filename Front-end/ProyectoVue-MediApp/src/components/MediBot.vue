@@ -11,6 +11,7 @@ const emit = defineEmits([
   'ir-a-calendario-usuario',
   'ir-a-reservar-turno',
   'ir-a-mis-pacientes',
+  'ir-a-configuracion',
 ])
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
@@ -247,7 +248,7 @@ function formatear(texto: string) {
           </div>
         </button>
 
-        <button href="#">
+        <button href="#" @click="emit('ir-a-configuracion')">
           <div id="barra-dentro" class="w-50 h-12 rounded-2xl">
             <div class="barra-texto">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 32 32" fill="none" style="flex-shrink: 0;">

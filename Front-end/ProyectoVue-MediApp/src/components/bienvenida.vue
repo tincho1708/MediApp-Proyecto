@@ -124,16 +124,15 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 .contenedor1 {
   background-color: #D9D9D9;
   width: 100%;
-  max-width: 33.125rem;
+  max-width: 36.86rem;
   border-radius: 1.25rem;
-  border: 0.5rem solid #ccc;
-  overflow: hidden
+  border: 0.5rem solid #5FA8D8;
+  overflow: hidden;
 }
 
 .contenedor1 img {
   width: 100%;
-  height: 31.25rem;
-  object-fit: contain;
+  height: auto;
   display: block;
 }
 

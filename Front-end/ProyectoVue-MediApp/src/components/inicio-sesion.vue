@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useTurnosMedico } from '@/stores/turnosMedico'
 
 const emit = defineEmits(['ir-a-registro', 'bienvenida', 'ir-a-principal', 'ir-a-principal-usuario'])
+
+const { resetTurnosMedico } = useTurnosMedico()
 
 const form = ref({
   email: '',
@@ -32,11 +35,13 @@ async function testearSubmit() {
 
       if (res.ok && tipo === 'Medico') {
         localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, email: form.value.email, nombre: data.nombre }))
+        resetTurnosMedico()
         emit('ir-a-principal')
         return
       }
       if (res.ok && tipo === 'Paciente') {
         localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, email: form.value.email, nombre: data.nombre }))
+        resetTurnosMedico()
         emit('ir-a-principal-usuario')
         return
       }

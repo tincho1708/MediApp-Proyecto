@@ -40,6 +40,13 @@ async function cargarTurnosMedico(forzar = false) {
   }
 }
 
+function resetTurnosMedico() {
+  turnos.value = []
+  cargado.value = false
+  cargando.value = false
+  error.value = ''
+}
+
 async function actualizarEstadoTurno(id: number, accion: 'aceptar' | 'rechazar' | 'cancelar') {
   const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos/${id}/${accion}`, {
     method: 'PATCH',
@@ -56,5 +63,5 @@ async function actualizarEstadoTurno(id: number, accion: 'aceptar' | 'rechazar' 
 }
 
 export function useTurnosMedico() {
-  return { turnos, cargado, cargando, error, cargarTurnosMedico, actualizarEstadoTurno }
+  return { turnos, cargado, cargando, error, cargarTurnosMedico, actualizarEstadoTurno, resetTurnosMedico }
 }

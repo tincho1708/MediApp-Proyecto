@@ -60,6 +60,17 @@ def obtener_horarios_ocupados(medico_id: int, fecha: date, db: Session = Depends
     return [t.fecha_hora.hour for t in turnos]
 
 
+@router.get("/medicos/mis-horarios", response_model=List[HorarioResponse])
+def mis_horarios(
+    db: Session = Depends(get_db),
+    user: dict = Depends(solo_medico),
+):
+    medico_id = int(user["sub"])
+    return db.query(HorarioMedico).filter(
+        HorarioMedico.id_medico == medico_id
+    ).order_by(HorarioMedico.dia_semana, HorarioMedico.hora).all()
+
+
 @router.put("/medicos/mis-horarios", response_model=List[HorarioResponse])
 def actualizar_horarios(
     data: HorarioUpdate,
