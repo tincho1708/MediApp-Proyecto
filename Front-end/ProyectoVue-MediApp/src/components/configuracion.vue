@@ -257,7 +257,7 @@ function cancelarCambios() {
               <option v-for="h in HORAS" :key="h" :value="h">{{ formatearHora(h) }}</option>
             </select>
           </div>
-          <hr class="border-zinc-200" />
+          <hr class="border-zinc-100" />
         </template>
 
         <p v-if="error" class="text-red-500 mt-4">{{ error }}</p>

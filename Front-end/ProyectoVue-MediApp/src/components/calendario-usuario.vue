@@ -109,6 +109,14 @@ async function cargarTurnos() {
 
 onMounted(cargarTurnos)
 
+let intervaloTurnos: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  intervaloTurnos = setInterval(cargarTurnos, 6000)
+})
+onBeforeUnmount(() => {
+  if (intervaloTurnos !== undefined) clearInterval(intervaloTurnos)
+})
+
 function esMismoDia(fechaHora: string, dia: Date) {
   const f = new Date(fechaHora)
   return f.getFullYear() === dia.getFullYear() && f.getMonth() === dia.getMonth() && f.getDate() === dia.getDate()

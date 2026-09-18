@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useTurnosMedico, type TurnoMedico } from '@/stores/turnosMedico'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-mis-pacientes'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-mis-pacientes', 'ir-a-configuracion'])
 
 const esta = ref(false)
 
@@ -85,9 +85,9 @@ function diaSiguiente() {
 
 type Turno = TurnoMedico
 
-const { turnos, cargarTurnosMedico } = useTurnosMedico()
+const { turnos, usarPollingTurnos } = useTurnosMedico()
 
-onMounted(() => cargarTurnosMedico())
+usarPollingTurnos()
 
 function esMismoDia(fechaHora: string, dia: Date) {
   const f = new Date(fechaHora)

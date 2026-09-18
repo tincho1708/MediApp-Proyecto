@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-principal', 'ir-a-solicitudes', 'ir-a-mis-pacientes'])
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-principal', 'ir-a-solicitudes', 'ir-a-mis-pacientes', 'ir-a-configuracion'])
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const esta = ref(false)
 

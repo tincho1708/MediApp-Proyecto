@@ -211,8 +211,8 @@ async function cargarHorarios(medicoId: number) {
   }
 }
 
-async function cargarHorasOcupadas(medicoId: number, dia: number) {
-  horasOcupadas.value = []
+async function cargarHorasOcupadas(medicoId: number, dia: number, silencioso = false) {
+  if (!silencioso) horasOcupadas.value = []
   try {
     const pad = (n: number) => String(n).padStart(2, '0')
     const fecha = `${añoActual.value}-${pad(mesActual.value + 1)}-${pad(dia)}`
@@ -222,6 +222,18 @@ async function cargarHorasOcupadas(medicoId: number, dia: number) {
   } catch {
   }
 }
+
+let intervaloOcupadas: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  intervaloOcupadas = setInterval(() => {
+    if (medicoSeleccionado.value && diaSeleccionado.value !== null) {
+      cargarHorasOcupadas(medicoSeleccionado.value.id, diaSeleccionado.value, true)
+    }
+  }, 6000)
+})
+onBeforeUnmount(() => {
+  if (intervaloOcupadas !== undefined) clearInterval(intervaloOcupadas)
+})
 
 const diaSemanaSeleccionado = computed(() => {
   if (diaSeleccionado.value === null) return null
@@ -352,13 +364,13 @@ async function confirmarReserva() {
             </div>
           </button>
 
-          <button href="#" style="margin-top: auto;">
+          <button href="#" style="margin-top: auto;" @click="emit('ir-a-bienvenida')">
             <div class="barra-dentro-cerrar w-50 h-12 rounded-2xl">
               <div class="barra-texto">
                 <svg xmlns="http://www.w3.org/2000/svg" width="21" height="22" viewBox="0 0 31 32" fill="none" style="flex-shrink: 0;">
                   <path d="M3.44444 32C2.49722 32 1.68663 31.6521 1.01267 30.9564C0.338704 30.2607 0.00114815 29.4234 0 28.4444V3.55556C0 2.57778 0.337556 1.74104 1.01267 1.04533C1.68778 0.34963 2.49837 0.00118519 3.44444 0H15.5V3.55556H3.44444V28.4444H15.5V32H3.44444ZM22.3889 24.8889L20.0208 22.3111L24.4125 17.7778H10.3333V14.2222H24.4125L20.0208 9.68889L22.3889 7.11111L31 16L22.3889 24.8889Z" fill="#FF2A2A"/>
                 </svg>
-                <button @click="emit('ir-a-bienvenida')">Cerrar sesion</button>
+                Cerrar sesion
               </div>
             </div>
           </button>

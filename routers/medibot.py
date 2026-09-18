@@ -451,7 +451,7 @@ def ejecutar_tool(nombre: str, args: dict, db: Session, user_id: int, tipo: str)
 
     if nombre == "mi_agenda":
         dias = int(args.get("dias") or 7)
-        ahora = datetime.datetime.utcnow()
+        ahora = datetime.datetime.now()
         hasta = ahora + datetime.timedelta(days=dias)
         id_aceptado = _estado_id(db, "aceptado")
 
@@ -585,7 +585,7 @@ def ejecutar_tool(nombre: str, args: dict, db: Session, user_id: int, tipo: str)
             return error
 
         dias = int(args.get("dias") or 14)
-        ahora = datetime.datetime.utcnow()
+        ahora = datetime.datetime.now()
         hasta = ahora + datetime.timedelta(days=dias)
 
         horarios = db.query(HorarioMedico).filter(HorarioMedico.id_medico == medico.id).all()

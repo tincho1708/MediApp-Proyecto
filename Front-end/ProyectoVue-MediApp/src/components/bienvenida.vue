@@ -125,9 +125,9 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   background-color: #D9D9D9;
   width: 100%;
   max-width: 36.86rem;
-  border-radius: 1.25rem;
-  border: 0.5rem solid #5FA8D8;
+  border-radius: 1.05231rem;
   overflow: hidden;
+  box-shadow: 0 0 28.061px 15.714px rgba(0, 0, 0, 0.25);
 }
 
 .contenedor1 img {

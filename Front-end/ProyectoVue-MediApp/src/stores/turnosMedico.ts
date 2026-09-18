@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 export type TurnoMedico = {
   id_turno: number
@@ -22,10 +22,12 @@ function token() {
   return sesion.token as string | undefined
 }
 
-async function cargarTurnosMedico(forzar = false) {
+async function cargarTurnosMedico(forzar = false, silencioso = false) {
   if (cargado.value && !forzar) return
-  cargando.value = true
-  error.value = ''
+  if (!silencioso) {
+    cargando.value = true
+    error.value = ''
+  }
   try {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos/mis-turnos`, {
       headers: { Authorization: `Bearer ${token()}` },
@@ -34,10 +36,23 @@ async function cargarTurnosMedico(forzar = false) {
     turnos.value = await res.json()
     cargado.value = true
   } catch {
-    error.value = 'No se pudieron cargar los turnos. Intentá de nuevo más tarde.'
+    if (!silencioso) error.value = 'No se pudieron cargar los turnos. Intentá de nuevo más tarde.'
   } finally {
-    cargando.value = false
+    if (!silencioso) cargando.value = false
   }
+}
+
+function usarPollingTurnos(intervaloMs = 6000) {
+  let intervalId: ReturnType<typeof setInterval> | undefined
+
+  onMounted(() => {
+    cargarTurnosMedico(true)
+    intervalId = setInterval(() => cargarTurnosMedico(true, true), intervaloMs)
+  })
+
+  onUnmounted(() => {
+    if (intervalId !== undefined) clearInterval(intervalId)
+  })
 }
 
 function resetTurnosMedico() {
@@ -63,5 +78,5 @@ async function actualizarEstadoTurno(id: number, accion: 'aceptar' | 'rechazar' 
 }
 
 export function useTurnosMedico() {
-  return { turnos, cargado, cargando, error, cargarTurnosMedico, actualizarEstadoTurno, resetTurnosMedico }
+  return { turnos, cargado, cargando, error, cargarTurnosMedico, actualizarEstadoTurno, resetTurnosMedico, usarPollingTurnos }
 }
