@@ -83,9 +83,47 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
     </div>
     <div class="text-center text-black text-5xl font-normal font-['Inter']" style="margin-top: 9rem; padding: 0 2rem;">Nuestros planes, adaptados a cada cliente.</div>
     <div style="display: flex; flex-direction: row; gap: 5rem; justify-content: center; margin-top: 2rem;">
-      <div class="w-80 h-[470px] bg-white rounded-[20px] mt-5 shadow-[0px_4px_10.699999809265137px_5px_rgba(0,0,0,0.25)] border-[5px] border-sky-500"></div>
-      <div class="w-80 h-[470px] bg-white rounded-[20px] mt-5 shadow-[0px_4px_10.699999809265137px_5px_rgba(0,0,0,0.25)] border-[5px] border-sky-500"></div>
-      <div class="w-80 h-[470px] bg-white rounded-[20px] mt-5 shadow-[0px_4px_10.699999809265137px_5px_rgba(0,0,0,0.25)] border-[5px] border-sky-500"></div>
+      <div class="w-80 h-[470px] bg-white rounded-[20px] mt-5 shadow-[0px_4px_10.699999809265137px_5px_rgba(0,0,0,0.25)] border-[5px] border-sky-500 p-6 text-left font-['Inter']">
+        <div class="text-2xl font-semibold text-black">MediApp Basic</div>
+        <div class="mt-3 flex items-end gap-1">
+          <span class="text-4xl font-bold text-black">0$</span>
+          <span class="text-xs text-black/60 leading-tight">USD/<br />mes</span>
+        </div>
+        <ul class="mt-6 space-y-3 text-black text-sm list-disc pl-5">
+          <li>Caracteres limitados en informacion de turnos</li>
+          <li>Caracteres limitados de infromacion como profesional</li>
+        </ul>
+      </div>
+
+      <div class="w-80 h-[470px] bg-white rounded-[20px] mt-5 shadow-[0px_4px_10.699999809265137px_5px_rgba(0,0,0,0.25)] border-[5px] border-sky-500 p-6 text-left font-['Inter']">
+        <div class="text-2xl font-semibold text-black">MediApp+ (plus)</div>
+        <div class="mt-3 flex items-end gap-1">
+          <span class="text-4xl font-bold text-black">14.99$</span>
+          <span class="text-xs text-black/60 leading-tight">USD/<br />mes</span>
+        </div>
+        <ul class="mt-6 space-y-3 text-black text-sm list-disc pl-5">
+          <li>Prioridad en el buscador de profesionales</li>
+          <li>Caracteres ilimitados en la informacion de turnos</li>
+          <li>Conexiones ilimitadas</li>
+          <li>Cuento con conocimiento nulo relacionado a que beneficio insertar en este cuadro de texto.</li>
+          <li>Algo que tenga sentido, no como lo de arriba</li>
+        </ul>
+      </div>
+
+      <div class="w-80 h-[470px] bg-white rounded-[20px] mt-5 shadow-[0px_4px_10.699999809265137px_5px_rgba(0,0,0,0.25)] border-[5px] border-sky-500 p-6 text-left font-['Inter']">
+        <div class="text-2xl font-semibold text-black">MediApp Business</div>
+        <div class="mt-3 flex items-end gap-1">
+          <span class="text-4xl font-bold text-black">499$</span>
+          <span class="text-xs text-black/60 leading-tight">USD/<br />año</span>
+        </div>
+        <ul class="mt-6 space-y-3 text-black text-sm list-disc pl-5">
+          <li>50 usuarios</li>
+          <li>Caracteres ilimitados en la informacion de turnos</li>
+          <li>Conexiones ilimitadas</li>
+          <li>Cuento con conocimiento nulo relacionado a que beneficio insertar en este cuadro de texto.</li>
+          <li>Algo que tenga sentido, no como lo de arriba</li>
+        </ul>
+      </div>
     </div>
 </template>
 

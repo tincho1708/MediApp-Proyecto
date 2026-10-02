@@ -300,17 +300,19 @@ const celdas = computed(() => {
 .navbar-logo {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0;
+  margin-left: -1.4rem;
 }
 
 .navbar-logo img {
-  width: 6.875rem;
-  height: 6.875rem;
+  width: 5.775rem;
+  height: 5.775rem;
 }
 
 .navbar-logo span {
   font-family: Inter;
-  font-size: 2.625rem;
+  font-size: 2.425rem;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
