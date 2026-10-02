@@ -247,22 +247,27 @@ async function testearSubmit() {
 .boton-atras {
   color: #000;
   font-family: 'Inter', 'sans-serif';
-  font-size: 1.25rem;
-  font-weight: 400;
+  font-size: 1.0625rem;
+  font-weight: 500;
   line-height: normal;
   margin: 1.25rem;
   cursor: pointer;
-  width: 11.125rem;
-  height: 4rem;
-  border-radius: 1.875rem;
-  background: #2E9CE0;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.75rem;
+  background: transparent;
   border: none;
   display: flex;
   align-items: center;
-  padding-left: 2.5%;
-  justify-content: flex-start;
-  gap: 10%;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
 }
+
+.boton-atras:hover {
+  background-color: #EAF4FC;
+}
+
 .boton-atras.svg {
   stroke-width: 0.125rem;
   stroke: #000;

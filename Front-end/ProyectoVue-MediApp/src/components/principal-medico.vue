@@ -384,32 +384,42 @@ const celdas = computed(() => {
 
 .barra-desplegable {
   position: fixed;
-  top: 6.25rem;
-  right: 0;
-  height: 21.875rem;
+  top: 5.5rem;
+  right: 1.5rem;
   width: 13.75rem;
+  height: 21.875rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 1.5rem 1rem;
-  box-shadow: -0.5rem 0 1.5rem rgba(99, 102, 241, 0.35);
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
+  padding: 0.4rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.18);
+  transform: translateY(-1.5rem);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   pointer-events: none;
   border-radius: 1.3125rem;
-  background: #E8E8E8;
-  margin-top: 1%;
+  background: #FFFFFF;
 }
 
 .barra-abierta {
-  transform: translateX(0);
+  transform: translateY(0);
+  opacity: 1;
   pointer-events: auto;
 }
 
+.barra-desplegable button {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  cursor: pointer;
+}
+
 #barra-dentro {
+  width: 100%;
   align-items: center;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-left: 0.4rem;
 }
 
 #barra-dentro:hover {
@@ -418,9 +428,11 @@ const celdas = computed(() => {
 }
 
 .barra-dentro-cerrar {
+  width: 100%;
   align-items: center;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-left: 0.4rem;
 }
 
 .barra-dentro-cerrar:hover {
@@ -429,7 +441,7 @@ const celdas = computed(() => {
 }
 
 .barra-texto {
-  width: 11rem;
+  width: auto;
   height: 2rem;
   color: #000;
   font-size: 1.375rem;
@@ -437,6 +449,7 @@ const celdas = computed(() => {
   font-family: 'Inter', sans-serif;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 0.375rem;
 }
 
@@ -444,7 +457,7 @@ const celdas = computed(() => {
   color: #000;
   font-family: 'Inter', sans-serif;
   font-size: 3.625rem;
-  font-weight: 400;
+  font-weight: 500;
   line-height: normal;
   margin-top: 7.5rem;
   text-align: center;
@@ -626,7 +639,7 @@ const celdas = computed(() => {
   text-align: center;
   font-family: 'Inter', sans-serif;
   font-size: 1.75rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .cal-grid {

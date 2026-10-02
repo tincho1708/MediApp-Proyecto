@@ -78,12 +78,11 @@ async function testearSubmit() {
     Continuar con Google
     </button> 
 
-    <button class="texto-sesion2"">
+    <button class="texto-sesion2">
     <img src="@/assets/imagenes/microsoft.png" alt="Microsoft"/>
     Continuar con Microsoft
     </button>
 
-    <p class="separador">──────────────── O ────────────────</p>
     <form autocomplete="off" @submit.prevent="testearSubmit">
       <div class="campo">
         <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
@@ -112,21 +111,25 @@ async function testearSubmit() {
 .boton-atras {
   color: #000;
   font-family: 'Inter', 'sans-serif';
-  font-size: 1.25rem;
-  font-weight: 400;
+  font-size: 1.0625rem;
+  font-weight: 500;
   line-height: normal;
   margin: 1.25rem;
   cursor: pointer;
-  width: 11.125rem;
-  height: 4rem;
-  border-radius: 1.875rem;
-  background: #2E9CE0;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.75rem;
+  background: transparent;
   border: none;
   display: flex;
   align-items: center;
-  padding-left: 2.5%;
-  justify-content: flex-start;
-  gap: 10%;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.boton-atras:hover {
+  background-color: #EAF4FC;
 }
 
 .boton-atras.svg {
@@ -246,10 +249,7 @@ button:hover {
   background-color: #7cb1f192;
 }
 
-.separador {
-  color: black;
-  text-align: center;
-  margin-bottom: 0.625rem;
-  font-size: 0.98125rem;
+.texto-sesion1:focus, .texto-sesion2:focus {
+  outline: none;
 }
 </style>

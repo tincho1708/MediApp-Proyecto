@@ -81,7 +81,12 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
         </div>
       </div>
     </div>
-
+    <div class="text-center text-black text-5xl font-normal font-['Inter']" style="margin-top: 9rem; padding: 0 2rem;">Nuestros planes, adaptados a cada cliente.</div>
+    <div style="display: flex; flex-direction: row; gap: 5rem; justify-content: center; margin-top: 2rem;">
+      <div class="w-80 h-[470px] bg-white rounded-[20px] mt-5 shadow-[0px_4px_10.699999809265137px_5px_rgba(0,0,0,0.25)] border-[5px] border-sky-500"></div>
+      <div class="w-80 h-[470px] bg-white rounded-[20px] mt-5 shadow-[0px_4px_10.699999809265137px_5px_rgba(0,0,0,0.25)] border-[5px] border-sky-500"></div>
+      <div class="w-80 h-[470px] bg-white rounded-[20px] mt-5 shadow-[0px_4px_10.699999809265137px_5px_rgba(0,0,0,0.25)] border-[5px] border-sky-500"></div>
+    </div>
 </template>
 
 <style></style>
