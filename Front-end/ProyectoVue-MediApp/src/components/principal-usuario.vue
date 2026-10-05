@@ -184,27 +184,39 @@ const celdas = computed(() => {
 
         <div class="w-[40.9375rem] h-full bg-white rounded-[1.25rem] shadow-[0rem_0.25rem_0.66875rem_0.3125rem_rgba(0,0,0,0.25)] border-[0.3125rem] border-sky-500 flex flex-col" style="padding: 1.25rem;">
           <div style="display: flex; align-items: center; gap: 0.625rem;" class="shrink-0">
-            <svg  class="mt-1"width="37" height="39" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="16" cy="8" r="7" stroke="black" stroke-width="3"/>
-              <path d="M2 42V32c0-8.284 6.716-15 15-15 2.24 0 4.37.49 6.28 1.37" stroke="black" stroke-width="3" stroke-linecap="round"/>
-              <circle cx="30" cy="30" r="10" stroke="black" stroke-width="3" fill="white"/>
-              <path d="M30 24.5V30l4 2.8" stroke="black" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div style="color:  black; margin-left: 10px; font-size: 2.175rem; font-weight: 400; font-family: 'Inter', sans-serif;">Proximos turnos</div>
+            <div class="w-16 h-16 rounded-2xl border-2 border-sky-500 flex items-center justify-center shrink-0">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <path d="M16 3v4M8 3v4M3 10h18"/>
+              </svg>
+            </div>
+            <div style="color: black; margin-left: 10px; font-size: 2.175rem; font-weight: 700; font-family: 'Inter', sans-serif;">Proximos turnos</div>
           </div>
 
           <p v-if="cargandoTurnos" class="text-zinc-400 ml-8 mt-4 text-2xl">Cargando turnos...</p>
           <p v-else-if="errorTurnos" class="text-red-500 ml-8 mt-4">{{ errorTurnos }}</p>
-          <p v-else-if="!proximosTurnos.length" class="text-zinc-400 text-[1.7rem]ml-8 mt-4">No tenés turnos próximos.</p>
+          <p v-else-if="!proximosTurnos.length" class="text-zinc-400 text-[1.7rem] ml-8 mt-4">No tenés turnos próximos.</p>
 
-          <div v-else class="flex-1 min-h-0 flex flex-col gap-8 mt-7">
-            <div v-for="t in proximosTurnos" :key="t.id_turno">
-              <div class="flex flex-row items-baseline gap-8 ml-8 text-black font-normal font-['Inter']">
-                <div class="text-[1.7rem] w-14 shrink-0">{{ formatearFecha(t.fecha_hora) }}</div>
-                <div class="text-[1.7rem] text-black/40 w-20 shrink-0">{{ formatearHora(t.fecha_hora) }}</div>
-                <div class="justify-start text-black text-[1.7rem] font-normal font-['Inter'] truncate">{{ etiquetaTurno(t) }}</div>
+          <div v-else class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 mt-7">
+            <div v-for="(t, idx) in proximosTurnos" :key="t.id_turno" class="flex flex-row items-center gap-6 ml-8 font-['Inter'] cursor-pointer group">
+              <div
+                class="flex items-center justify-center w-20 h-20 shrink-0 rounded-[1.5rem] text-white"
+                :class="idx % 2 === 0 ? 'bg-red-400' : 'bg-sky-500'"
+              >
+                <div class="text-2xl font-bold">{{ formatearFecha(t.fecha_hora) }}</div>
               </div>
-              <div class="mx-auto w-[35rem] h-0 mt-3 outline-1 outline-offset-[-0.50px] outline-black/30"></div>
+
+              <div class="flex-1 min-w-0">
+                <div class="text-2xl font-bold text-black/70 truncate">{{ etiquetaTurno(t) }}</div>
+                <div class="flex items-center gap-2 mt-1 text-black font-semibold text-lg">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                  {{ formatearHora(t.fecha_hora) }}
+                </div>
+              </div>
+
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 group-hover:stroke-sky-500 transition-colors">
+                <path d="M9 6l6 6-6 6"/>
+              </svg>
             </div>
           </div>
         </div>

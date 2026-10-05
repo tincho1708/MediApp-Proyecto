@@ -12,7 +12,7 @@ const emit = defineEmits([
   'ir-a-reservar-turno',
   'ir-a-mis-pacientes',
   'ir-a-configuracion',
-])
+, 'ir-a-mi-usuario'])
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const token = sesion.token as string | undefined
@@ -237,7 +237,7 @@ function formatear(texto: string) {
       </button>
 
       <div :class="['barra-desplegable', { 'barra-abierta': esta }]" @click.stop>
-        <button href="#">
+        <button href="#" @click="emit('ir-a-mi-usuario')">
           <div id="barra-dentro" class="w-50 h-12 rounded-2xl">
             <div class="barra-texto">
               <svg xmlns="http://www.w3.org/2000/svg" width="21" height="22" viewBox="0 0 31 32" fill="none">

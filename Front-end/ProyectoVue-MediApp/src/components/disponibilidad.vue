@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-reservar-turno', 'ir-a-mis-pacientes', 'ir-a-configuracion'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-reservar-turno', 'ir-a-mis-pacientes', 'ir-a-configuracion', 'ir-a-mi-usuario'])
 const esta = ref(false)
 
 function cerrarAlClickFuera() { esta.value = false }
@@ -146,7 +146,7 @@ function cancelarCambios() {
       </button>
 
       <div :class="['barra-desplegable', { 'barra-abierta': esta }]" @click.stop>
-        <button href="#">
+        <button href="#" @click="emit('ir-a-mi-usuario')">
           <div id="barra-dentro" class="w-50 h-12 rounded-2xl">
             <div class="barra-texto">
               <svg xmlns="http://www.w3.org/2000/svg" width="21" height="22" viewBox="0 0 31 32" fill="none">
@@ -185,11 +185,11 @@ function cancelarCambios() {
   <div class="titulo-pagina w-fit text-zinc-900 text-4xl font-semibold font-['Inter'] pb-2 mb-6 border-b-2 border-black">Configuracion</div>
 
   <div class="contenido-pagina flex gap-6 items-start font-['Inter']">
-    <div class="w-64 bg-white rounded-2xl border border-sky-500 shadow-[0px_4px_20px_2px_rgba(0,0,0,0.15)] p-5 flex flex-col gap-1 shrink-0">
-      <div class="flex items-center gap-3 px-3 py-3 rounded-xl text-black/70">
+    <div class="w-64 h-[32.5rem] bg-white rounded-2xl border border-sky-500 shadow-[0px_4px_20px_2px_rgba(0,0,0,0.15)] p-5 flex flex-col gap-1 shrink-0">
+      <button class="flex items-center gap-3 px-3 py-3 rounded-xl text-black/70 hover:bg-sky-50 text-left" @click="emit('ir-a-mi-usuario')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
         Mi usuario
-      </div>
+      </button>
       <div class="flex items-center gap-3 px-3 py-3 rounded-xl text-black/70">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         Notificaciones

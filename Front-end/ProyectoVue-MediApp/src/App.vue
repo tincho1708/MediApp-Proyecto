@@ -12,7 +12,8 @@ import MediPlus from './components/MediPlus.vue'
 import ReservarTurno from './components/reservar-turno.vue'
 import Solicitudes from './components/solicitudes.vue'
 import MisPacientes from './components/mispacientes.vue'
-import Configuracion from './components/configuracion.vue'
+import Disponibilidad from './components/disponibilidad.vue'
+import MiUsuario from './components/MiUsuario.vue'
 import { useTurnosMedico } from '@/stores/turnosMedico'
 
 const vista = ref('bienvenida')
@@ -64,7 +65,8 @@ function cerrarSesion() {
       @ir-a-MediPlus="vista = 'MediPlus'"
       @ir-a-solicitudes="vista = 'solicitudes'"
       @ir-a-mis-pacientes="vista = 'misPacientes'"
-      @ir-a-configuracion="vista = 'configuracion'"/>
+      @ir-a-configuracion="vista = 'configuracion'"
+      @ir-a-mi-usuario="vista = 'miUsuario'"/>
 
     <MediBot
       v-else-if="vista === 'chatbot'"
@@ -78,7 +80,8 @@ function cerrarSesion() {
       @ir-a-MediPlus="vista = 'MediPlus'"
       @ir-a-calendario="vista = 'calendario'"
       @ir-a-calendario-usuario="vista = 'calendarioUsuario'"
-      @ir-a-configuracion="vista = 'configuracion'"/>
+      @ir-a-configuracion="vista = 'configuracion'"
+      @ir-a-mi-usuario="vista = 'miUsuario'"/>
 
     <Calendario
       v-else-if="vista === 'calendario'"
@@ -89,7 +92,8 @@ function cerrarSesion() {
       @ir-a-MediPlus="vista = 'MediPlus'"
       @ir-a-solicitudes="vista = 'solicitudes'"
       @ir-a-mis-pacientes="vista = 'misPacientes'"
-      @ir-a-configuracion="vista = 'configuracion'"/>
+      @ir-a-configuracion="vista = 'configuracion'"
+      @ir-a-mi-usuario="vista = 'miUsuario'"/>
 
       <Calendario-Usuario
       v-else-if="vista === 'calendarioUsuario'"
@@ -117,7 +121,8 @@ function cerrarSesion() {
       @ir-a-principal="vista = 'Principal'"
       @ir-a-solicitudes="vista = 'solicitudes'"
       @ir-a-mis-pacientes="vista = 'misPacientes'"
-      @ir-a-configuracion="vista = 'configuracion'"/>
+      @ir-a-configuracion="vista = 'configuracion'"
+      @ir-a-mi-usuario="vista = 'miUsuario'"/>
 
     <ReservarTurno
       v-else-if="vista === 'reservarTurno'"
@@ -137,7 +142,8 @@ function cerrarSesion() {
       @ir-a-calendario="vista = 'calendario'"
       @ir-a-MediPlus="vista = 'MediPlus'"
       @ir-a-mis-pacientes="vista = 'misPacientes'"
-      @ir-a-configuracion="vista = 'configuracion'"/>
+      @ir-a-configuracion="vista = 'configuracion'"
+      @ir-a-mi-usuario="vista = 'miUsuario'"/>
 
     <MisPacientes
       v-else-if="vista === 'misPacientes'"
@@ -149,11 +155,26 @@ function cerrarSesion() {
       @ir-a-MediPlus="vista = 'MediPlus'"
       @ir-a-solicitudes="vista = 'solicitudes'"
       @ir-a-reservar-turno="vista = 'reservarTurno'"
-      @ir-a-configuracion="vista = 'configuracion'"/>
+      @ir-a-configuracion="vista = 'configuracion'"
+      @ir-a-mi-usuario="vista = 'miUsuario'"/>
 
-    <Configuracion
+    <Disponibilidad
       v-else-if="vista === 'configuracion'"
       key="configuracion"
+      @ir-a-bienvenida="cerrarSesion"
+      @ir-a-principal="vista = 'Principal'"
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-calendario="vista = 'calendario'"
+      @ir-a-MediPlus="vista = 'MediPlus'"
+      @ir-a-solicitudes="vista = 'solicitudes'"
+      @ir-a-reservar-turno="vista = 'reservarTurno'"
+      @ir-a-mis-pacientes="vista = 'misPacientes'"
+      @ir-a-configuracion="vista = 'configuracion'"
+      @ir-a-mi-usuario="vista = 'miUsuario'"/>
+
+    <MiUsuario
+      v-else-if="vista === 'miUsuario'"
+      key="miUsuario"
       @ir-a-bienvenida="cerrarSesion"
       @ir-a-principal="vista = 'Principal'"
       @ir-a-chatbot="vista = 'chatbot'"

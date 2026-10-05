@@ -83,6 +83,7 @@ async function testearSubmit() {
     Continuar con Microsoft
     </button>
 
+    <p class="separador">──────────────── O ────────────────</p>
     <form autocomplete="off" @submit.prevent="testearSubmit">
       <div class="campo">
         <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
@@ -251,5 +252,12 @@ button:hover {
 
 .texto-sesion1:focus, .texto-sesion2:focus {
   outline: none;
+}
+
+.separador {
+  color: black;
+  text-align: center;
+  margin-bottom: 0.625rem;
+  font-size: 0.98125rem;
 }
 </style>
