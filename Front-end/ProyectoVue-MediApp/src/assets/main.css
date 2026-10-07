@@ -6,6 +6,10 @@
     margin: 0;
     padding: 0;
   }
+
+  html {
+    font-size: clamp(8px, 1.1111vw, 40px);
+  }
 }
 
 body {

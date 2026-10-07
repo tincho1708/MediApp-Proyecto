@@ -127,7 +127,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   max-width: 36.86rem;
   border-radius: 1.05231rem;
   overflow: hidden;
-  box-shadow: 0 0 28.061px 15.714px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 1.753812rem 0.982125rem rgba(0, 0, 0, 0.25);
 }
 
 .contenedor1 img {

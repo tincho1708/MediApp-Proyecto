@@ -65,7 +65,7 @@ async function testearSubmit() {
 
 <template>
   <div>
-  <button class="boton-atras" @click="emit('bienvenida')"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="15" viewBox="0 0 18 15" fill="none">
+  <button class="boton-atras" @click="emit('bienvenida')"> <svg style="width:1.125rem; height:0.9375rem;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 15" fill="none">
     <path d="M0.292889 6.65691C-0.0976353 7.04743 -0.0976353 7.6806 0.292889 8.07112L6.65685 14.4351C7.04737 14.8256 7.68054 14.8256 8.07106 14.4351C8.46159 14.0446 8.46159 13.4114 8.07106 13.0209L2.41421 7.36401L8.07106 1.70716C8.46159 1.31664 8.46159 0.68347 8.07106 0.292946C7.68054 -0.0975785 7.04737 -0.0975785 6.65685 0.292946L0.292889 6.65691ZM17.1245 7.36401V6.36401L0.999996 6.36401V7.36401V8.36401L17.1245 8.36401V7.36401Z" fill="black"/>
     </svg> Atrás
   </button>
