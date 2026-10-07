@@ -166,7 +166,7 @@ const celdas = computed(() => {
           <button href="#" style="margin-top: auto;" @click="emit('ir-a-bienvenida')">
             <div class="barra-dentro-cerrar w-50 h-12 rounded-2xl">
               <div class="barra-texto">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 32" fill="none" style="flex-shrink: 0; width:1.3125rem; height:1.375rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="22" viewBox="0 0 31 32" fill="none" style="flex-shrink: 0;">
                   <path d="M3.44444 32C2.49722 32 1.68663 31.6521 1.01267 30.9564C0.338704 30.2607 0.00114815 29.4234 0 28.4444V3.55556C0 2.57778 0.337556 1.74104 1.01267 1.04533C1.68778 0.34963 2.49837 0.00118519 3.44444 0H15.5V3.55556H3.44444V28.4444H15.5V32H3.44444ZM22.3889 24.8889L20.0208 22.3111L24.4125 17.7778H10.3333V14.2222H24.4125L20.0208 9.68889L22.3889 7.11111L31 16L22.3889 24.8889Z" fill="#FF2A2A"/>
                 </svg>
                 Cerrar sesion
@@ -185,7 +185,7 @@ const celdas = computed(() => {
         <div class="w-[40.9375rem] h-full bg-white rounded-[1.25rem] shadow-[0rem_0.25rem_0.66875rem_0.3125rem_rgba(0,0,0,0.25)] border-[0.3125rem] border-sky-500 flex flex-col" style="padding: 1.25rem;">
           <div style="display: flex; align-items: center; gap: 0.625rem;" class="shrink-0">
             <div class="w-16 h-16 rounded-2xl border-2 border-sky-500 flex items-center justify-center shrink-0">
-              <svg style="width:1.625rem; height:1.625rem;" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke- stroke-linecap="round" stroke-linejoin="round">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="5" width="18" height="16" rx="2"/>
                 <path d="M16 3v4M8 3v4M3 10h18"/>
               </svg>
@@ -199,22 +199,19 @@ const celdas = computed(() => {
 
           <div v-else class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 mt-7">
             <div v-for="(t, idx) in proximosTurnos" :key="t.id_turno" class="flex flex-row items-center gap-6 ml-8 font-['Inter'] cursor-pointer group">
-              <div
-                class="flex items-center justify-center w-20 h-20 shrink-0 rounded-[1.5rem] text-white"
-                :class="idx % 2 === 0 ? 'bg-red-400' : 'bg-sky-500'"
-              >
+              <div class="flex items-center justify-center w-20 h-20 shrink-0 rounded-[1.5rem] text-white" :class="idx % 2 === 0 ? 'bg-red-400' : 'bg-sky-500'">
                 <div class="text-2xl font-bold">{{ formatearFecha(t.fecha_hora) }}</div>
               </div>
 
               <div class="flex-1 min-w-0">
                 <div class="text-2xl font-bold text-black/70 truncate">{{ etiquetaTurno(t) }}</div>
                 <div class="flex items-center gap-2 mt-1 text-black font-semibold text-lg">
-                  <svg style="width:1.25rem; height:1.25rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
                   {{ formatearHora(t.fecha_hora) }}
                 </div>
               </div>
 
-              <svg style="width:1.375rem; height:1.375rem;" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke- stroke-linecap="round" stroke-linejoin="round" class="shrink-0 group-hover:stroke-sky-500 transition-colors">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 group-hover:stroke-sky-500 transition-colors">
                 <path d="M9 6l6 6-6 6"/>
               </svg>
             </div>
@@ -227,13 +224,13 @@ const celdas = computed(() => {
         <div class="calendario">
           <div class="cal-header">
             <button class="cal-nav-btn" @click="mesAnterior">
-              <svg style="width:3.125rem; height:3.125rem;" viewBox="0 0 83 82" fill="none">
+              <svg width="50" height="50" viewBox="0 0 83 82" fill="none">
                 <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
               </svg>
             </button>
             <span class="cal-titulo">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
             <button class="cal-nav-btn" @click="mesSiguiente">
-              <svg viewBox="0 0 83 82" fill="none" style="transform:rotate(180deg); width:3.125rem; height:3.125rem;">
+              <svg width="50" height="50" viewBox="0 0 83 82" fill="none" style="transform:rotate(180deg)">
                 <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
               </svg>
             </button>
