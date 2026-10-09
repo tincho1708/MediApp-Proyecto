@@ -14,6 +14,7 @@ import Solicitudes from './components/solicitudes.vue'
 import MisPacientes from './components/mispacientes.vue'
 import Disponibilidad from './components/disponibilidad.vue'
 import MiUsuario from './components/MiUsuario.vue'
+import MiUsuarioPaciente from './components/MiUsuario-Paciente.vue'
 import { useTurnosMedico } from '@/stores/turnosMedico'
 
 const vista = ref('bienvenida')
@@ -101,9 +102,10 @@ function cerrarSesion() {
       @ir-a-bienvenida="cerrarSesion"
       @ir-a-principal-usuario="vista = 'principalUsuario'"
       @ir-a-chatbot="vista = 'chatbot'"
-      @ir-a-reservar-turno="vista = 'reservarTurno'"/>
-      
-      
+      @ir-a-reservar-turno="vista = 'reservarTurno'"
+      @ir-a-mi-usuario-paciente="vista = 'miUsuarioPaciente'"/>
+
+
     <PrincipalUsuario
       v-else-if="vista === 'principalUsuario'"
       key="principalUsuario"
@@ -111,7 +113,8 @@ function cerrarSesion() {
       @ir-a-principal="vista = 'Principal'"
       @ir-a-chatbot="vista = 'chatbot'"
       @ir-a-calendario-usuario="vista = 'calendarioUsuario'"
-      @ir-a-reservar-turno="vista = 'reservarTurno'"/>
+      @ir-a-reservar-turno="vista = 'reservarTurno'"
+      @ir-a-mi-usuario-paciente="vista = 'miUsuarioPaciente'"/>
 
     <MediPlus
       v-else-if="vista === 'MediPlus'"
@@ -130,7 +133,8 @@ function cerrarSesion() {
       @ir-a-bienvenida="cerrarSesion"
       @ir-a-principal-usuario="vista = 'principalUsuario'"
       @ir-a-chatbot="vista = 'chatbot'"
-      @ir-a-calendario-usuario="vista = 'calendarioUsuario'"/>
+      @ir-a-calendario-usuario="vista = 'calendarioUsuario'"
+      @ir-a-mi-usuario-paciente="vista = 'miUsuarioPaciente'"/>
 
 
     <Solicitudes
@@ -184,6 +188,15 @@ function cerrarSesion() {
       @ir-a-reservar-turno="vista = 'reservarTurno'"
       @ir-a-mis-pacientes="vista = 'misPacientes'"
       @ir-a-configuracion="vista = 'configuracion'"/>
+
+    <MiUsuarioPaciente
+      v-else-if="vista === 'miUsuarioPaciente'"
+      key="miUsuarioPaciente"
+      @ir-a-bienvenida="cerrarSesion"
+      @ir-a-principal-usuario="vista = 'principalUsuario'"
+      @ir-a-chatbot="vista = 'chatbot'"
+      @ir-a-calendario-usuario="vista = 'calendarioUsuario'"
+      @ir-a-reservar-turno="vista = 'reservarTurno'"/>
   </Transition>
 
 </template>

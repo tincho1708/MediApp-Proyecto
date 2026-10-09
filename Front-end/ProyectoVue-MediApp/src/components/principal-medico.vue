@@ -217,7 +217,7 @@ const celdas = computed(() => {
             <p v-if="!proximosTurnos.length" class="text-black mt-4">No tenés turnos próximos.</p>
 
             <template v-for="(t, i) in proximosTurnos" :key="t.id_turno">
-              <hr v-if="i > 0" class="separador" />
+              <hr v-if="i > 0" class="separador-turno" />
               <div class="turno-fila" :style="i === 0 ? 'margin-top: 0.1rem;' : ''">
                 <div class="flex flex-col items-center leading-tight w-14 shrink-0">
                   <span class="text-[0.85rem] text-black/70">{{ formatearFecha(t.fecha_hora) }}</span>
@@ -592,7 +592,7 @@ const celdas = computed(() => {
   color: rgba(0, 0, 0, 0.8);
 }
 
-.separador {
+.separador-turno {
   border: none;
   border-top: 0.125rem solid rgba(46, 156, 224, 0.5);
   margin: 0.375rem 0;

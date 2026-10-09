@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-calendario-usuario'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-calendario-usuario', 'ir-a-mi-usuario-paciente'])
 const esta = ref(false)
 
 function cerrarAlClickFuera() { esta.value = false }
@@ -342,7 +342,7 @@ async function confirmarReserva() {
         </button>
 
         <div :class="['barra-desplegable', { 'barra-abierta': esta }]" @click.stop>
-          <button href="#">
+          <button href="#" @click="emit('ir-a-mi-usuario-paciente')">
             <div id="barra-dentro" class="w-50 h-12 rounded-2xl">
               <div class="barra-texto">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" style="flex-shrink: 0; width:1.375rem; height:1.375rem;">
