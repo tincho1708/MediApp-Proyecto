@@ -44,6 +44,7 @@ class Medico(Base):
     notificaciones = relationship("Notificacion", back_populates="medico")
     turnos = relationship("Turno", back_populates="medico")
     resenas = relationship("Resena", back_populates="medico")
+    devoluciones = relationship("Devolucion", back_populates="medico")
     recomendaciones_dadas = relationship("Recomienda", foreign_keys="Recomienda.id_medico", back_populates="medico")
     recomendaciones_recibidas = relationship("Recomienda", foreign_keys="Recomienda.id_medico_recomendado", back_populates="medico_recomendado")
 
@@ -67,6 +68,7 @@ class Paciente(Base):
 
     turnos = relationship("Turno", back_populates="paciente")
     resenas = relationship("Resena", back_populates="paciente")
+    devoluciones = relationship("Devolucion", back_populates="paciente")
 
 
 class EstadoTurno(Base):
@@ -159,6 +161,22 @@ class MensajeMediBot(Base):
     creado_en = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
 
     conversacion = relationship("ConversacionMediBot", back_populates="mensajes")
+
+
+class Devolucion(Base):
+    __tablename__ = "devoluciones"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_medico = Column(Integer, ForeignKey("medicos.id"), nullable=False)
+    id_paciente = Column(Integer, ForeignKey("pacientes.id"), nullable=False)
+    id_turno = Column(Integer, ForeignKey("turno.id_turno"), nullable=True)
+    contenido = Column(Text, nullable=False)
+    fecha = Column(DateTime, default=datetime.datetime.utcnow)
+    leida = Column(Boolean, default=False)
+
+    medico = relationship("Medico", back_populates="devoluciones")
+    paciente = relationship("Paciente", back_populates="devoluciones")
+    turno = relationship("Turno")
 
 
 class Recomienda(Base):

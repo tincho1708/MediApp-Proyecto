@@ -158,6 +158,26 @@ class NotificacionResponse(BaseModel):
         from_attributes = True
 
 
+class DevolucionCreate(BaseModel):
+    id_paciente: int
+    contenido: str
+    id_turno: Optional[int] = None
+
+
+class DevolucionResponse(BaseModel):
+    id: int
+    contenido: str
+    fecha: datetime.datetime
+    leida: bool
+    id_medico: int
+    id_paciente: int
+    id_turno: Optional[int]
+    medico: "MedicoBasico"
+
+    class Config:
+        from_attributes = True
+
+
 class MensajeChat(BaseModel):
     role: str = Field(pattern="^(user|assistant)$")
     content: str = Field(min_length=1, max_length=4000)
