@@ -38,9 +38,9 @@ class Medico(Base):
     google_id = Column(String(255), unique=True, nullable=True)
     pin_verificacion = Column(String(6), nullable=True)
     pin_expires = Column(DateTime, nullable=True)
-    cambio_password_token = Column(String(255), nullable=True)
-    cambio_password_token_expires = Column(DateTime, nullable=True)
-    nuevo_password_hash = Column(String(255), nullable=True)
+    # cambio_password_token = Column(String(255), nullable=True)
+    # cambio_password_token_expires = Column(DateTime, nullable=True)
+    # nuevo_password_hash = Column(String(255), nullable=True)
 
     especialidades = relationship("Especialidad", secondary=medico_especialidad, back_populates="medicos")
     horarios = relationship("HorarioMedico", back_populates="medico", cascade="all, delete-orphan")

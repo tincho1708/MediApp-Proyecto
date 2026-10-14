@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-calendario-usuario', 'ir-a-reservar-turno'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-calendario-usuario', 'ir-a-reservar-turno', 'ir-a-notificaciones'])
 
 const form = ref({
   nombre: '',
@@ -39,7 +39,7 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
         <button class="campoo" @click="emit('ir-a-reservar-turno')">Reservar Turno</button>
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
         <button class="campoo">Profesionales</button>
-        <button class="campoo">Notificaciones</button>
+        <button class="campoo" @click="emit('ir-a-notificaciones')">Notificaciones</button>
 
         <button @click.stop="esta = !esta" class="barra">
           <div class="w-12 h-9 relative">
