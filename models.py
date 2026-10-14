@@ -72,6 +72,7 @@ class Paciente(Base):
     turnos = relationship("Turno", back_populates="paciente")
     resenas = relationship("Resena", back_populates="paciente")
     devoluciones = relationship("Devolucion", back_populates="paciente")
+    notificaciones = relationship("NotificacionPaciente", back_populates="paciente")
 
 
 class EstadoTurno(Base):
@@ -179,6 +180,20 @@ class Devolucion(Base):
 
     medico = relationship("Medico", back_populates="devoluciones")
     paciente = relationship("Paciente", back_populates="devoluciones")
+    turno = relationship("Turno")
+
+
+class NotificacionPaciente(Base):
+    __tablename__ = "notificaciones_paciente"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_paciente = Column(Integer, ForeignKey("pacientes.id"), nullable=False)
+    id_turno = Column(Integer, ForeignKey("turno.id_turno"), nullable=False)
+    mensaje = Column(String(500), nullable=False)
+    leida = Column(Boolean, default=False)
+    fecha = Column(DateTime, default=datetime.datetime.utcnow)
+
+    paciente = relationship("Paciente", back_populates="notificaciones")
     turno = relationship("Turno")
 
 

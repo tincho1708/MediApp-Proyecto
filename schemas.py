@@ -178,6 +178,22 @@ class DevolucionResponse(BaseModel):
         from_attributes = True
 
 
+class NotificacionPacienteResponse(BaseModel):
+    id: int
+    id_turno: int
+    mensaje: str
+    leida: bool
+    fecha: datetime.datetime
+    turno: TurnoResponse
+
+    class Config:
+        from_attributes = True
+
+
+class ConteoNoLeidasResponse(BaseModel):
+    count: int
+
+
 class MensajeChat(BaseModel):
     role: str = Field(pattern="^(user|assistant)$")
     content: str = Field(min_length=1, max_length=4000)

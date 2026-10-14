@@ -4,7 +4,7 @@ from typing import List
 from datetime import datetime
 
 from database import get_db
-from models import Turno, EstadoTurno, Medico, Paciente, HorarioMedico, Notificacion
+from models import Turno, EstadoTurno, Medico, Paciente, HorarioMedico, Notificacion, NotificacionPaciente
 from schemas import TurnoCreate, TurnoResponse
 from deps import get_current_user, solo_paciente, solo_medico
 
@@ -104,6 +104,12 @@ def aceptar_turno(
         raise HTTPException(status_code=400, detail="Solo se pueden aceptar turnos pendientes")
 
     turno.id_estado = _get_estado(db, "aceptado").id
+    fecha_str = turno.fecha_hora.strftime("%d/%m/%Y a las %H:%M")
+    db.add(NotificacionPaciente(
+        id_paciente=turno.id_pacientes,
+        id_turno=turno.id_turno,
+        mensaje=f"Tu turno del {fecha_str} fue aceptado.",
+    ))
     db.commit()
     db.refresh(turno)
     return turno
@@ -124,6 +130,12 @@ def rechazar_turno(
         raise HTTPException(status_code=400, detail="Solo se pueden rechazar turnos pendientes")
 
     turno.id_estado = _get_estado(db, "rechazado").id
+    fecha_str = turno.fecha_hora.strftime("%d/%m/%Y a las %H:%M")
+    db.add(NotificacionPaciente(
+        id_paciente=turno.id_pacientes,
+        id_turno=turno.id_turno,
+        mensaje=f"Tu turno del {fecha_str} fue rechazado.",
+    ))
     db.commit()
     db.refresh(turno)
     return turno
@@ -148,6 +160,24 @@ def cancelar_turno(
         raise HTTPException(status_code=400, detail="El turno ya está cancelado")
 
     turno.id_estado = _get_estado(db, "cancelado").id
+    fecha_str = turno.fecha_hora.strftime("%d/%m/%Y a las %H:%M")
+
+    if user["tipo"] == "medico":
+        # notificar al paciente que el médico canceló
+        db.add(NotificacionPaciente(
+            id_paciente=turno.id_pacientes,
+            id_turno=turno.id_turno,
+            mensaje=f"Tu turno del {fecha_str} fue cancelado por el médico.",
+        ))
+    else:
+        # notificar al médico que el paciente canceló
+        paciente = db.query(Paciente).filter(Paciente.id == turno.id_pacientes).first()
+        db.add(Notificacion(
+            id_medico=turno.id_medicos,
+            id_turno=turno.id_turno,
+            mensaje=f"{paciente.nombre} {paciente.apellido} canceló su turno del {fecha_str}.",
+        ))
+
     db.commit()
     db.refresh(turno)
     return turno
