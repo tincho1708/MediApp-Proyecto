@@ -78,33 +78,33 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
     <div class="titulo-pagina w-fit text-zinc-900 text-4xl font-bold font-['Inter'] pb-2 mb-6 border-b-2 border-black">Configuracion</div>
 
     <div class="contenido-pagina flex gap-6 font-['Inter']">
-      <div class="w-64 bg-white rounded-2xl border border-sky-500 shadow-[0px_4px_20px_2px_rgba(0,0,0,0.15)] p-4 flex flex-col gap-1 shrink-0">
+      <div class="w-64 bg-white rounded-2xl border border-sky-500 shadow-[0rem_0.25rem_1.25rem_0.125rem_rgba(0,0,0,0.15)] p-4 flex flex-col gap-1 shrink-0">
         <div class="flex items-center gap-3 px-3 py-2 rounded-xl bg-sky-500 text-white">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <svg style="width:1.125rem; height:1.125rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
           Mi usuario
         </div>
         <div class="flex items-center gap-3 px-3 py-2 rounded-xl text-black/70">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
+          <svg style="width:1.125rem; height:1.125rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
           Seguridad
         </div>
         <div class="flex items-center gap-3 px-3 py-2 rounded-xl text-black/70">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 0 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 0 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15Z"/></svg>
+          <svg style="width:1.125rem; height:1.125rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 0 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 0 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15Z"/></svg>
           Preferencias
         </div>
 
         <div class="flex-1"></div>
         <hr class="border-zinc-200 my-2" />
         <button class="flex items-center gap-3 px-3 py-2 rounded-xl bg-red-100 text-red-500 font-medium" @click="emit('ir-a-bienvenida')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <svg style="width:1.125rem; height:1.125rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Cerrar sesion
         </button>
       </div>
 
-      <div class="flex-1 bg-white rounded-2xl border border-sky-500 shadow-[0px_4px_20px_2px_rgba(0,0,0,0.15)] p-8">
+      <div class="flex-1 bg-white rounded-2xl border border-sky-500 shadow-[0rem_0.25rem_1.25rem_0.125rem_rgba(0,0,0,0.15)] p-8">
         <div class="flex items-start gap-8">
           <div class="flex flex-col items-center shrink-0">
             <div class="w-28 h-28 rounded-full bg-zinc-100 border-2 border-sky-300 flex items-center justify-center">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7dd3fc" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <svg style="width:3rem; height:3rem;" viewBox="0 0 24 24" fill="none" stroke="#7dd3fc" stroke-><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
             </div>
             <button class="mt-3 px-5 py-2 rounded-full bg-sky-500 text-white text-sm font-semibold">Cambiar foto</button>
           </div>

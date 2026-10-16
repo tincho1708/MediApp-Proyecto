@@ -124,21 +124,21 @@ function formatearFecha(fecha: string) {
     <div class="contenido-pagina font-['Inter']">
       <div class="gap-6 flex flex-row">
         <button
-          class="w-34 h-13 pb-0.5 rounded-[20px] outline-[1.50px] outline-offset-[-1.50px] outline-black inline-flex justify-center items-center transition-colors"
+          class="w-34 h-13 pb-0.5 rounded-[1.25rem] outline-[0.09375rem] outline-offset-[-0.09375rem] outline-black inline-flex justify-center items-center transition-colors"
           :class="filtro === 'todos' ? 'bg-zinc-200' : 'bg-white hover:bg-zinc-100'"
           @click="filtro = 'todos'"
         >
           <div class="text-center justify-center font-normal text-black text-[1rem] font-['Inter']">Todos</div>
         </button>
         <button
-          class="w-34 h-13 pb-0.5 rounded-[20px] outline-[1.50px] outline-offset-[-1.50px] outline-black inline-flex justify-center items-center transition-colors"
+          class="w-34 h-13 pb-0.5 rounded-[1.25rem] outline-[0.09375rem] outline-offset-[-0.09375rem] outline-black inline-flex justify-center items-center transition-colors"
           :class="filtro === 'turnos' ? 'bg-zinc-200' : 'bg-white hover:bg-zinc-100'"
           @click="filtro = 'turnos'"
         >
           <div class="text-center justify-center text-black text-[1rem] font-normal font-['Inter']">Turnos</div>
         </button>
         <button
-          class="w-34 h-13 pb-0.5 rounded-[20px] outline-[1.50px] outline-offset-[-1.50px] outline-black inline-flex justify-center items-center transition-colors"
+          class="w-34 h-13 pb-0.5 rounded-[1.25rem] outline-[0.09375rem] outline-offset-[-0.09375rem] outline-black inline-flex justify-center items-center transition-colors"
           :class="filtro === 'recordatorios' ? 'bg-zinc-200' : 'bg-white hover:bg-zinc-100'"
           @click="filtro = 'recordatorios'"
         >
@@ -152,7 +152,7 @@ function formatearFecha(fecha: string) {
       <div
         v-for="n in notificacionesFiltradas"
         :key="n.id"
-        class="w-[84.6rem] h-20 flex items-center justify-between bg-white rounded-[40px] shadow-[0px_0px_30px_12px_rgba(0,0,0,0.25)] mt-10 border border-sky-500"
+        class="w-[84.6rem] h-20 flex items-center justify-between bg-white rounded-[2.5rem] shadow-[0rem_0rem_1.875rem_0.75rem_rgba(0,0,0,0.25)] mt-10 border border-sky-500"
       >
         <span class="ml-8 text-2xl font-normal font-['Inter']">{{ n.mensaje }}</span>
         <span class="mr-10 text-black/50 text-xl font-normal font-['Inter'] shrink-0">{{ formatearFecha(n.fecha) }}</span>
