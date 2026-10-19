@@ -14,7 +14,7 @@
 
 body {
   font-family: sans-serif;
-  background: linear-gradient(135deg, rgba(182, 212, 246, 1), rgba(255, 255, 255, 1), rgba(190, 222, 242, 1));
+  background: linear-gradient(135deg, #D6E6F7 0%, #E7EEF7 50%, #CAE2F3 100%);
   background-attachment: fixed; 
   min-height: 80vh;              
 }

@@ -12,11 +12,15 @@ const emit = defineEmits([
   'ir-a-reservar-turno',
   'ir-a-mis-pacientes',
   'ir-a-configuracion',
-, 'ir-a-mi-usuario'])
+  'ir-a-notificaciones',
+  'ir-a-mi-usuario',
+  'ir-a-mi-usuario-paciente',
+])
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const token = sesion.token as string | undefined
 const esMedico = sesion.tipo === 'Medico'
+const nombreUsuario = sesion.nombre || 'Usuario'
 
 const API = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
@@ -37,19 +41,33 @@ const error = ref('')
 const conversacionId = ref<number | null>(null)
 
 const conversaciones = ref<Conversacion[]>([])
-const panelAbierto = ref(false)
-const cargandoPanel = ref(false)
+const cargandoConversaciones = ref(false)
 
 const scroller = ref<HTMLElement | null>(null)
 const caja = ref<HTMLTextAreaElement | null>(null)
 
 const vacio = computed(() => mensajes.value.length === 0)
 
-const sugerencias = computed(() =>
+type Sugerencia = { titulo: string; desc: string }
+
+const sugerencias = computed<Sugerencia[]>(() =>
   esMedico
-    ? ['¿Cómo viene mi semana?', '¿Cuántos pacientes tengo?', '¿Tengo solicitudes sin responder?']
-    : ['Necesito un psicólogo', '¿Qué especialidades hay?', '¿Cuándo es mi próximo turno?'],
+    ? [
+        { titulo: 'Mi semana', desc: '¿Cómo viene mi semana?' },
+        { titulo: 'Mis pacientes', desc: '¿Cuántos pacientes tengo?' },
+        { titulo: 'Solicitudes pendientes', desc: '¿Tengo solicitudes sin responder?' },
+      ]
+    : [
+        { titulo: 'Encontrar un profesional', desc: '¿Cómo busco un profesional por especialidad?' },
+        { titulo: 'Preparar mi consulta', desc: 'Ayudame a ordenar mis preguntas para la consulta.' },
+        { titulo: 'Usar MediApp', desc: '¿Cómo consulto o modifico mis próximos turnos?' },
+      ],
 )
+
+const tituloConversacion = computed(() => {
+  if (conversacionId.value === null) return 'Nueva conversación'
+  return conversaciones.value.find(c => c.id === conversacionId.value)?.titulo || 'Conversación'
+})
 
 async function bajarScroll() {
   await nextTick()
@@ -104,6 +122,7 @@ async function enviar(texto?: string) {
     const data = await res.json()
     conversacionId.value = data.conversacion_id
     mensajes.value.push({ role: 'assistant', content: data.respuesta })
+    cargarConversaciones()
   } catch (e) {
     mensajes.value.pop()
     borrador.value = contenido
@@ -121,11 +140,9 @@ function teclado(e: KeyboardEvent) {
   }
 }
 
-async function togglePanel() {
-  panelAbierto.value = !panelAbierto.value
-  if (!panelAbierto.value) return
-
-  cargandoPanel.value = true
+async function cargarConversaciones() {
+  if (!token) return
+  cargandoConversaciones.value = true
   try {
     const res = await fetch(`${API}/medibot/conversaciones`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -134,9 +151,11 @@ async function togglePanel() {
   } catch {
     conversaciones.value = []
   } finally {
-    cargandoPanel.value = false
+    cargandoConversaciones.value = false
   }
 }
+
+onMounted(cargarConversaciones)
 
 async function abrirConversacion(id: number) {
   if (ocupado.value) return
@@ -152,7 +171,6 @@ async function abrirConversacion(id: number) {
       content: m.contenido,
     }))
     conversacionId.value = id
-    panelAbierto.value = false
     bajarScroll()
   } catch {
     error.value = 'No se pudo abrir esa conversación.'
@@ -216,267 +234,204 @@ function formatear(texto: string) {
 
     <div class="navbar-acciones">
       <template v-if="esMedico">
-        <button class="campoo">MediBot</button>
-        <button class="campoo" @click="emit('ir-a-mis-pacientes')">Mis pacientes</button>
-        <button class="campoo" @click="emit('ir-a-solicitudes')">Solicitudes</button>
-        <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+</button>
+        <button class="campoo activo">MediBot<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-mis-pacientes')">Mis pacientes<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-solicitudes')">Solicitudes<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+<span class="campoo-indicador"></span></button>
       </template>
       <template v-else>
-        <button class="campoo" @click="emit('ir-a-reservar-turno')">Reservar Turno</button>
-        <button class="campoo">MediBot</button>
-        <button class="campoo">Profesionales</button>
-        <button class="campoo">Notificaciones</button>
+        <button class="campoo" @click="emit('ir-a-reservar-turno')">Reservar turno<span class="campoo-indicador"></span></button>
+        <button class="campoo activo">MediBot<span class="campoo-indicador"></span></button>
+        <button class="campoo">Profesionales<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-notificaciones')">Notificaciones<span class="campoo-indicador"></span></button>
       </template>
+    </div>
 
-      <button @click.stop="esta = !esta" class="barra">
-        <div class="w-12 h-9 relative">
-          <div class="w-12 border-t-2 border-black absolute left-0 top-0"></div>
-          <div class="w-12 border-t-2 border-black absolute left-0 top-[1rem]"></div>
-          <div class="w-12 border-t-2 border-black absolute left-0 top-[2rem]"></div>
+    <div class="navbar-usuario-zona">
+      <div class="navbar-divisor"></div>
+      <button class="navbar-usuario" @click.stop="esta = !esta">
+        <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+        <div class="navbar-usuario-info">
+          <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
+          <span class="navbar-usuario-rol">Mi cuenta</span>
         </div>
+        <svg style="width:1rem; height:1rem;" class="navbar-usuario-chevron" :class="{ 'navbar-usuario-chevron-abierta': esta }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
       </button>
 
       <div :class="['barra-desplegable', { 'barra-abierta': esta }]" @click.stop>
-        <button href="#" @click="emit('ir-a-mi-usuario')">
-          <div id="barra-dentro" class="w-50 h-12 rounded-2xl">
-            <div class="barra-texto">
-              <svg style="width:1.3125rem; height:1.375rem;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 32" fill="none">
-                <path d="M15.5 0C17.5554 0 19.5267 0.842854 20.9801 2.34315C22.4335 3.84344 23.25 5.87827 23.25 8C23.25 10.1217 22.4335 12.1566 20.9801 13.6569C19.5267 15.1571 17.5554 16 15.5 16C13.4446 16 11.4733 15.1571 10.0199 13.6569C8.56651 12.1566 7.75 10.1217 7.75 8C7.75 5.87827 8.56651 3.84344 10.0199 2.34315C11.4733 0.842854 13.4446 0 15.5 0ZM15.5 4C14.4723 4 13.4867 4.42143 12.76 5.17157C12.0333 5.92172 11.625 6.93913 11.625 8C11.625 9.06087 12.0333 10.0783 12.76 10.8284C13.4867 11.5786 14.4723 12 15.5 12C16.5277 12 17.5133 11.5786 18.24 10.8284C18.9667 10.0783 19.375 9.06087 19.375 8C19.375 6.93913 18.9667 5.92172 18.24 5.17157C17.5133 4.42143 16.5277 4 15.5 4ZM15.5 18C20.6731 18 31 20.66 31 26V32H0V26C0 20.66 10.3269 18 15.5 18ZM15.5 21.8C9.74562 21.8 3.68125 24.72 3.68125 26V28.2H27.3188V26C27.3188 24.72 21.2544 21.8 15.5 21.8Z" fill="black"/>
-              </svg>
-              Mi cuenta
-            </div>
+        <div class="dropdown-header">
+          <div class="dropdown-nombre">{{ nombreUsuario }}</div>
+          <div class="dropdown-rol">{{ esMedico ? 'Cuenta de médico' : 'Cuenta de paciente' }}</div>
+        </div>
+        <div class="dropdown-divisor"></div>
+
+        <button v-if="esMedico" href="#" @click="emit('ir-a-mi-usuario')">
+          <div class="dropdown-item dropdown-item-destacado">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
+            </svg>
+            Mi cuenta
           </div>
         </button>
 
-        <button href="#" @click="emit('ir-a-configuracion')">
-          <div id="barra-dentro" class="w-50 h-12 rounded-2xl">
-            <div class="barra-texto">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" style="flex-shrink: 0; width:1.375rem; height:1.375rem;">
-                <path d="M11.6219 32L10.9851 26.88C10.6401 26.7467 10.3154 26.5867 10.0107 26.4C9.70614 26.2133 9.40736 26.0133 9.11443 25.8L4.37811 27.8L0 20.2L4.0995 17.08C4.07297 16.8933 4.0597 16.7136 4.0597 16.5408V15.4608C4.0597 15.2869 4.07297 15.1067 4.0995 14.92L0 11.8L4.37811 4.2L9.11443 6.2C9.4063 5.98667 9.71144 5.78667 10.0299 5.6C10.3483 5.41333 10.6667 5.25333 10.9851 5.12L11.6219 0H20.3781L21.0149 5.12C21.3599 5.25333 21.6852 5.41333 21.9908 5.6C22.2965 5.78667 22.5948 5.98667 22.8856 6.2L27.6219 4.2L32 11.8L27.9005 14.92C27.927 15.1067 27.9403 15.2869 27.9403 15.4608V16.5392C27.9403 16.7131 27.9138 16.8933 27.8607 17.08L31.9602 20.2L27.5821 27.8L22.8856 25.8C22.5937 26.0133 22.2886 26.2133 21.9701 26.4C21.6517 26.5867 21.3333 26.7467 21.0149 26.88L20.3781 32H11.6219ZM14.408 28.8H17.5522L18.1095 24.56C18.932 24.3467 19.6951 24.0336 20.3988 23.6208C21.1025 23.208 21.7457 22.7077 22.3284 22.12L26.2687 23.76L27.8209 21.04L24.398 18.44C24.5307 18.0667 24.6236 17.6736 24.6766 17.2608C24.7297 16.848 24.7562 16.4277 24.7562 16C24.7562 15.5723 24.7297 15.1525 24.6766 14.7408C24.6236 14.3291 24.5307 13.9355 24.398 13.56L27.8209 10.96L26.2687 8.24L22.3284 9.92C21.7446 9.30667 21.1014 8.7936 20.3988 8.3808C19.6962 7.968 18.9331 7.6544 18.1095 7.44L17.592 3.2H14.4478L13.8905 7.44C13.068 7.65333 12.3054 7.96693 11.6028 8.3808C10.9002 8.79467 10.2565 9.2944 9.67164 9.88L5.73134 8.24L4.1791 10.96L7.60199 13.52C7.46932 13.92 7.37645 14.32 7.32338 14.72C7.27032 15.12 7.24378 15.5467 7.24378 16C7.24378 16.4267 7.27032 16.84 7.32338 17.24C7.37645 17.64 7.46932 18.04 7.60199 18.44L4.1791 21.04L5.73134 23.76L9.67164 22.08C10.2554 22.6933 10.8991 23.2069 11.6028 23.6208C12.3065 24.0347 13.0691 24.3477 13.8905 24.56L14.408 28.8ZM16.0796 21.6C17.6186 21.6 18.932 21.0533 20.0199 19.96C21.1078 18.8667 21.6517 17.5467 21.6517 16C21.6517 14.4533 21.1078 13.1333 20.0199 12.04C18.932 10.9467 17.6186 10.4 16.0796 10.4C14.5141 10.4 13.1938 10.9467 12.1186 12.04C11.0435 13.1333 10.5064 14.4533 10.5075 16C10.5085 17.5467 11.0461 18.8667 12.1202 19.96C13.1943 21.0533 14.5141 21.6 16.0796 21.6Z" fill="black"/>
-              </svg>
-              Configuracion
-            </div>
+        <button href="#" @click="emit(esMedico ? 'ir-a-configuracion' : 'ir-a-mi-usuario-paciente')">
+          <div class="dropdown-item dropdown-item-destacado">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            Configuración
           </div>
         </button>
 
-        <button href="#" style="margin-top: auto;" @click="emit('ir-a-bienvenida')">
-          <div class="barra-dentro-cerrar w-50 h-12 rounded-2xl">
-            <div class="barra-texto">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 32" fill="none" style="flex-shrink: 0; width:1.3125rem; height:1.375rem;">
-                <path d="M3.44444 32C2.49722 32 1.68663 31.6521 1.01267 30.9564C0.338704 30.2607 0.00114815 29.4234 0 28.4444V3.55556C0 2.57778 0.337556 1.74104 1.01267 1.04533C1.68778 0.34963 2.49837 0.00118519 3.44444 0H15.5V3.55556H3.44444V28.4444H15.5V32H3.44444ZM22.3889 24.8889L20.0208 22.3111L24.4125 17.7778H10.3333V14.2222H24.4125L20.0208 9.68889L22.3889 7.11111L31 16L22.3889 24.8889Z" fill="#FF2A2A"/>
-              </svg>
-              Cerrar sesion
-            </div>
+        <button href="#" @click="emit('ir-a-bienvenida')">
+          <div class="dropdown-item dropdown-item-danger">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
+            </svg>
+            Cerrar sesión
           </div>
         </button>
       </div>
     </div>
   </div>
 
-  <div class="chat">
-    <div ref="scroller" class="chat-scroll">
-      <div class="chat-ancho">
-
-        <div v-if="vacio" class="inicio">
-          <h1 class="titulo">Preguntale algo a <span>MediBot</span></h1>
-          <p class="subtitulo">
-            {{ esMedico
-              ? 'Puedo mirar tu agenda, tus pacientes y las solicitudes que tenés sin responder.'
-              : 'Puedo buscarte profesionales, contarte sobre ellos y mostrarte tus turnos.' }}
-          </p>
-          <div class="sugerencias">
-            <button v-for="s in sugerencias" :key="s" class="sugerencia" @click="enviar(s)">
-              {{ s }}
-            </button>
-          </div>
-        </div>
-
-        <div v-else class="mensajes">
-          <div v-for="(m, i) in mensajes" :key="i">
-            <div v-if="m.role === 'user'" class="fila-usuario">
-              <p class="burbuja-usuario">{{ m.content }}</p>
-            </div>
-            <div v-else class="fila-bot">
-              <img class="avatar-bot" src="@/assets/imagenes/imagen-logo.png" alt="MediBot" />
-              <div class="texto-bot" v-html="formatear(m.content)"></div>
-            </div>
-          </div>
-
-          <div v-if="pensando" class="fila-bot">
-            <img class="avatar-bot" src="@/assets/imagenes/imagen-logo.png" alt="MediBot" />
-            <div class="puntitos" aria-label="MediBot está escribiendo">
-              <i></i><i></i><i></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="pie">
-      <p v-if="error" class="error">{{ error }}</p>
-
-      <div class="barra-mensaje">
-        <div class="barra-mensaje-avatar">
-          <img src="@/assets/imagenes/imagen-logo.png" alt="MediBot" />
-        </div>
-        <textarea
-          ref="caja"
-          v-model="borrador"
-          rows="1"
-          placeholder="Escribe algo..."
-          :disabled="ocupado"
-          maxlength="4000"
-          @input="ajustarAltura"
-          @keydown="teclado"
-        ></textarea>
-        <button class="enviar" :disabled="!borrador.trim() || ocupado" @click="enviar()" aria-label="Enviar mensaje">
-          <svg style="width:1.25rem; height:1.25rem;" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 4l7 7h-5v9h-4v-9H5z" />
-          </svg>
-        </button>
+  <div class="h-screen overflow-hidden bg-linear-to-br from-blue-100 via-violet-100 to-blue-200 pt-[4.9rem] flex flex-col font-['Inter']">
+    <div class="flex-1 min-h-0 max-w-[82rem] w-full mx-auto px-16 py-10 flex flex-col gap-8">
+      <div class="shrink-0">
+        <div class="text-3xl font-semibold text-slate-900">MediBot</div>
+        <p class="text-sm text-slate-500 mt-1">Tu asistente para orientarte en MediApp y preparar tus consultas.</p>
       </div>
 
-      <div class="acciones-pie">
-        <button class="link" @click="togglePanel">Ver chats anteriores</button>
-        <button v-if="!vacio" class="link" :disabled="ocupado" @click="nuevaConversacion">Empezar de nuevo</button>
-      </div>
-    </div>
-
-    <aside :class="['panel', { 'panel-abierto': panelAbierto }]">
-      <header class="panel-header">
-        <h2>Chats anteriores</h2>
-        <button class="cerrar-panel" @click="panelAbierto = false" aria-label="Cerrar">✕</button>
-      </header>
-      <div class="panel-lista">
-        <p v-if="cargandoPanel" class="panel-vacio">Cargando...</p>
-        <p v-else-if="!conversaciones.length" class="panel-vacio">
-          Todavía no hablaste con MediBot. Cuando lo hagas, tus conversaciones van a aparecer acá.
-        </p>
-        <div v-for="c in conversaciones" :key="c.id" class="panel-item">
-          <button class="panel-item-abrir" :disabled="ocupado" @click="abrirConversacion(c.id)">
-            <span class="panel-item-titulo">{{ c.titulo }}</span>
-            <span class="panel-item-fecha">{{ fechaCorta(c.creado_en) }}</span>
+      <div class="flex-1 min-h-0 flex gap-6">
+        <div class="w-72 shrink-0 bg-white rounded-3xl shadow-[0_0.5rem_1.5rem_-0.25rem_rgba(34,66,105,0.11),0_0.125rem_0.375rem_0_rgba(34,66,105,0.06)] outline-1 -outline-offset-1 outline-slate-200 p-6 flex flex-col gap-6 min-h-0">
+          <button class="shrink-0 h-11 bg-sky-700 text-white rounded-xl flex items-center justify-center gap-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity" :disabled="ocupado" @click="nuevaConversacion">
+            <svg style="width:1rem; height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Nueva conversación
           </button>
-          <button class="panel-item-borrar" :disabled="ocupado" @click="borrarConversacion(c.id)" aria-label="Borrar conversación">✕</button>
+
+          <div class="text-xs font-medium text-slate-400 tracking-wide shrink-0">CONVERSACIONES</div>
+
+          <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1.5">
+            <p v-if="cargandoConversaciones" class="text-sm text-slate-400 text-center py-4">Cargando...</p>
+
+            <div v-else-if="!conversaciones.length" class="bg-slate-50 rounded-2xl p-4 flex flex-col items-center text-center gap-2">
+              <svg style="width:1.5rem; height:1.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <div class="text-sm font-medium text-slate-900">Sin conversaciones todavía</div>
+              <div class="text-xs text-slate-400">Cuando inicies un chat, aparecerá en este espacio.</div>
+            </div>
+
+            <div v-else v-for="c in conversaciones" :key="c.id" class="group flex items-center gap-1 shrink-0">
+              <button
+                class="flex-1 min-w-0 text-left rounded-xl px-3 py-2.5 transition-colors cursor-pointer"
+                :class="conversacionId === c.id ? 'bg-blue-50' : 'hover:bg-slate-50'"
+                :disabled="ocupado" @click="abrirConversacion(c.id)"
+              >
+                <div class="text-sm font-medium text-slate-900 truncate">{{ c.titulo }}</div>
+                <div class="text-xs text-slate-400">{{ fechaCorta(c.creado_en) }}</div>
+              </button>
+              <button
+                class="shrink-0 p-2 rounded-lg text-slate-300 opacity-0 group-hover:opacity-100 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                :disabled="ocupado" @click="borrarConversacion(c.id)" aria-label="Borrar conversación"
+              >
+                <svg style="width:0.875rem; height:0.875rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 min-h-0 bg-white rounded-3xl shadow-[0_0.5rem_1.5rem_-0.25rem_rgba(34,66,105,0.11),0_0.125rem_0.375rem_0_rgba(34,66,105,0.06)] outline-1 -outline-offset-1 outline-slate-200 p-6 flex flex-col gap-4 min-h-0">
+          <div class="flex items-center gap-2 shrink-0">
+            <svg style="width:1.25rem; height:1.25rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="text-sky-700"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>
+            <span class="text-sm font-medium text-slate-900">{{ tituloConversacion }}</span>
+            <div class="flex-1"></div>
+            <span class="text-xs text-slate-400 whitespace-nowrap">MediBot · IA</span>
+          </div>
+
+          <div ref="scroller" class="flex-1 min-h-0 overflow-y-auto">
+            <div v-if="vacio" class="h-full flex flex-col items-center justify-center gap-6 text-center px-4">
+              <div class="size-16 bg-blue-50 rounded-3xl flex items-center justify-center shrink-0">
+                <svg style="width:2rem; height:2rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="text-sky-700"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>
+              </div>
+              <div class="flex flex-col items-center gap-2 max-w-[54rem]">
+                <h1 class="text-3xl font-semibold text-slate-900">¿En qué puedo ayudarte hoy?</h1>
+                <p class="text-sm text-slate-500">Escribí tu consulta o elegí una sugerencia para empezar.</p>
+              </div>
+              <div class="flex gap-3 w-full max-w-[54rem]">
+                <button
+                  v-for="s in sugerencias" :key="s.titulo"
+                  class="flex-1 min-w-0 p-3 bg-slate-50 rounded-2xl outline-1 -outline-offset-1 outline-slate-200 text-left cursor-pointer hover:bg-slate-100 transition-colors"
+                  @click="enviar(s.desc)"
+                >
+                  <div class="text-sm font-medium text-sky-700 truncate">{{ s.titulo }}</div>
+                  <div class="text-xs text-slate-400 mt-1 line-clamp-2">{{ s.desc }}</div>
+                </button>
+              </div>
+            </div>
+
+            <div v-else class="flex flex-col gap-6 py-2">
+              <div v-for="(m, i) in mensajes" :key="i">
+                <div v-if="m.role === 'user'" class="flex justify-end">
+                  <p class="max-w-[80%] bg-blue-50 rounded-2xl px-5 py-3 text-sm text-slate-900 whitespace-pre-wrap">{{ m.content }}</p>
+                </div>
+                <div v-else class="flex gap-3 items-start">
+                  <img class="w-8 h-8 object-contain shrink-0 mt-0.5" src="@/assets/imagenes/imagen-logo.png" alt="MediBot" />
+                  <div class="max-w-[85%] text-sm text-slate-900 leading-relaxed mediBotTexto" v-html="formatear(m.content)"></div>
+                </div>
+              </div>
+
+              <div v-if="pensando" class="flex gap-3 items-start">
+                <img class="w-8 h-8 object-contain shrink-0 mt-0.5" src="@/assets/imagenes/imagen-logo.png" alt="MediBot" />
+                <div class="flex gap-1.5 pt-2" aria-label="MediBot está escribiendo">
+                  <i class="puntito"></i><i class="puntito"></i><i class="puntito"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="shrink-0">
+            <p v-if="error" class="text-red-600 text-sm mb-2">{{ error }}</p>
+            <div class="bg-white outline-1 -outline-offset-1 outline-slate-200 rounded-2xl p-4 flex flex-col gap-3">
+              <textarea
+                ref="caja"
+                v-model="borrador"
+                rows="1"
+                placeholder="Escribí tu consulta a MediBot…"
+                :disabled="ocupado"
+                maxlength="4000"
+                class="w-full border-none outline-none resize-none text-sm text-slate-900 placeholder:text-slate-400 bg-transparent"
+                style="max-height:8.75rem"
+                @input="ajustarAltura"
+                @keydown="teclado"
+              ></textarea>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-400">Una conversación, a tu ritmo.</span>
+                <button
+                  class="size-10 shrink-0 bg-sky-700 rounded-xl flex items-center justify-center text-white hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  :disabled="!borrador.trim() || ocupado" @click="enviar()" aria-label="Enviar mensaje"
+                >
+                  <svg style="width:1.25rem; height:1.25rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </aside>
+    </div>
   </div>
 </template>
 
+
 <style scoped>
-.chat {
-  position: fixed;
-  inset: 5.4rem 0 0 0;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(180deg, #BCD9F7 0%, #E6F1FC 55%, #FFFFFF 100%);
-}
-
-.chat-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 1.5rem;
-}
-
-.chat-ancho {
-  max-width: 48rem;
-  margin: 0 auto;
-  width: 100%;
-  min-height: 100%;
-}
-
-
-.inicio {
-  padding-top: 5rem;
-  text-align: center;
-}
-
-.titulo {
-  font-family: 'Inter', sans-serif;
-  font-size: 3rem;
-  font-weight: 400;
-  color: #1C1C1C;
-  line-height: 1.15;
-}
-
-.titulo span { color: #2F97E0; }
-
-.subtitulo {
-  margin-top: 1rem;
-  font-size: 1.05rem;
-  color: #3A4A5C;
-}
-
-.sugerencias {
-  margin-top: 2.5rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  justify-content: center;
-}
-
-.sugerencia {
-  background: rgba(255, 255, 255, 0.75);
-  border: 0.0625rem solid rgba(47, 151, 224, 0.3);
-  border-radius: 624.9375rem;
-  padding: 0.6rem 1.1rem;
-  font-size: 0.95rem;
-  color: #2440A8;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.sugerencia:hover { background: #fff; }
-
-
-.mensajes {
-  padding: 2rem 0 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.fila-usuario { display: flex; justify-content: flex-end; }
-
-.burbuja-usuario {
-  max-width: 80%;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 1.5rem;
-  padding: 0.75rem 1.25rem;
-  color: #1C1C1C;
-  white-space: pre-wrap;
-  box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.08);
-}
-
-.fila-bot { display: flex; gap: 0.75rem; align-items: flex-start; }
-
-.avatar-bot {
-  width: 2rem;
-  height: 2rem;
-  object-fit: contain;
-  flex-shrink: 0;
-  margin-top: 0.15rem;
-}
-
-.texto-bot {
-  max-width: 85%;
-  color: #1C1C1C;
-  line-height: 1.6;
-}
-
-.puntitos { display: flex; gap: 0.35rem; padding-top: 0.6rem; }
-
-.puntitos i {
+.puntito {
   width: 0.5rem;
   height: 0.5rem;
-  border-radius: 624.9375rem;
-  background: #2F97E0;
+  border-radius: 999px;
+  background: #0369A1;
   animation: latir 1.2s infinite ease-in-out;
 }
 
-.puntitos i:nth-child(2) { animation-delay: 0.15s; }
-.puntitos i:nth-child(3) { animation-delay: 0.3s; }
+.puntito:nth-child(2) { animation-delay: 0.15s; }
+.puntito:nth-child(3) { animation-delay: 0.3s; }
 
 @keyframes latir {
   0%, 60%, 100% { opacity: 0.3; }
@@ -484,174 +439,10 @@ function formatear(texto: string) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .puntitos i { animation: none; opacity: 0.6; }
+  .puntito { animation: none; opacity: 0.6; }
 }
 
-
-.pie { padding: 0 1.5rem 1.5rem; }
-
-.error {
-  max-width: 48rem;
-  margin: 0 auto 0.75rem;
-  text-align: center;
-  color: #B42318;
-  font-size: 0.9rem;
-}
-
-.barra-mensaje {
-  max-width: 48rem;
-  margin: 0 auto;
-  min-height: 4.5rem;
-  background: #fff;
-  border-radius: 2rem;
-  box-shadow: 0 0.5rem 1.75rem rgba(36, 64, 168, 0.18);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1.25rem;
-}
-
-.barra-mensaje-avatar {
-  width: 2.75rem;
-  height: 2.75rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.barra-mensaje-avatar img { width: 100%; height: 100%; object-fit: contain; }
-
-.barra-mensaje textarea {
-  flex: 1;
-  border: none;
-  outline: none;
-  resize: none;
-  max-height: 8.75rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 1.25rem;
-  color: #000;
-  background: transparent;
-  line-height: 1.5;
-}
-
-.barra-mensaje textarea::placeholder { color: #9ca3af; }
-
-.enviar {
-  width: 2.5rem;
-  height: 2.5rem;
-  flex-shrink: 0;
-  border: none;
-  border-radius: 624.9375rem;
-  background: #2440A8;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.enviar:hover:not(:disabled) { background: #1c3488; }
-.enviar:disabled { background: #D1D5DB; cursor: default; }
-
-.acciones-pie {
-  margin-top: 0.85rem;
-  display: flex;
-  gap: 1.5rem;
-  justify-content: center;
-}
-
-.link {
-  background: none;
-  border: none;
-  font-size: 0.95rem;
-  color: #1C1C1C;
-  cursor: pointer;
-}
-
-.link:hover { text-decoration: underline; }
-
-.panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 20rem;
-  max-width: 85vw;
-  background: #fff;
-  box-shadow: -0.5rem 0 1.5rem rgba(36, 64, 168, 0.2);
-  transform: translateX(100%);
-  transition: transform 0.25s ease;
-  display: flex;
-  flex-direction: column;
-  z-index: 20;
-}
-
-.panel-abierto { transform: translateX(0); }
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.1rem 1.25rem;
-  border-bottom: 0.0625rem solid #E5E7EB;
-}
-
-.panel-header h2 { font-size: 1.1rem; font-weight: 500; color: #1C1C1C; }
-
-.cerrar-panel {
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  color: #6B7280;
-  cursor: pointer;
-}
-
-.panel-lista { flex: 1; overflow-y: auto; padding: 0.75rem; }
-
-.panel-vacio { padding: 1.5rem 0.75rem; font-size: 0.9rem; color: #6B7280; }
-
-.panel-item { display: flex; align-items: center; gap: 0.25rem; }
-
-.panel-item-abrir {
-  flex: 1;
-  text-align: left;
-  background: none;
-  border: none;
-  border-radius: 0.75rem;
-  padding: 0.6rem 0.75rem;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.panel-item-abrir:hover { background: #E6F1FC; }
-
-.panel-item-titulo {
-  display: block;
-  font-size: 0.9rem;
-  color: #1C1C1C;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.panel-item-fecha { font-size: 0.75rem; color: #6B7280; }
-
-.panel-item-borrar {
-  background: none;
-  border: none;
-  color: #9CA3AF;
-  cursor: pointer;
-  padding: 0.35rem;
-  border-radius: 0.5rem;
-}
-
-.panel-item-borrar:hover { color: #B42318; background: #FEF2F2; }
-
-@media (max-width: 48rem) {
-  .titulo { font-size: 2rem; }
-  .barra-mensaje textarea { font-size: 1rem; }
-  .inicio { padding-top: 2.5rem; }
+.mediBotTexto :deep(strong) {
+  font-weight: 600;
 }
 </style>

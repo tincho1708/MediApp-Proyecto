@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useTurnosMedico } from '@/stores/turnosMedico'
+import { obtenerIdTokenGoogle } from '@/auth0'
 
 const emit = defineEmits(['ir-a-registro', 'bienvenida', 'ir-a-principal', 'ir-a-principal-usuario'])
 
@@ -13,6 +14,50 @@ const form = ref({
 
 const error = ref('')
 const cargando = ref(false)
+const cargandoGoogle = ref(false)
+
+function guardarSesionYEntrar(tipo: 'Medico' | 'Paciente', data: { access_token: string; nombre: string }) {
+  localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, nombre: data.nombre }))
+  if (tipo === 'Medico') {
+    resetTurnosMedico()
+    emit('ir-a-principal')
+  } else {
+    emit('ir-a-principal-usuario')
+  }
+}
+
+async function iniciarSesionConGoogle() {
+  error.value = ''
+  cargandoGoogle.value = true
+  try {
+    const idToken = await obtenerIdTokenGoogle()
+
+    const intentos: Array<'paciente' | 'medico'> = ['paciente', 'medico']
+    for (const tipo of intentos) {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_token: idToken, tipo }),
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        guardarSesionYEntrar(tipo === 'medico' ? 'Medico' : 'Paciente', data)
+        return
+      }
+      if (res.status === 403) {
+        error.value = data.detail
+        return
+      }
+    }
+
+    error.value = 'No existe una cuenta con ese Google. Registrate primero.'
+  } catch {
+    error.value = 'No se pudo iniciar sesión con Google.'
+  } finally {
+    cargandoGoogle.value = false
+  }
+}
 
 async function testearSubmit() {
   error.value = ''
@@ -33,16 +78,8 @@ async function testearSubmit() {
       })
       const data = await res.json()
 
-      if (res.ok && tipo === 'Medico') {
-        localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, email: form.value.email, nombre: data.nombre }))
-        resetTurnosMedico()
-        emit('ir-a-principal')
-        return
-      }
-      if (res.ok && tipo === 'Paciente') {
-        localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, email: form.value.email, nombre: data.nombre }))
-        resetTurnosMedico()
-        emit('ir-a-principal-usuario')
+      if (res.ok) {
+        guardarSesionYEntrar(tipo as 'Medico' | 'Paciente', data)
         return
       }
       if (res.status === 403) {
@@ -78,9 +115,9 @@ async function testearSubmit() {
 
     <div class="etiqueta-tipo">O inicia sesión con</div>
     <div class="social-fila">
-      <button type="button" class="social-boton">
+      <button type="button" class="social-boton" :disabled="cargandoGoogle" @click="iniciarSesionConGoogle">
         <img src="@/assets/imagenes/google.png" alt="Google"/>
-        Continuar con Google
+        {{ cargandoGoogle ? 'Conectando...' : 'Continuar con Google' }}
       </button>
       <button type="button" class="social-boton">
         <img src="@/assets/imagenes/microsoft.png" alt="Microsoft"/>

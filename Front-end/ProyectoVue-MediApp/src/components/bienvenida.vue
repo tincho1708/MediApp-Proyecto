@@ -1,5 +1,53 @@
 <script setup lang="ts">
-const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
+import { ref } from 'vue'
+import { useTurnosMedico } from '@/stores/turnosMedico'
+import { obtenerIdTokenGoogle } from '@/auth0'
+
+const emit = defineEmits(['ir-a-registro', 'ir-a-login', 'ir-a-principal', 'ir-a-principal-usuario'])
+
+const { resetTurnosMedico } = useTurnosMedico()
+
+const errorGoogle = ref('')
+const cargandoGoogle = ref(false)
+
+async function iniciarSesionConGoogle() {
+  errorGoogle.value = ''
+  cargandoGoogle.value = true
+  try {
+    const idToken = await obtenerIdTokenGoogle()
+
+    const intentos: Array<'paciente' | 'medico'> = ['paciente', 'medico']
+    for (const tipo of intentos) {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_token: idToken, tipo }),
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo: tipo === 'medico' ? 'Medico' : 'Paciente', nombre: data.nombre }))
+        if (tipo === 'medico') {
+          resetTurnosMedico()
+          emit('ir-a-principal')
+        } else {
+          emit('ir-a-principal-usuario')
+        }
+        return
+      }
+      if (res.status === 403) {
+        errorGoogle.value = data.detail
+        return
+      }
+    }
+
+    errorGoogle.value = 'No existe una cuenta con ese Google. Registrate primero.'
+  } catch {
+    errorGoogle.value = 'No se pudo iniciar sesión con Google.'
+  } finally {
+    cargandoGoogle.value = false
+  }
+}
 </script>
 
 <template>
@@ -29,15 +77,17 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
         <div class="accede-con"><span>Accede con</span></div>
 
         <div class="fila-social">
-          <button class="social-boton" @click="emit('ir-a-login')">
+          <button class="social-boton" :disabled="cargandoGoogle" @click="iniciarSesionConGoogle">
             <img src="@/assets/imagenes/google.png" alt="Google" />
-            Continuar con Google
+            {{ cargandoGoogle ? 'Conectando...' : 'Continuar con Google' }}
           </button>
           <button class="social-boton" @click="emit('ir-a-login')">
             <img src="@/assets/imagenes/microsoft.png" alt="Microsoft" />
             Continuar con Microsoft
           </button>
         </div>
+
+        <p v-if="errorGoogle" class="error-google">{{ errorGoogle }}</p>
 
         <p class="sin-cuenta">¿No tienes cuenta? <a href="#" @click.prevent="emit('ir-a-registro')">Regístrate</a></p>
       </div>
@@ -175,6 +225,12 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   color: #4B5563;
 }
 
+.error-google {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  color: #DC2626;
+}
+
 .sin-cuenta a {
   color: #0EA5E9;
   font-weight: 500;
@@ -207,7 +263,7 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
 }
 
 .navbar-logo span {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Lexend', sans-serif;
   font-size: 2.425rem;
   font-weight: 500;
   background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
@@ -218,10 +274,13 @@ const emit = defineEmits(['ir-a-registro', 'ir-a-login'])
   margin-top: 0.4375rem;
 }
 
-.navbar-acciones {
+nav.navbar .navbar-acciones {
   display: flex;
+  flex: none;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.75rem;
+  margin-left: auto;
 }
 
 .boton1 {

@@ -174,33 +174,39 @@ async function testearSubmit() {
     </form>
   </div>
 
-  <div class="contenedor" v-else>
-    <div class="font-['Inter']">
-      <div class="text-2xl text-black mb-3">Especialidad:</div>
-      <input
-        v-model="busquedaEspecialidad"
-        type="text"
-        placeholder="Buscar especialidad..."
-        class="w-full px-4 py-2 mb-4 rounded-full border border-zinc-400 focus:outline-sky-500"/>
+  <div class="contenedor-especialidad" v-else>
+    <button class="boton-atras-esp" type="button" @click="paso = 1">
+      <svg style="width:1rem; height:0.875rem;" viewBox="0 0 18 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0.292889 6.65691C-0.0976353 7.04743 -0.0976353 7.6806 0.292889 8.07112L6.65685 14.4351C7.04737 14.8256 7.68054 14.8256 8.07106 14.4351C8.46159 14.0446 8.46159 13.4114 8.07106 13.0209L2.41421 7.36401L8.07106 1.70716C8.46159 1.31664 8.46159 0.68347 8.07106 0.292946C7.68054 -0.0975785 7.04737 -0.0975785 6.65685 0.292946L0.292889 6.65691ZM17.1245 7.36401V6.36401L0.999996 6.36401V7.36401V8.36401L17.1245 8.36401V7.36401Z" fill="black"/>
+      </svg>
+      Volver atrás
+    </button>
 
-      <p v-if="cargandoEspecialidades" class="text-zinc-400 text-center">Cargando especialidades...</p>
-      <p v-else-if="errorEspecialidades" class="error">{{ errorEspecialidades }}</p>
+    <div class="titulo-esp">Selecciona tu especialidad</div>
+    <div class="subtitulo-esp">Elige la especialidad que mejor se adapte a tu perfil profesional.</div>
 
-      <div v-else class="flex flex-wrap gap-3 mb-4">
-        <button
-          v-for="e in especialidadesFiltradas" :key="e.id_especialidad"
-          type="button"
-          @click="toggleEspecialidad(e.id_especialidad)"
-          :disabled="!especialidadesSeleccionadas.includes(e.id_especialidad) && especialidadesSeleccionadas.length >= MAX_ESPECIALIDADES"
-          class="px-5 py-2 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          :class="especialidadesSeleccionadas.includes(e.id_especialidad) ? 'bg-sky-500 text-white' : 'bg-sky-100 hover:bg-sky-200'"
-        >{{ e.nombre_especialidad }}</button>
-      </div>
-
-      <p class="text-sm text-zinc-400 mb-4">Podés elegir hasta {{ MAX_ESPECIALIDADES }} especialidades ({{ especialidadesSeleccionadas.length }}/{{ MAX_ESPECIALIDADES }})</p>
-
-      <button class="submit" type="button" :disabled="cargando || !especialidadesSeleccionadas.length" @click="confirmarEspecialidades">{{ cargando ? 'Guardando...' : 'Continuar' }}</button>
+    <div class="buscador-esp">
+      <svg style="width:1.25rem; height:1.25rem;" class="icono-buscador" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input v-model="busquedaEspecialidad" type="text" placeholder="Buscar especialidad..." />
     </div>
+
+    <p v-if="cargandoEspecialidades" class="text-zinc-400 text-center">Cargando especialidades...</p>
+    <p v-else-if="errorEspecialidades" class="error">{{ errorEspecialidades }}</p>
+
+    <div v-else class="grid-especialidades">
+      <button
+        v-for="e in especialidadesFiltradas" :key="e.id_especialidad"
+        type="button"
+        class="especialidad-boton"
+        :class="{ seleccionada: especialidadesSeleccionadas.includes(e.id_especialidad) }"
+        :disabled="!especialidadesSeleccionadas.includes(e.id_especialidad) && especialidadesSeleccionadas.length >= MAX_ESPECIALIDADES"
+        @click="toggleEspecialidad(e.id_especialidad)"
+      >{{ e.nombre_especialidad }}</button>
+    </div>
+
+    <p class="nota-max-esp">Podés elegir hasta {{ MAX_ESPECIALIDADES }} especialidades ({{ especialidadesSeleccionadas.length }}/{{ MAX_ESPECIALIDADES }})</p>
+
+    <button class="submit-esp" type="button" :disabled="cargando || !especialidadesSeleccionadas.length" @click="confirmarEspecialidades">{{ cargando ? 'Guardando...' : 'Continuar' }}</button>
   </div>
 </div>
 </template>
@@ -367,6 +373,160 @@ input:focus {
 .login-link a {
   color: #111827;
   font-weight: 600;
+}
+
+.contenedor-especialidad {
+  position: relative;
+  width: 47.5rem;
+  max-width: 92vw;
+  margin: 2rem auto;
+  padding: 2.1875rem 3.5rem 3.5rem;
+  border-radius: 1.5rem;
+  background-color: #FFFFFF;
+  box-shadow: 0 1.5rem 3.75rem -1rem rgba(0, 0, 0, 0.07),
+              0 0 5.66875rem 0.375rem rgba(0, 0, 0, 0.40);
+}
+
+.boton-atras-esp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.0625rem;
+  background-color: #F8FAFC;
+  outline: 0.0625rem solid #E5E7EB;
+  outline-offset: -0.0625rem;
+  border: none;
+  border-radius: 0.75rem;
+  color: #111827;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.boton-atras-esp:hover {
+  background-color: #EEF2F6;
+}
+
+.titulo-esp {
+  color: #000000;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: normal;
+  margin-bottom: 0.375rem;
+}
+
+.subtitulo-esp {
+  color: #6B7280;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.375rem;
+  margin-bottom: 2rem;
+}
+
+.buscador-esp {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 4rem;
+  padding: 0 1rem;
+  margin-bottom: 2.875rem;
+  background-color: #F8FAFC;
+  outline: 0.0625rem solid #A3A3A3;
+  outline-offset: -0.0625rem;
+  border-radius: 1rem;
+  gap: 0.75rem;
+}
+
+.icono-buscador {
+  color: #000000;
+  flex-shrink: 0;
+}
+
+.buscador-esp input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: #000000;
+  font-size: 0.9rem;
+}
+
+.buscador-esp input:focus {
+  outline: none;
+}
+
+.buscador-esp input::placeholder {
+  color: #52525B;
+}
+
+.grid-especialidades {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.especialidad-boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.875rem;
+  border-radius: 0.875rem;
+  background-color: #DBEAFE;
+  outline: 0.0625rem solid #0EA5E9;
+  outline-offset: -0.0625rem;
+  border: none;
+  color: #000000;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.especialidad-boton:hover:not(:disabled):not(.seleccionada) {
+  background-color: #BFDBFE;
+}
+
+.especialidad-boton.seleccionada {
+  background-color: #0EA5E9;
+  color: #FFFFFF;
+}
+
+.especialidad-boton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.nota-max-esp {
+  color: #9CA3AF;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.submit-esp {
+  width: 100%;
+  padding: 0.875rem;
+  background: linear-gradient(90deg, #0EA5E9 0%, #0369A1 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit-esp:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 </style>

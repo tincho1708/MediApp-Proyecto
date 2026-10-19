@@ -64,18 +64,23 @@ onBeforeUnmount(() => {
   if (intervaloTurnos !== undefined) clearInterval(intervaloTurnos)
 })
 
-function formatearFecha(fechaHora: string) {
-  const f = new Date(fechaHora)
-  return `${f.getDate()}/${f.getMonth() + 1}`
+const mesesAbrev = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+
+function diaNumero(fechaHora: string) {
+  return new Date(fechaHora).getDate()
+}
+function mesAbrev(fechaHora: string) {
+  return mesesAbrev[new Date(fechaHora).getMonth()]
 }
 function formatearHora(fechaHora: string) {
   const f = new Date(fechaHora)
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${pad(f.getHours())}:${pad(f.getMinutes())}`
 }
-function etiquetaTurno(t: Turno) {
+function especialidadTurno(t: Turno) {
   const especialidad = t.medico.especialidades[0]?.nombre_especialidad
-  return especialidad ? `Turno ${especialidad.toLowerCase()}` : `Turno con ${t.medico.nombre} ${t.medico.apellido}`
+  if (especialidad) return especialidad.charAt(0).toUpperCase() + especialidad.slice(1).toLowerCase()
+  return `${t.medico.nombre} ${t.medico.apellido}`
 }
 
 const hoy = new Date()
@@ -102,6 +107,21 @@ function mesSiguiente() {
   }
 }
 
+const diasConTurno = computed(() => {
+  const hoyInicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).getTime()
+  const set = new Set<number>()
+  for (const t of turnos.value) {
+    if (t.estado?.estado !== 'aceptado') continue
+    const f = new Date(t.fecha_hora)
+    const fInicio = new Date(f.getFullYear(), f.getMonth(), f.getDate()).getTime()
+    if (fInicio < hoyInicio) continue
+    if (f.getMonth() === mesActual.value && f.getFullYear() === añoActual.value) {
+      set.add(f.getDate())
+    }
+  }
+  return set
+})
+
 const celdas = computed(() => {
   const ultimoDia = new Date(añoActual.value, mesActual.value + 1, 0).getDate()
   const primerDia = new Date(añoActual.value, mesActual.value, 1).getDay()
@@ -116,6 +136,7 @@ const celdas = computed(() => {
     resultado.push({
       dia: d,
       hoy: d === hoy.getDate() && mesActual.value === hoy.getMonth() && añoActual.value === hoy.getFullYear(),
+      conTurno: diasConTurno.value.has(d),
     })
   }
 
@@ -132,137 +153,513 @@ const celdas = computed(() => {
 <template>
   <div>
     <div class="navbar">
-      <div class="navbar-logo">
-        <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
-        <span>App</span>
-      </div>
+      <button @click="emit('ir-a-principal-usuario')">
+        <div class="navbar-logo" style="cursor:pointer">
+          <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
+          <span>App</span>
+        </div>
+      </button>
 
       <div class="navbar-acciones">
-        <button class="campoo" @click="emit('ir-a-reservar-turno')">Reservar Turno</button>
-        <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
-        <button class="campoo">Profesionales</button>
-        <button class="campoo" @click="emit('ir-a-notificaciones')">Notificaciones</button>
+        <button class="campoo" @click="emit('ir-a-reservar-turno')">Reservar turno<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-chatbot')">MediBot<span class="campoo-indicador"></span></button>
+        <button class="campoo">Profesionales<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-notificaciones')">Notificaciones<span class="campoo-indicador"></span></button>
+      </div>
 
-        <button @click.stop="esta = !esta" class="barra">
-          <div class="w-12 h-9 relative">
-            <div class="w-12 border-t-2 border-black absolute left-0 top-0"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-[1rem]"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-[2rem]"></div>
+      <div class="navbar-usuario-zona">
+        <div class="navbar-divisor"></div>
+        <button class="navbar-usuario" @click.stop="esta = !esta">
+          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <div class="navbar-usuario-info">
+            <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
+            <span class="navbar-usuario-rol">Mi cuenta</span>
           </div>
+          <svg style="width:1rem; height:1rem;" class="navbar-usuario-chevron" :class="{ 'navbar-usuario-chevron-abierta': esta }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
         </button>
 
         <div :class="['barra-desplegable', { 'barra-abierta': esta }]" @click.stop>
+          <div class="dropdown-header">
+            <div class="dropdown-nombre">{{ nombreUsuario }}</div>
+            <div class="dropdown-rol">Cuenta de paciente</div>
+          </div>
+          <div class="dropdown-divisor"></div>
+
           <button href="#" @click="emit('ir-a-mi-usuario-paciente')">
-            <div id="barra-dentro" class="w-50 h-12 rounded-2xl">
-              <div class="barra-texto">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" style="flex-shrink: 0; width:1.375rem; height:1.375rem;">
-                  <path d="M11.6219 32L10.9851 26.88C10.6401 26.7467 10.3154 26.5867 10.0107 26.4C9.70614 26.2133 9.40736 26.0133 9.11443 25.8L4.37811 27.8L0 20.2L4.0995 17.08C4.07297 16.8933 4.0597 16.7136 4.0597 16.5408V15.4608C4.0597 15.2869 4.07297 15.1067 4.0995 14.92L0 11.8L4.37811 4.2L9.11443 6.2C9.4063 5.98667 9.71144 5.78667 10.0299 5.6C10.3483 5.41333 10.6667 5.25333 10.9851 5.12L11.6219 0H20.3781L21.0149 5.12C21.3599 5.25333 21.6852 5.41333 21.9908 5.6C22.2965 5.78667 22.5948 5.98667 22.8856 6.2L27.6219 4.2L32 11.8L27.9005 14.92C27.927 15.1067 27.9403 15.2869 27.9403 15.4608V16.5392C27.9403 16.7131 27.9138 16.8933 27.8607 17.08L31.9602 20.2L27.5821 27.8L22.8856 25.8C22.5937 26.0133 22.2886 26.2133 21.9701 26.4C21.6517 26.5867 21.3333 26.7467 21.0149 26.88L20.3781 32H11.6219ZM14.408 28.8H17.5522L18.1095 24.56C18.932 24.3467 19.6951 24.0336 20.3988 23.6208C21.1025 23.208 21.7457 22.7077 22.3284 22.12L26.2687 23.76L27.8209 21.04L24.398 18.44C24.5307 18.0667 24.6236 17.6736 24.6766 17.2608C24.7297 16.848 24.7562 16.4277 24.7562 16C24.7562 15.5723 24.7297 15.1525 24.6766 14.7408C24.6236 14.3291 24.5307 13.9355 24.398 13.56L27.8209 10.96L26.2687 8.24L22.3284 9.92C21.7446 9.30667 21.1014 8.7936 20.3988 8.3808C19.6962 7.968 18.9331 7.6544 18.1095 7.44L17.592 3.2H14.4478L13.8905 7.44C13.068 7.65333 12.3054 7.96693 11.6028 8.3808C10.9002 8.79467 10.2565 9.2944 9.67164 9.88L5.73134 8.24L4.1791 10.96L7.60199 13.52C7.46932 13.92 7.37645 14.32 7.32338 14.72C7.27032 15.12 7.24378 15.5467 7.24378 16C7.24378 16.4267 7.27032 16.84 7.32338 17.24C7.37645 17.64 7.46932 18.04 7.60199 18.44L4.1791 21.04L5.73134 23.76L9.67164 22.08C10.2554 22.6933 10.8991 23.2069 11.6028 23.6208C12.3065 24.0347 13.0691 24.3477 13.8905 24.56L14.408 28.8ZM16.0796 21.6C17.6186 21.6 18.932 21.0533 20.0199 19.96C21.1078 18.8667 21.6517 17.5467 21.6517 16C21.6517 14.4533 21.1078 13.1333 20.0199 12.04C18.932 10.9467 17.6186 10.4 16.0796 10.4C14.5141 10.4 13.1938 10.9467 12.1186 12.04C11.0435 13.1333 10.5064 14.4533 10.5075 16C10.5085 17.5467 11.0461 18.8667 12.1202 19.96C13.1943 21.0533 14.5141 21.6 16.0796 21.6Z" fill="black"/>
-                </svg>
-                Configuracion
-              </div>
+            <div class="dropdown-item dropdown-item-destacado">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              Configuración
             </div>
           </button>
 
-          <button href="#" style="margin-top: auto;" @click="emit('ir-a-bienvenida')">
-            <div class="barra-dentro-cerrar w-50 h-12 rounded-2xl">
-              <div class="barra-texto">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 32" fill="none" style="flex-shrink: 0; width:1.3125rem; height:1.375rem;">
-                  <path d="M3.44444 32C2.49722 32 1.68663 31.6521 1.01267 30.9564C0.338704 30.2607 0.00114815 29.4234 0 28.4444V3.55556C0 2.57778 0.337556 1.74104 1.01267 1.04533C1.68778 0.34963 2.49837 0.00118519 3.44444 0H15.5V3.55556H3.44444V28.4444H15.5V32H3.44444ZM22.3889 24.8889L20.0208 22.3111L24.4125 17.7778H10.3333V14.2222H24.4125L20.0208 9.68889L22.3889 7.11111L31 16L22.3889 24.8889Z" fill="#FF2A2A"/>
-                </svg>
-                Cerrar sesion
-              </div>
+          <button href="#" @click="emit('ir-a-bienvenida')">
+            <div class="dropdown-item dropdown-item-danger">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
+              </svg>
+              Cerrar sesión
             </div>
           </button>
         </div>
       </div>
     </div>
 
-    <div class="bienvenida">Bienvenido, {{ nombreUsuario }}</div>
+    <div class="pu-contenido">
+      <div class="pu-encabezado">
+        <div>
+          <div class="pu-titulo-bienvenida">Bienvenido, {{ nombreUsuario }}</div>
+          <p class="pu-subtitulo-bienvenida">Tus turnos y accesos, en un solo lugar.</p>
+        </div>
+        <button class="pu-boton-reservar" @click="emit('ir-a-reservar-turno')">
+          <svg style="width:1rem; height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Reservar turno
+        </button>
+      </div>
 
-    <div class="main-layout">
-      <div class="main-izquierdo" style="margin-left: 2.5rem; height: 30.25rem;">
-
-        <div class="w-[40.9375rem] h-full bg-white rounded-[1.25rem] shadow-[0rem_0.25rem_0.66875rem_0.3125rem_rgba(0,0,0,0.25)] border-[0.3125rem] border-sky-500 flex flex-col" style="padding: 1.25rem;">
-          <div style="display: flex; align-items: center; gap: 0.625rem;" class="shrink-0">
-            <div class="w-16 h-16 rounded-2xl border-2 border-sky-500 flex items-center justify-center shrink-0">
-              <svg style="width:1.625rem; height:1.625rem;" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke- stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="5" width="18" height="16" rx="2"/>
-                <path d="M16 3v4M8 3v4M3 10h18"/>
-              </svg>
+      <div class="pu-main-layout">
+        <div class="pu-columna-izquierda">
+          <div class="pu-tarjeta pu-tarjeta-turnos">
+            <div class="pu-tarjeta-turnos-header">
+              <svg style="width:1.375rem; height:1.375rem;" viewBox="0 0 24 24" fill="none" stroke="#0369A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+              <span class="pu-tarjeta-titulo">Próximos turnos</span>
+              <span class="pu-badge-contador">{{ proximosTurnos.length }}</span>
             </div>
-            <div style="color: black; margin-left: 0.625rem; font-size: 2.175rem; font-weight: 700; font-family: 'Inter', sans-serif;">Proximos turnos</div>
+
+            <p v-if="cargandoTurnos" class="pu-estado-turnos">Cargando turnos...</p>
+            <p v-else-if="errorTurnos" class="pu-estado-turnos pu-error">{{ errorTurnos }}</p>
+            <p v-else-if="!proximosTurnos.length" class="pu-estado-turnos">No tenés turnos próximos.</p>
+
+            <div v-else class="pu-lista-turnos">
+              <div v-for="t in proximosTurnos" :key="t.id_turno" class="pu-fila-turno">
+                <div class="pu-fecha-badge">
+                  <span class="pu-fecha-dia">{{ diaNumero(t.fecha_hora) }}</span>
+                  <span class="pu-fecha-mes">{{ mesAbrev(t.fecha_hora) }}</span>
+                </div>
+
+                <div class="pu-fila-turno-info">
+                  <div class="pu-fila-turno-especialidad">{{ especialidadTurno(t) }}</div>
+                  <div class="pu-fila-turno-hora">
+                    <svg style="width:1rem; height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                    {{ formatearHora(t.fecha_hora) }}
+                  </div>
+                </div>
+
+                <svg class="pu-chevron" style="width:1.125rem; height:1.125rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+              </div>
+            </div>
+
+            <div class="pu-tarjeta-turnos-footer">
+              <span>Consultá los detalles de cada turno.</span>
+              <a href="#" class="pu-enlace" @click.prevent="emit('ir-a-calendario-usuario')">Ver todos mis turnos →</a>
+            </div>
           </div>
 
-          <p v-if="cargandoTurnos" class="text-zinc-400 ml-8 mt-4 text-2xl">Cargando turnos...</p>
-          <p v-else-if="errorTurnos" class="text-red-500 ml-8 mt-4">{{ errorTurnos }}</p>
-          <p v-else-if="!proximosTurnos.length" class="text-zinc-400 text-[1.7rem] ml-8 mt-4">No tenés turnos próximos.</p>
-
-          <div v-else class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 mt-7">
-            <div v-for="(t, idx) in proximosTurnos" :key="t.id_turno" class="flex flex-row items-center gap-6 ml-8 font-['Inter'] cursor-pointer group">
-              <div class="flex items-center justify-center w-20 h-20 shrink-0 rounded-[1.5rem] text-white" :class="idx % 2 === 0 ? 'bg-red-400' : 'bg-sky-500'">
-                <div class="text-2xl font-bold">{{ formatearFecha(t.fecha_hora) }}</div>
-              </div>
-
-              <div class="flex-1 min-w-0">
-                <div class="text-2xl font-bold text-black/70 truncate">{{ etiquetaTurno(t) }}</div>
-                <div class="flex items-center gap-2 mt-1 text-black font-semibold text-lg">
-                  <svg style="width:1.25rem; height:1.25rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-                  {{ formatearHora(t.fecha_hora) }}
-                </div>
-              </div>
-
-              <svg style="width:1.375rem; height:1.375rem;" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke- stroke-linecap="round" stroke-linejoin="round" class="shrink-0 group-hover:stroke-sky-500 transition-colors">
-                <path d="M9 6l6 6-6 6"/>
-              </svg>
+          <div class="pu-fila-tarjetas-chicas">
+            <div class="pu-tarjeta pu-tarjeta-chica">
+              <div class="pu-tarjeta-chica-titulo">Encontrá un profesional</div>
+              <p class="pu-tarjeta-chica-desc">Buscá profesionales y elegí con quién atenderte.</p>
+              <a href="#" class="pu-enlace" @click.prevent>Buscar profesionales →</a>
+            </div>
+            <div class="pu-tarjeta pu-tarjeta-chica">
+              <div class="pu-tarjeta-chica-titulo">Conversá con MediBot</div>
+              <p class="pu-tarjeta-chica-desc">Hacé una consulta o pedí ayuda para usar MediApp.</p>
+              <a href="#" class="pu-enlace" @click.prevent="emit('ir-a-chatbot')">Abrir MediBot →</a>
             </div>
           </div>
         </div>
-        
-      </div>
 
-      <div class="div-derecho" style="margin-top: 0;">
-        <div class="calendario">
-          <div class="cal-header">
-            <button class="cal-nav-btn" @click="mesAnterior">
-              <svg style="width:3.125rem; height:3.125rem;" viewBox="0 0 83 82" fill="none">
-                <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
-              </svg>
-            </button>
-            <span class="cal-titulo">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
-            <button class="cal-nav-btn" @click="mesSiguiente">
-              <svg viewBox="0 0 83 82" fill="none" style="transform:rotate(180deg); width:3.125rem; height:3.125rem;">
-                <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
-              </svg>
-            </button>
-          </div>
-
-          <div class="cal-grid">
-            <div class="cal-nombre-dia">LU</div>
-            <div class="cal-nombre-dia">MA</div>
-            <div class="cal-nombre-dia">MI</div>
-            <div class="cal-nombre-dia">JU</div>
-            <div class="cal-nombre-dia">VI</div>
-            <div class="cal-nombre-dia">SA</div>
-            <div class="cal-nombre-dia">DO</div>
-
-            <div
-              v-for="(celda, i) in celdas"
-              :key="i"
-              class="cal-dia"
-              :class="{
-                'cal-hoy': celda.hoy,
-                'cal-otro-mes': celda.otroMes
-              }"
-            >
-              {{ celda.dia }}
+        <div class="pu-columna-derecha">
+          <div class="pu-tarjeta pu-calendario">
+            <div class="pu-cal-header">
+              <button class="pu-cal-nav-btn" @click="mesAnterior">
+                <svg style="width:1rem; height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <span class="pu-cal-titulo">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
+              <button class="pu-cal-nav-btn" @click="mesSiguiente">
+                <svg style="width:1rem; height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
             </div>
-          </div>
 
-          <button class="cal-ver-completo" @click="emit('ir-a-calendario-usuario')">Ver calendario completo</button>
+            <div class="pu-cal-grid">
+              <div class="pu-cal-nombre-dia">LU</div>
+              <div class="pu-cal-nombre-dia">MA</div>
+              <div class="pu-cal-nombre-dia">MI</div>
+              <div class="pu-cal-nombre-dia">JU</div>
+              <div class="pu-cal-nombre-dia">VI</div>
+              <div class="pu-cal-nombre-dia">SA</div>
+              <div class="pu-cal-nombre-dia">DO</div>
+
+              <div
+                v-for="(celda, i) in celdas"
+                :key="i"
+                class="pu-cal-dia"
+                :class="{ 'pu-cal-hoy': celda.hoy, 'pu-cal-otro-mes': celda.otroMes }"
+              >
+                {{ celda.dia }}
+                <span v-if="celda.conTurno" class="pu-cal-punto"></span>
+              </div>
+            </div>
+
+            <div class="pu-cal-leyenda"><span class="pu-cal-punto-leyenda"></span>Días con turnos</div>
+
+            <button class="pu-cal-ver-completo" @click="emit('ir-a-calendario-usuario')">
+              <svg style="width:1.125rem; height:1.125rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+              Ver calendario completo
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style></style>
+<style scoped>
+.pu-contenido {
+  background-color: #EAF2FB;
+  min-height: 100vh;
+  padding-top: 4.9rem;
+}
+
+.pu-encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 2.5rem 2.5rem 1.5rem;
+}
+
+.pu-titulo-bienvenida {
+  font-family: 'Inter', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.pu-subtitulo-bienvenida {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  color: #6B7280;
+  margin-top: 0.25rem;
+}
+
+.pu-boton-reservar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #3D6FC2;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.pu-boton-reservar:hover {
+  opacity: 0.9;
+}
+
+.pu-main-layout {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 2rem;
+  padding: 0 2.5rem 2.5rem;
+}
+
+.pu-tarjeta {
+  background-color: #FFFFFF;
+  border-radius: 1.25rem;
+  box-shadow: 0 0.25rem 1rem 0 rgba(15, 42, 86, 0.06);
+  padding: 1.5rem;
+}
+
+.pu-tarjeta-turnos {
+  display: flex;
+  flex-direction: column;
+}
+
+.pu-tarjeta-turnos-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 1.5rem;
+}
+
+.pu-tarjeta-titulo {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.pu-badge-contador {
+  background-color: #DCEBFB;
+  color: #2563EB;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+}
+
+.pu-estado-turnos {
+  color: #9CA3AF;
+  font-family: 'Inter', sans-serif;
+  margin: 0.5rem 0;
+}
+
+.pu-error {
+  color: #DC2626;
+}
+
+.pu-lista-turnos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pu-fila-turno {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pu-fila-turno:hover {
+  background-color: #F8FAFC;
+}
+
+.pu-fila-turno:hover .pu-chevron {
+  color: #0EA5E9;
+}
+
+.pu-fecha-badge {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex-shrink: 0;
+  border-radius: 1rem;
+  background-color: #EAF2FB;
+  color: #2563EB;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pu-fecha-dia {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.pu-fecha-mes {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-top: 0.125rem;
+}
+
+.pu-fila-turno-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pu-fila-turno-especialidad {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pu-fila-turno-hora {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #6B7280;
+}
+
+.pu-chevron {
+  flex-shrink: 0;
+  color: #94A3B8;
+  transition: color 0.2s ease;
+}
+
+.pu-tarjeta-turnos-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 0.0625rem solid #F1F5F9;
+  font-size: 0.85rem;
+  color: #6B7280;
+}
+
+.pu-enlace {
+  color: #2563EB;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pu-enlace:hover {
+  text-decoration: underline;
+}
+
+.pu-fila-tarjetas-chicas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.pu-tarjeta-chica-titulo {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.pu-tarjeta-chica-desc {
+  color: #6B7280;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.pu-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.pu-cal-nav-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 0.0625rem solid #E2E8F0;
+  background-color: #FFFFFF;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pu-cal-nav-btn:hover {
+  background-color: #F8FAFC;
+}
+
+.pu-cal-titulo {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.pu-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.pu-cal-nombre-dia {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #94A3B8;
+  padding-bottom: 0.5rem;
+}
+
+.pu-cal-dia {
+  position: relative;
+  padding: 0.5rem 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: #334155;
+  border-radius: 0.75rem;
+}
+
+.pu-cal-otro-mes {
+  color: #CBD5E1;
+}
+
+.pu-cal-hoy {
+  background-color: #2563EB;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.pu-cal-punto {
+  position: absolute;
+  bottom: 0.1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0.25rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background-color: #2563EB;
+}
+
+.pu-cal-hoy .pu-cal-punto {
+  background-color: #FFFFFF;
+}
+
+.pu-cal-leyenda {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: #64748B;
+}
+
+.pu-cal-punto-leyenda {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background-color: #2563EB;
+  display: inline-block;
+}
+
+.pu-cal-ver-completo {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem;
+  background-color: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  margin-top: 5.8rem;
+}
+
+.pu-cal-ver-completo:hover {
+  opacity: 0.9;
+}
+</style>
