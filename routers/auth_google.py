@@ -21,11 +21,19 @@ AUTH0_CLIENT_ID = os.getenv("AUTH0_CLIENT_ID")
 
 router = APIRouter(prefix="/auth/google", tags=["Auth Google"])
 
+_jwks = None
+
+
+def _get_jwks() -> dict:
+    global _jwks
+    if _jwks is None:
+        _jwks = httpx.get(f"https://{AUTH0_DOMAIN}/.well-known/jwks.json").json()
+    return _jwks
+
 
 def verify_auth0_token(token: str) -> dict:
     try:
-        jwks_url = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
-        jwks = httpx.get(jwks_url).json()
+        jwks = _get_jwks()
         unverified_header = jwt.get_unverified_header(token)
 
         rsa_key = {}
@@ -68,6 +76,58 @@ class PinVerificacionRequest(BaseModel):
 class GoogleLoginRequest(BaseModel):
     id_token: str
     tipo: str
+
+
+class GoogleAuthRequest(BaseModel):
+    id_token: str
+    tipo: str
+
+
+@router.post("")
+def auth_google(data: GoogleAuthRequest, db: Session = Depends(get_db)):
+    if data.tipo not in ("medico", "paciente"):
+        raise HTTPException(status_code=400, detail="Tipo debe ser 'medico' o 'paciente'")
+
+    payload = verify_auth0_token(data.id_token)
+    email = payload.get("email")
+    google_id = payload.get("sub")
+    if not email:
+        raise HTTPException(status_code=400, detail="No se pudo obtener el email de Google")
+    if not payload.get("email_verified"):
+        raise HTTPException(status_code=403, detail="El mail de Google no está verificado")
+
+    Modelo = Medico if data.tipo == "medico" else Paciente
+    usuario = db.query(Modelo).filter(Modelo.google_id == google_id).first()
+    nuevo = False
+
+    if not usuario:
+        usuario = db.query(Modelo).filter(Modelo.mail == email).first()
+        if usuario:
+            usuario.google_id = google_id
+            usuario.email_verificado = True
+        else:
+            nuevo = True
+            nombre = payload.get("given_name") or payload.get("name", "").split()[0]
+            apellido = payload.get("family_name") or (payload.get("name", "").split()[-1] if " " in payload.get("name", "") else "")
+            usuario = Modelo(nombre=nombre, apellido=apellido, mail=email,
+                             google_id=google_id, email_verificado=True)
+            if data.tipo == "medico":
+                usuario.setup_token = str(uuid.uuid4())
+            db.add(usuario)
+            db.flush()
+            if data.tipo == "medico":
+                for dia in range(5):
+                    for hora in range(9, 17):
+                        db.add(HorarioMedico(id_medico=usuario.id, dia_semana=dia, hora=hora))
+
+    db.commit()
+
+    token = create_access_token({"sub": str(usuario.id), "tipo": data.tipo})
+    response = {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre, "nuevo": nuevo}
+    if data.tipo == "medico" and usuario.setup_token:
+        response["setup_token"] = usuario.setup_token
+        response["medico_id"] = usuario.id
+    return response
 
 
 @router.post("/registro", status_code=status.HTTP_201_CREATED)
