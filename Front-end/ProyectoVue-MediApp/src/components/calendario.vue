@@ -2,20 +2,46 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useTurnosMedico, type TurnoMedico } from '@/stores/turnosMedico'
 
-const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-mis-pacientes', 'ir-a-configuracion', 'ir-a-mi-usuario'])
+const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-mis-pacientes', 'ir-a-configuracion'])
+
+const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+const nombreUsuario = sesion.nombre || 'Usuario'
 
 const esta = ref(false)
 
-function cerrarAlClickFuera() { esta.value = false }
+function cerrarAlClickFuera() {
+  esta.value = false
+}
 
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
+const { turnos, usarPollingTurnos, guardarNotasMedico } = useTurnosMedico()
+
+usarPollingTurnos()
+
+const nombresMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+
 const hoy = new Date()
 const mesActual = ref(hoy.getMonth())
 const añoActual = ref(hoy.getFullYear())
+const seleccionado = ref(hoy)
 
-const nombresMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+function esMismoDia(fecha: string | Date, dia: Date) {
+  const f = new Date(fecha)
+  return f.getFullYear() === dia.getFullYear() && f.getMonth() === dia.getMonth() && f.getDate() === dia.getDate()
+}
+
+function seleccionarDia(dia: Date) {
+  seleccionado.value = dia
+  mesActual.value = dia.getMonth()
+  añoActual.value = dia.getFullYear()
+}
+
+function correrDias(n: number) {
+  return new Date(seleccionado.value.getFullYear(), seleccionado.value.getMonth(), seleccionado.value.getDate() + n)
+}
 
 function mesAnterior() {
   if (mesActual.value === 0) {
@@ -35,335 +61,328 @@ function mesSiguiente() {
   }
 }
 
+const turnosAceptados = computed(() => turnos.value.filter((t) => t.estado?.estado === 'aceptado'))
+
 const celdas = computed(() => {
   const ultimoDia = new Date(añoActual.value, mesActual.value + 1, 0).getDate()
-  const primerDia = new Date(añoActual.value, mesActual.value, 1).getDay()
-  const offset = (primerDia + 6) % 7
+  const offset = (new Date(añoActual.value, mesActual.value, 1).getDay() + 6) % 7
   const resultado = []
 
-  for (let i = 0; i < offset; i++) {
-    resultado.push({ otroMes: true })
-  }
-
-  for (let d = 1; d <= ultimoDia; d++) {
+  for (let i = -offset + 1; i <= ultimoDia || resultado.length % 7 !== 0; i++) {
+    const fecha = new Date(añoActual.value, mesActual.value, i)
     resultado.push({
-      dia: d,
-      hoy: d === hoy.getDate() && mesActual.value === hoy.getMonth() && añoActual.value === hoy.getFullYear(),
+      fecha,
+      otroMes: fecha.getMonth() !== mesActual.value,
+      seleccionado: esMismoDia(fecha, seleccionado.value),
+      conTurno: turnosAceptados.value.some((t) => esMismoDia(t.fecha_hora, fecha)),
     })
-  }
-
-  let siguiente = 1
-  while (resultado.length % 7 !== 0) {
-    resultado.push({ dia: siguiente, otroMes: true })
-    siguiente++
   }
 
   return resultado
 })
-const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
-const seleccionado = ref(new Date())
+const turnosDelDia = computed(() =>
+  turnosAceptados.value.filter((t) => esMismoDia(t.fecha_hora, seleccionado.value)).sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime()),
+)
 
-function correrDias(n: number) {
-  return new Date(
-    seleccionado.value.getFullYear(),
-    seleccionado.value.getMonth(),
-    seleccionado.value.getDate() + n
-  )
-}
+const diasVecinos = computed(() => [correrDias(-1), seleccionado.value, correrDias(1)])
 
-const anterior = computed(() => correrDias(-1))
-const siguiente = computed(() => correrDias(1))
-
-function diaAnterior() {
-  seleccionado.value = correrDias(-1)
-}
-
-function diaSiguiente() {
-  seleccionado.value = correrDias(1)
-}
-
-type Turno = TurnoMedico
-
-const { turnos, usarPollingTurnos } = useTurnosMedico()
-
-usarPollingTurnos()
-
-function esMismoDia(fechaHora: string, dia: Date) {
+function formatearHora(fechaHora: string) {
   const f = new Date(fechaHora)
-  return f.getFullYear() === dia.getFullYear() && f.getMonth() === dia.getMonth() && f.getDate() === dia.getDate()
+  return `${String(f.getHours()).padStart(2, '0')}:${String(f.getMinutes()).padStart(2, '0')}`
 }
 
-const CANTIDAD_SLOTS = 3
-
-const turnosDelDia = computed(() => {
-  return turnos.value
-    .filter(t => t.estado?.estado === 'aceptado' && esMismoDia(t.fecha_hora, seleccionado.value))
-    .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
-    .slice(0, CANTIDAD_SLOTS)
-})
-
-const slots = computed(() => {
-  const lista: (Turno | null)[] = [...turnosDelDia.value]
-  while (lista.length < CANTIDAD_SLOTS) lista.push(null)
-  return lista
-})
-
-function formatearHoraTurno(fechaHora: string) {
+function formatearFechaNumerica(fechaHora: string) {
   const f = new Date(fechaHora)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(f.getHours())}:${pad(f.getMinutes())}`
+  return `${String(f.getDate()).padStart(2, '0')}/${String(f.getMonth() + 1).padStart(2, '0')}/${f.getFullYear()}`
+}
+
+function fechaCorta(d: Date) {
+  return `${nombresDia[d.getDay()]} ${d.getDate()} de ${nombresMes[d.getMonth()].toLowerCase()}`
+}
+
+function cantidadTurnos(n: number) {
+  return `${n} turno${n !== 1 ? 's' : ''}`
+}
+
+function nombrePaciente(t: TurnoMedico) {
+  return `${t.paciente.nombre} ${t.paciente.apellido}`
+}
+
+function iniciales(t: TurnoMedico) {
+  return `${t.paciente.nombre.charAt(0)}${t.paciente.apellido.charAt(0)}`.toUpperCase()
+}
+
+const turnoEditandoId = ref<number | null>(null)
+const notas = ref('')
+const guardando = ref(false)
+const errorGuardar = ref('')
+
+const turnoEditando = computed(() => turnos.value.find((t) => t.id_turno === turnoEditandoId.value) ?? null)
+
+function editarTurno(t: TurnoMedico) {
+  turnoEditandoId.value = t.id_turno
+  notas.value = t.notas_medico ?? ''
+  errorGuardar.value = ''
+}
+
+function cerrarEdicion() {
+  turnoEditandoId.value = null
+}
+
+async function guardarCambios() {
+  if (!turnoEditando.value) return
+  guardando.value = true
+  errorGuardar.value = ''
+  try {
+    await guardarNotasMedico(turnoEditando.value.id_turno, notas.value)
+    cerrarEdicion()
+  } catch (e) {
+    errorGuardar.value = e instanceof Error ? e.message : 'No se pudo conectar al servidor.'
+  } finally {
+    guardando.value = false
+  }
 }
 </script>
 
 <template>
   <div>
-    
     <div class="navbar">
-      <button  @click="emit('ir-a-principal')">
-        <div class="navbar-logo" style="cursor:pointer">
+      <button @click="emit('ir-a-principal')">
+        <div class="navbar-logo">
           <img src="@/assets/imagenes/imagen-logo.png" alt="Logo MediApp" />
           <span>App</span>
         </div>
       </button>
 
       <div class="navbar-acciones">
-        <button class="campoo" @click="emit('ir-a-chatbot')">MediBot</button>
-        <button class="campoo" @click="emit('ir-a-mis-pacientes')">Mis pacientes</button>
-        <button class="campoo" @click="emit('ir-a-solicitudes')">Solicitudes</button>
-        <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+</button>
+        <button class="campoo" @click="emit('ir-a-chatbot')">MediBot<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-mis-pacientes')">Mis pacientes<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-solicitudes')">Solicitudes<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-MediPlus')">MediApp+<span class="campoo-indicador"></span></button>
+      </div>
 
-        <button @click.stop="esta = !esta" class="barra">
-          <div class="w-12 h-9 relative">
-            <div class="w-12 border-t-2 border-black absolute left-0 top-0"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-[1rem]"></div>
-            <div class="w-12 border-t-2 border-black absolute left-0 top-[2rem]"></div>
+      <div class="navbar-usuario-zona">
+        <div class="navbar-divisor"></div>
+        <button class="navbar-usuario" @click.stop="esta = !esta">
+          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <div class="navbar-usuario-info">
+            <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
+            <span class="navbar-usuario-rol">Mi cuenta</span>
           </div>
+          <svg style="width: 1rem; height: 1rem" class="navbar-usuario-chevron" :class="{ 'navbar-usuario-chevron-abierta': esta }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
         </button>
 
         <div :class="['barra-desplegable', { 'barra-abierta': esta }]" @click.stop>
-          <button href="#" @click="emit('ir-a-mi-usuario')">
-            <div id="barra-dentro" class="w-50 h-12 rounded-2xl">
-              <div class="barra-texto">
-                <svg style="width:1.3125rem; height:1.375rem;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 32" fill="none">
-                  <path d="M15.5 0C17.5554 0 19.5267 0.842854 20.9801 2.34315C22.4335 3.84344 23.25 5.87827 23.25 8C23.25 10.1217 22.4335 12.1566 20.9801 13.6569C19.5267 15.1571 17.5554 16 15.5 16C13.4446 16 11.4733 15.1571 10.0199 13.6569C8.56651 12.1566 7.75 10.1217 7.75 8C7.75 5.87827 8.56651 3.84344 10.0199 2.34315C11.4733 0.842854 13.4446 0 15.5 0ZM15.5 4C14.4723 4 13.4867 4.42143 12.76 5.17157C12.0333 5.92172 11.625 6.93913 11.625 8C11.625 9.06087 12.0333 10.0783 12.76 10.8284C13.4867 11.5786 14.4723 12 15.5 12C16.5277 12 17.5133 11.5786 18.24 10.8284C18.9667 10.0783 19.375 9.06087 19.375 8C19.375 6.93913 18.9667 5.92172 18.24 5.17157C17.5133 4.42143 16.5277 4 15.5 4ZM15.5 18C20.6731 18 31 20.66 31 26V32H0V26C0 20.66 10.3269 18 15.5 18ZM15.5 21.8C9.74562 21.8 3.68125 24.72 3.68125 26V28.2H27.3188V26C27.3188 24.72 21.2544 21.8 15.5 21.8Z" fill="black"/>
-                </svg>
-                Mi cuenta
-              </div>
+          <div class="dropdown-header">
+            <div class="dropdown-nombre">{{ nombreUsuario }}</div>
+            <div class="dropdown-rol">Cuenta de médico</div>
+          </div>
+          <div class="dropdown-divisor"></div>
+
+          <button @click="emit('ir-a-configuracion')">
+            <div class="dropdown-item dropdown-item-destacado">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              Configuración
             </div>
           </button>
 
-
-          <button href="#" @click="emit('ir-a-configuracion')">
-            <div id="barra-dentro" class="w-50 h-12 rounded-2xl">
-              <div class="barra-texto">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" style="flex-shrink: 0; width:1.375rem; height:1.375rem;">
-                  <path d="M11.6219 32L10.9851 26.88C10.6401 26.7467 10.3154 26.5867 10.0107 26.4C9.70614 26.2133 9.40736 26.0133 9.11443 25.8L4.37811 27.8L0 20.2L4.0995 17.08C4.07297 16.8933 4.0597 16.7136 4.0597 16.5408V15.4608C4.0597 15.2869 4.07297 15.1067 4.0995 14.92L0 11.8L4.37811 4.2L9.11443 6.2C9.4063 5.98667 9.71144 5.78667 10.0299 5.6C10.3483 5.41333 10.6667 5.25333 10.9851 5.12L11.6219 0H20.3781L21.0149 5.12C21.3599 5.25333 21.6852 5.41333 21.9908 5.6C22.2965 5.78667 22.5948 5.98667 22.8856 6.2L27.6219 4.2L32 11.8L27.9005 14.92C27.927 15.1067 27.9403 15.2869 27.9403 15.4608V16.5392C27.9403 16.7131 27.9138 16.8933 27.8607 17.08L31.9602 20.2L27.5821 27.8L22.8856 25.8C22.5937 26.0133 22.2886 26.2133 21.9701 26.4C21.6517 26.5867 21.3333 26.7467 21.0149 26.88L20.3781 32H11.6219ZM14.408 28.8H17.5522L18.1095 24.56C18.932 24.3467 19.6951 24.0336 20.3988 23.6208C21.1025 23.208 21.7457 22.7077 22.3284 22.12L26.2687 23.76L27.8209 21.04L24.398 18.44C24.5307 18.0667 24.6236 17.6736 24.6766 17.2608C24.7297 16.848 24.7562 16.4277 24.7562 16C24.7562 15.5723 24.7297 15.1525 24.6766 14.7408C24.6236 14.3291 24.5307 13.9355 24.398 13.56L27.8209 10.96L26.2687 8.24L22.3284 9.92C21.7446 9.30667 21.1014 8.7936 20.3988 8.3808C19.6962 7.968 18.9331 7.6544 18.1095 7.44L17.592 3.2H14.4478L13.8905 7.44C13.068 7.65333 12.3054 7.96693 11.6028 8.3808C10.9002 8.79467 10.2565 9.2944 9.67164 9.88L5.73134 8.24L4.1791 10.96L7.60199 13.52C7.46932 13.92 7.37645 14.32 7.32338 14.72C7.27032 15.12 7.24378 15.5467 7.24378 16C7.24378 16.4267 7.27032 16.84 7.32338 17.24C7.37645 17.64 7.46932 18.04 7.60199 18.44L4.1791 21.04L5.73134 23.76L9.67164 22.08C10.2554 22.6933 10.8991 23.2069 11.6028 23.6208C12.3065 24.0347 13.0691 24.3477 13.8905 24.56L14.408 28.8ZM16.0796 21.6C17.6186 21.6 18.932 21.0533 20.0199 19.96C21.1078 18.8667 21.6517 17.5467 21.6517 16C21.6517 14.4533 21.1078 13.1333 20.0199 12.04C18.932 10.9467 17.6186 10.4 16.0796 10.4C14.5141 10.4 13.1938 10.9467 12.1186 12.04C11.0435 13.1333 10.5064 14.4533 10.5075 16C10.5085 17.5467 11.0461 18.8667 12.1202 19.96C13.1943 21.0533 14.5141 21.6 16.0796 21.6Z" fill="black"/>
-                </svg>
-                Configuracion
-              </div>
-            </div>
-          </button>
-
-          <button href="#" style="margin-top: auto;" @click="emit('ir-a-bienvenida')">
-            <div class="barra-dentro-cerrar w-50 h-12 rounded-2xl">
-              <div class="barra-texto">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 32" fill="none" style="flex-shrink: 0; width:1.3125rem; height:1.375rem;">
-                  <path d="M3.44444 32C2.49722 32 1.68663 31.6521 1.01267 30.9564C0.338704 30.2607 0.00114815 29.4234 0 28.4444V3.55556C0 2.57778 0.337556 1.74104 1.01267 1.04533C1.68778 0.34963 2.49837 0.00118519 3.44444 0H15.5V3.55556H3.44444V28.4444H15.5V32H3.44444ZM22.3889 24.8889L20.0208 22.3111L24.4125 17.7778H10.3333V14.2222H24.4125L20.0208 9.68889L22.3889 7.11111L31 16L22.3889 24.8889Z" fill="#FF2A2A"/>
-                </svg>
-                Cerrar sesion
-              </div>
+          <button @click="emit('ir-a-bienvenida')">
+            <div class="dropdown-item dropdown-item-danger">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" x2="9" y1="12" y2="12" />
+              </svg>
+              Cerrar sesión
             </div>
           </button>
         </div>
       </div>
     </div>
 
-    <div class="cal-contenido">
-      <div id="calendario">
-
-        <div class="izq">
-          <div class="cal-header">
-            <button class="cal-nav-btn" @click="mesAnterior">
-              <svg style="width:3.125rem; height:3.125rem;" viewBox="0 0 83 82" fill="none">
-                <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
-              </svg>
-            </button>
-
-            <span class="cal-titulo">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
-            <button class="cal-nav-btn" @click="mesSiguiente">
-              <svg style="width:3.125rem; height:3.125rem;" viewBox="0 0 83 82" fill="none" class="cal-nav-der">
-                <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
-              </svg>
-            </button>
+    <div class="min-h-screen lg:h-screen lg:overflow-hidden bg-linear-to-br from-blue-100 via-violet-100 to-blue-200 pt-[4.9rem] flex flex-col font-['Inter']">
+      <div class="flex-1 min-h-0 max-w-328 w-full mx-auto px-4 sm:px-8 pt-8 pb-6 flex flex-col gap-6">
+        <div class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div v-if="turnoEditando">
+            <h1 class="text-3xl font-semibold text-gray-800">Editar turno</h1>
+            <p class="text-sm text-slate-500 mt-2">Agregá notas privadas sobre la consulta. Solo vos podés verlas.</p>
           </div>
-
-           <div class="calgGrid">
-            <div class="cal-nombre-dia">LU</div>
-            <div class="cal-nombre-dia">MA</div>
-            <div class="cal-nombre-dia">MI</div>
-            <div class="cal-nombre-dia">JU</div>
-            <div class="cal-nombre-dia">VI</div>
-            <div class="cal-nombre-dia">SA</div>
-            <div class="cal-nombre-dia">DO</div>
-
-            <div
-              v-for="(celda, i) in celdas"
-              :key="i"
-              class="calDia"
-              :class="{
-                'cal-hoy': celda.hoy,
-                'cal-otro-mes': celda.otroMes
-              }"
-            >
-              {{ celda.dia }}
-            </div>
+          <div v-else>
+            <h1 class="text-3xl font-semibold text-gray-800">Calendario</h1>
+            <p class="text-sm text-slate-500 mt-2">Consultá tus turnos y organizá cada día de atención.</p>
           </div>
+          <button v-if="turnoEditando" class="h-11 px-5 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 flex items-center justify-center gap-2 text-sm font-medium text-[#3D6FC2] cursor-pointer hover:bg-slate-50 transition-colors" @click="cerrarEdicion">
+            <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+            Volver al calendario
+          </button>
+          <button v-else class="h-11 px-6 bg-[#3D6FC2] rounded-xl text-sm font-medium text-white cursor-pointer hover:opacity-90 transition-opacity" @click="emit('ir-a-solicitudes')">Ver solicitudes</button>
         </div>
 
-        <div class="divisor-v"></div>
-
-        <div class="der">
-          <div class="flex items-center justify-between w-full">
-            <button @click="diaAnterior">
-              <div class="size-20 relative flex items-center justify-center rounded-[2.625rem] border border-black bg-white">
-                <svg style="width:5rem; height:4.375rem;" viewBox="0 0 83 82" fill="none">
-                  <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
-                </svg>
+        <div class="lg:flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[20rem_1fr] lg:grid-rows-[minmax(0,1fr)] gap-6">
+          <div class="min-h-0 bg-white rounded-3xl outline-1 -outline-offset-1 outline-slate-200 shadow-[0_0.5rem_1.5rem_-0.25rem_rgba(34,66,105,0.11),0_0.125rem_0.375rem_0_rgba(34,66,105,0.06)] p-5 flex flex-col gap-3">
+            <div class="shrink-0 flex items-center justify-between">
+              <span class="text-lg font-semibold text-gray-800">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
+              <div class="flex gap-2">
+                <button class="size-9 rounded-xl bg-white outline-1 -outline-offset-1 outline-slate-200 text-[#3D6FC2] flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors" @click="mesAnterior">
+                  <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+                </button>
+                <button class="size-9 rounded-xl bg-white outline-1 -outline-offset-1 outline-slate-200 text-[#3D6FC2] flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors" @click="mesSiguiente">
+                  <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+                </button>
               </div>
-            </button>
-
-            <div class="flex flex-col items-center">
-              <span class="text-2xl text-gray-400 font-medium">{{ nombresDia[anterior.getDay()] }}</span>
-              <span class="text-5xl text-gray-400 font-semibold">{{ anterior.getDate() }}</span>
             </div>
 
-            <div class="flex flex-col items-center">
-              <span class="text-2xl text-black font-medium">{{ nombresDia[seleccionado.getDay()] }}</span>
-              <span class="text-5xl text-black font-bold">{{ seleccionado.getDate() }}</span>
-            </div>
-
-            <div class="flex flex-col items-center">
-              <span class="text-2xl text-gray-400 font-medium">{{ nombresDia[siguiente.getDay()] }}</span>
-              <span class="text-5xl text-gray-400 font-semibold">{{ siguiente.getDate() }}</span>
-            </div>
-
-            <button @click="diaSiguiente">
-              <div class="size-20 relative flex items-center justify-center rounded-[2.625rem] border border-black bg-white">
-                <svg style="width:5rem; height:4.375rem;" viewBox="0 0 83 82" fill="none" class="rotate-180">
-                  <path d="M29.2929 41.2929C28.9024 41.6834 28.9024 42.3166 29.2929 42.7071L35.6569 49.0711C36.0474 49.4616 36.6805 49.4616 37.0711 49.0711C37.4616 48.6805 37.4616 48.0474 37.0711 47.6569L31.4142 42L37.0711 36.3431C37.4616 35.9526 37.4616 35.3195 37.0711 34.9289C36.6805 34.5384 36.0474 34.5384 35.6569 34.9289L29.2929 41.2929ZM55 42V41H30V42V43H55V42Z" fill="black"/>
-                </svg>
+            <div class="flex-1 min-h-0 flex flex-col gap-1">
+              <div class="shrink-0 grid grid-cols-7">
+                <span v-for="d in ['LU', 'MA', 'MI', 'JU', 'VI', 'SA', 'DO']" :key="d" class="h-5 text-center text-xs text-slate-500">{{ d }}</span>
               </div>
-            </button>
+              <div class="flex-1 min-h-0 grid grid-cols-7 auto-rows-[minmax(1.75rem,2.5rem)] content-start gap-0.5">
+                <button v-for="celda in celdas" :key="celda.fecha.getTime()" class="rounded-xl flex flex-col items-center justify-center gap-0.5 text-sm font-medium cursor-pointer transition-colors" :class="celda.seleccionado ? 'bg-[#3D6FC2] text-white' : celda.otroMes ? 'text-slate-500 hover:bg-slate-50' : 'text-gray-800 hover:bg-slate-100'" @click="seleccionarDia(celda.fecha)">
+                  {{ celda.fecha.getDate() }}
+                  <span class="size-0.75 rounded-full" :class="celda.conTurno ? (celda.seleccionado ? 'bg-white' : 'bg-[#3D6FC2]') : 'bg-transparent'"></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="shrink-0 flex items-center gap-2 text-xs text-slate-500">
+              <span class="size-1.5 rounded-full bg-[#3D6FC2]"></span>
+              Día con turnos
+            </div>
+
+            <div class="shrink-0 h-px bg-slate-200"></div>
+
+            <div class="shrink-0 px-4 py-3 bg-blue-50 rounded-2xl flex flex-col gap-1">
+              <span class="text-sm font-medium text-[#3D6FC2]">{{ fechaCorta(seleccionado) }}</span>
+              <span class="text-base font-semibold text-gray-800">{{ turnosDelDia.length ? `${cantidadTurnos(turnosDelDia.length)} programado${turnosDelDia.length !== 1 ? 's' : ''}` : 'Sin turnos programados' }}</span>
+              <span v-if="turnosDelDia.length" class="text-xs text-slate-500">Primer turno a las {{ formatearHora(turnosDelDia[0].fecha_hora) }}</span>
+            </div>
+
+            <button class="shrink-0 h-10 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-[#3D6FC2] cursor-pointer hover:bg-slate-50 transition-colors" @click="seleccionarDia(hoy)">Ir a hoy</button>
           </div>
-          <div class="flex-1 flex flex-col justify-center gap-6">
-            <div v-for="(t, i) in slots" :key="i" class="w-full flex flex-col items-center" :class="{ 'mt-[2%]': i > 0 }">
-              <div
-                v-if="t"
-                class="w-[100%] h-24 bg-red-400 rounded-2xl flex items-center justify-between px-6"
-              >
-                <div>
-                  <div class="text-2xl font-medium text-black">{{ t.paciente.nombre }} {{ t.paciente.apellido }}</div>
-                  <div class="text-black/60">{{ t.notas || 'Sin motivo especificado' }}</div>
+
+          <div v-if="turnoEditando" class="min-h-0 bg-white rounded-3xl outline-1 -outline-offset-1 outline-slate-200 shadow-[0_0.5rem_1.5rem_-0.25rem_rgba(34,66,105,0.11),0_0.125rem_0.375rem_0_rgba(34,66,105,0.06)] p-6 flex flex-col gap-4">
+            <div class="shrink-0 flex items-center justify-between gap-4">
+              <span class="text-lg font-semibold text-gray-800">Datos del turno</span>
+              <span class="text-xs text-slate-500">{{ fechaCorta(new Date(turnoEditando.fecha_hora)) }} de {{ new Date(turnoEditando.fecha_hora).getFullYear() }}</span>
+            </div>
+
+            <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4">
+              <div class="shrink-0 p-4 bg-slate-50 rounded-2xl flex items-center gap-4 min-w-0">
+                <div class="size-11 shrink-0 rounded-full bg-blue-50 text-[#3D6FC2] text-sm font-medium flex items-center justify-center">{{ iniciales(turnoEditando) }}</div>
+                <div class="min-w-0">
+                  <div class="text-lg font-semibold text-gray-800 truncate">{{ nombrePaciente(turnoEditando) }}</div>
+                  <div class="text-xs text-slate-500 truncate">Email: {{ turnoEditando.paciente.mail }}</div>
                 </div>
-                <div class="text-3xl text-black">{{ formatearHoraTurno(t.fecha_hora) }}</div>
               </div>
-              <div v-else class="w-[100%] h-24"></div>
-              <div class="w-[100%] mt-4 h-0 outline-1 outline-offset-[-0.03125rem] outline-black/30"></div>
+
+              <div class="shrink-0 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="flex flex-col gap-2">
+                  <span class="text-sm font-medium text-gray-800">Fecha</span>
+                  <span class="h-12 px-4 bg-slate-50 rounded-xl outline-1 -outline-offset-1 outline-slate-200 flex items-center text-sm text-gray-800">{{ formatearFechaNumerica(turnoEditando.fecha_hora) }}</span>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <span class="text-sm font-medium text-gray-800">Horario</span>
+                  <span class="h-12 px-4 bg-slate-50 rounded-xl outline-1 -outline-offset-1 outline-slate-200 flex items-center text-sm text-gray-800">{{ formatearHora(turnoEditando.fecha_hora) }}</span>
+                </div>
+              </div>
+
+              <div class="shrink-0 flex flex-col gap-2">
+                <span class="text-sm font-medium text-gray-800">Motivo de la consulta</span>
+                <span class="min-h-12 px-4 py-3 bg-slate-50 rounded-xl outline-1 -outline-offset-1 outline-slate-200 flex items-center text-sm text-gray-800 wrap-break-word">{{ turnoEditando.notas || 'Sin motivo especificado' }}</span>
+              </div>
+
+              <label class="flex-1 min-h-40 flex flex-col gap-2">
+                <span class="shrink-0 flex items-baseline gap-2">
+                  <span class="text-sm font-medium text-gray-800">Notas</span>
+                  <span class="text-xs text-slate-500">Opcional · solo las ves vos</span>
+                </span>
+                <textarea v-model="notas" placeholder="Agregá una nota sobre este turno…" class="flex-1 min-h-32 w-full p-4 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 focus:outline-[#3D6FC2] text-sm text-gray-800 placeholder:text-slate-500 resize-none"></textarea>
+              </label>
+            </div>
+
+            <div class="shrink-0 flex flex-col gap-2">
+              <p v-if="errorGuardar" class="text-sm text-red-600">{{ errorGuardar }}</p>
+              <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <button class="sm:w-32 h-12 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-[#3D6FC2] cursor-pointer hover:bg-slate-50 transition-colors" @click="cerrarEdicion">Cancelar</button>
+                <button class="sm:w-60 h-12 bg-[#3D6FC2] rounded-xl flex items-center justify-center gap-2 text-sm font-medium text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed" :disabled="guardando" @click="guardarCambios">
+                  <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                  {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+                </button>
+              </div>
+              <span class="text-xs text-slate-500">Los cambios se aplican al guardar.</span>
             </div>
           </div>
 
+          <div v-else class="min-h-0 bg-white rounded-3xl outline-1 -outline-offset-1 outline-slate-200 shadow-[0_0.5rem_1.5rem_-0.25rem_rgba(34,66,105,0.11),0_0.125rem_0.375rem_0_rgba(34,66,105,0.06)] p-6 flex flex-col gap-6">
+            <div class="shrink-0 flex items-center justify-between gap-4">
+              <div>
+                <div class="text-lg font-semibold text-gray-800">Agenda del día</div>
+                <div class="text-sm text-slate-500">{{ fechaCorta(seleccionado) }} de {{ seleccionado.getFullYear() }}</div>
+              </div>
+              <div class="flex gap-2">
+                <button class="size-11 rounded-xl bg-white outline-1 -outline-offset-1 outline-slate-200 text-[#3D6FC2] flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors" @click="seleccionarDia(correrDias(-1))">
+                  <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+                </button>
+                <button class="w-18 h-11 rounded-xl bg-white outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-[#3D6FC2] cursor-pointer hover:bg-slate-50 transition-colors" @click="seleccionarDia(hoy)">Hoy</button>
+                <button class="size-11 rounded-xl bg-white outline-1 -outline-offset-1 outline-slate-200 text-[#3D6FC2] flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors" @click="seleccionarDia(correrDias(1))">
+                  <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+                </button>
+              </div>
+            </div>
 
+            <div class="shrink-0 grid grid-cols-3 gap-3">
+              <button v-for="(dia, i) in diasVecinos" :key="i" class="h-20 p-4 rounded-2xl flex items-center gap-3 text-left cursor-pointer transition-colors min-w-0" :class="i === 1 ? 'bg-blue-50 outline-1 -outline-offset-1 outline-[#3D6FC2]' : 'bg-slate-50 hover:bg-slate-100'" @click="seleccionarDia(dia)">
+                <span class="text-3xl font-semibold" :class="i === 1 ? 'text-[#3D6FC2]' : 'text-slate-500'">{{ dia.getDate() }}</span>
+                <span class="hidden sm:flex flex-col min-w-0">
+                  <span class="text-sm font-medium truncate" :class="i === 1 ? 'text-[#3D6FC2]' : 'text-slate-500'">{{ nombresDia[dia.getDay()] }}</span>
+                  <span class="text-xs text-slate-500 truncate">{{ nombresMes[dia.getMonth()] }} de {{ dia.getFullYear() }}</span>
+                </span>
+              </button>
+            </div>
+
+            <div class="flex-1 min-h-0 flex flex-col gap-4">
+              <div class="shrink-0 flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-800">Turnos programados</span>
+                <span class="text-xs text-slate-500">{{ cantidadTurnos(turnosDelDia.length) }}</span>
+              </div>
+
+              <div v-if="turnosDelDia.length" class="min-h-0 max-h-55 overflow-y-auto flex flex-col gap-3 pr-1">
+                <div v-for="t in turnosDelDia" :key="t.id_turno" class="shrink-0 h-26 px-6 bg-blue-50 rounded-2xl outline-1 -outline-offset-1 outline-slate-200 flex items-center gap-6 min-w-0">
+                  <div class="shrink-0 flex flex-col">
+                    <span class="text-2xl font-semibold text-[#3D6FC2]">{{ formatearHora(t.fecha_hora) }}</span>
+                    <span class="text-xs text-slate-500">Horario</span>
+                  </div>
+                  <div class="w-px h-14 shrink-0 bg-slate-200"></div>
+                  <div class="flex-1 min-w-0 flex flex-col gap-2">
+                    <span class="text-lg font-semibold text-gray-800 truncate">{{ nombrePaciente(t) }}</span>
+                    <span class="text-sm text-slate-500 truncate">{{ t.notas || 'Sin motivo especificado' }}</span>
+                  </div>
+                  <button class="shrink-0 h-11 px-5 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 flex items-center gap-2 text-sm font-medium text-[#3D6FC2] cursor-pointer hover:bg-slate-50 transition-colors" @click="editarTurno(t)">
+                    <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                    Editar
+                  </button>
+                </div>
+              </div>
+
+              <div class="shrink-0 p-4 bg-slate-50 rounded-xl flex items-center gap-2 text-sm text-slate-500">
+                <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                {{ turnosDelDia.length ? 'No hay más turnos programados para este día.' : 'No hay turnos programados para este día.' }}
+              </div>
+            </div>
+
+            <p class="shrink-0 flex items-center gap-2 text-xs text-slate-500">
+              <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" /></svg>
+              Usá "Editar" para ver los datos del turno y agregar notas.
+            </p>
+          </div>
         </div>
-
       </div>
     </div>
-
   </div>
 </template>
-
-<style scoped>
-.cal-contenido {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: calc(100vh - 6.25rem);
-  margin-top: 6.25rem;
-}
-
-#calendario {
-  width: 71.5rem;
-  height: 37.5rem;
-  background: #fff;
-  border-radius: 1.25rem;
-  box-shadow: 0rem 0.25rem 0.66875rem 0.3125rem rgba(0, 0, 0, 0.25);
-  border: 0.3125rem solid #2E9CE0;
-  display: flex;
-  flex-direction: row;
-}
-
-.divisor-v {
-  width: 0.08125rem;
-  background: black;
-  align-self: center;
-  flex-shrink: 0;
-  height: 90%;
-  justify-content: center;
-}
-.izq {
-  width: 35%;
-}
-.der {
-  width: 65%;
-  display: flex;
-  flex-direction: column;
-  padding: 3%;
-  font-family: 'Inter', sans-serif;
-  font-weight: 200;
-}
-.linea-der {
-  margin-top: 20%;
-  align-self: center;
-  width: 100%;
-  border-top: 0.08125rem solid black;
-  
-}
-.cal-nav-btn {
-  display: flex;
-  justify-content: flex-start;
-}
-.cal-nav-der {
-  transform: rotate(180deg);
-}
-.cal-titulo {
-  color: #000;
-  text-align: center;
-  font-family: Inter;
-  font-size: 1.7rem;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-}
-.calDia {
-  text-align: center;
-  font-family: 'Inter', sans-serif;
-  font-size: 1.5625rem;
-  padding: 0.3125rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  gap: 1.25rem;
-}
-
-.calgGrid {
-  row-gap: 1.25rem;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  padding: 0 1rem;
-  flex: 1;
-  align-content: start;
-}
-
-
-</style>

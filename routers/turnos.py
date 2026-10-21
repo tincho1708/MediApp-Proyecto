@@ -5,7 +5,7 @@ from datetime import datetime
 
 from database import get_db
 from models import Turno, EstadoTurno, Medico, Paciente, HorarioMedico, Notificacion, NotificacionPaciente
-from schemas import TurnoCreate, TurnoResponse
+from schemas import TurnoCreate, TurnoResponse, TurnoMedicoResponse, NotasMedicoUpdate
 from deps import get_current_user, solo_paciente, solo_medico
 
 router = APIRouter(prefix="/turnos", tags=["Turnos"])
@@ -74,7 +74,7 @@ def solicitar_turno(
     return db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades)).filter(Turno.id_turno == turno.id_turno).first()
 
 
-@router.get("/mis-turnos", response_model=List[TurnoResponse])
+@router.get("/mis-turnos", response_model=List[TurnoMedicoResponse])
 def mis_turnos(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
@@ -82,14 +82,13 @@ def mis_turnos(
     query = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades))
 
     if user["tipo"] == "paciente":
-        query = query.filter(Turno.id_pacientes == int(user["sub"]))
-    else:
-        query = query.filter(Turno.id_medicos == int(user["sub"]))
+        turnos = query.filter(Turno.id_pacientes == int(user["sub"])).order_by(Turno.fecha_hora).all()
+        return [TurnoResponse.model_validate(t) for t in turnos]
 
-    return query.order_by(Turno.fecha_hora).all()
+    return query.filter(Turno.id_medicos == int(user["sub"])).order_by(Turno.fecha_hora).all()
 
 
-@router.patch("/{turno_id}/aceptar", response_model=TurnoResponse)
+@router.patch("/{turno_id}/aceptar", response_model=TurnoMedicoResponse)
 def aceptar_turno(
     turno_id: int,
     db: Session = Depends(get_db),
@@ -115,7 +114,7 @@ def aceptar_turno(
     return turno
 
 
-@router.patch("/{turno_id}/rechazar", response_model=TurnoResponse)
+@router.patch("/{turno_id}/rechazar", response_model=TurnoMedicoResponse)
 def rechazar_turno(
     turno_id: int,
     db: Session = Depends(get_db),
@@ -141,7 +140,7 @@ def rechazar_turno(
     return turno
 
 
-@router.patch("/{turno_id}/cancelar", response_model=TurnoResponse)
+@router.patch("/{turno_id}/cancelar", response_model=TurnoMedicoResponse)
 def cancelar_turno(
     turno_id: int,
     db: Session = Depends(get_db),
@@ -178,6 +177,25 @@ def cancelar_turno(
             mensaje=f"{paciente.nombre} {paciente.apellido} canceló su turno del {fecha_str}.",
         ))
 
+    db.commit()
+    db.refresh(turno)
+    return turno if user["tipo"] == "medico" else TurnoResponse.model_validate(turno)
+
+
+@router.patch("/{turno_id}/notas-medico", response_model=TurnoMedicoResponse)
+def actualizar_notas_medico(
+    turno_id: int,
+    data: NotasMedicoUpdate,
+    db: Session = Depends(get_db),
+    user: dict = Depends(solo_medico),
+):
+    turno = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades)).filter(Turno.id_turno == turno_id).first()
+    if not turno:
+        raise HTTPException(status_code=404, detail="Turno no encontrado")
+    if turno.id_medicos != int(user["sub"]):
+        raise HTTPException(status_code=403, detail="No tenés permiso para modificar este turno")
+
+    turno.notas_medico = (data.notas_medico or "").strip() or None
     db.commit()
     db.refresh(turno)
     return turno

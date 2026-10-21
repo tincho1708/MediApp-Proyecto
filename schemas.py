@@ -116,6 +116,7 @@ class PacienteBasico(BaseModel):
     id: int
     nombre: str
     apellido: str
+    mail: str
 
     class Config:
         from_attributes = True
@@ -144,6 +145,14 @@ class TurnoResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class TurnoMedicoResponse(TurnoResponse):
+    notas_medico: Optional[str] = None
+
+
+class NotasMedicoUpdate(BaseModel):
+    notas_medico: Optional[str] = None
 
 
 class NotificacionResponse(BaseModel):

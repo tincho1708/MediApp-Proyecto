@@ -4,12 +4,18 @@ export type TurnoMedico = {
   id_turno: number
   fecha_hora: string
   notas: string | null
+  notas_medico: string | null
   creado_en: string
   id_pacientes: number
   id_medicos: number
   estado: { id: number; estado: string }
-  paciente: { id: number; nombre: string; apellido: string }
-  medico: { id: number; nombre: string; apellido: string; especialidades: { id_especialidad: number; nombre_especialidad: string }[] }
+  paciente: { id: number; nombre: string; apellido: string; mail: string }
+  medico: {
+    id: number
+    nombre: string
+    apellido: string
+    especialidades: { id_especialidad: number; nombre_especialidad: string }[]
+  }
 }
 
 const turnos = ref<TurnoMedico[]>([])
@@ -67,10 +73,23 @@ async function actualizarEstadoTurno(id: number, accion: 'aceptar' | 'rechazar' 
     method: 'PATCH',
     headers: { Authorization: `Bearer ${token()}` },
   })
+  return reemplazarTurno(res)
+}
+
+async function guardarNotasMedico(id: number, notas: string) {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/turnos/${id}/notas-medico`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notas_medico: notas }),
+  })
+  return reemplazarTurno(res)
+}
+
+async function reemplazarTurno(res: Response) {
   const data = await res.json()
   if (!res.ok) throw new Error(data.detail || 'No se pudo actualizar el turno.')
 
-  const i = turnos.value.findIndex(t => t.id_turno === id)
+  const i = turnos.value.findIndex((t) => t.id_turno === data.id_turno)
   if (i !== -1) turnos.value[i] = data
   else turnos.value.push(data)
 
@@ -78,5 +97,15 @@ async function actualizarEstadoTurno(id: number, accion: 'aceptar' | 'rechazar' 
 }
 
 export function useTurnosMedico() {
-  return { turnos, cargado, cargando, error, cargarTurnosMedico, actualizarEstadoTurno, resetTurnosMedico, usarPollingTurnos }
+  return {
+    turnos,
+    cargado,
+    cargando,
+    error,
+    cargarTurnosMedico,
+    actualizarEstadoTurno,
+    guardarNotasMedico,
+    resetTurnosMedico,
+    usarPollingTurnos,
+  }
 }

@@ -3,7 +3,12 @@ import { ref } from 'vue'
 import { useTurnosMedico } from '@/stores/turnosMedico'
 import { obtenerIdTokenGoogle } from '@/auth0'
 
-const emit = defineEmits(['ir-a-registro', 'ir-a-login', 'ir-a-principal', 'ir-a-principal-usuario'])
+const emit = defineEmits([
+  'ir-a-registro',
+  'ir-a-login',
+  'ir-a-principal',
+  'ir-a-principal-usuario',
+])
 
 const { resetTurnosMedico } = useTurnosMedico()
 
@@ -26,7 +31,14 @@ async function iniciarSesionConGoogle() {
       const data = await res.json()
 
       if (res.ok) {
-        localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo: tipo === 'medico' ? 'Medico' : 'Paciente', nombre: data.nombre }))
+        localStorage.setItem(
+          'sesion',
+          JSON.stringify({
+            token: data.access_token,
+            tipo: tipo === 'medico' ? 'Medico' : 'Paciente',
+            nombre: data.nombre,
+          }),
+        )
         if (tipo === 'medico') {
           resetTurnosMedico()
           emit('ir-a-principal')
@@ -64,15 +76,19 @@ async function iniciarSesionConGoogle() {
     </nav>
 
     <div class="contenido">
-
-      <div class="titulo">La mejor herramienta de organizacion para <span class="texto-acento">profesionales</span>.</div>
+      <div class="titulo">
+        La mejor herramienta de organizacion para <span class="texto-acento">profesionales</span>.
+      </div>
 
       <div class="contenedor1">
         <img src="@/assets/imagenes/imagen-bienvenida.png" alt="Imagen de bienvenida" />
       </div>
 
       <div class="columna-izq">
-        <p class="descripcion">Organiza tu agenda, gestiona a tus pacientes y administra tus turnos desde una única plataforma, segura y centralizada.</p>
+        <p class="descripcion">
+          Organiza tu agenda, gestiona a tus pacientes y administra tus turnos desde una única
+          plataforma, segura y centralizada.
+        </p>
 
         <div class="accede-con"><span>Accede con</span></div>
 
@@ -89,12 +105,12 @@ async function iniciarSesionConGoogle() {
 
         <p v-if="errorGoogle" class="error-google">{{ errorGoogle }}</p>
 
-        <p class="sin-cuenta">¿No tienes cuenta? <a href="#" @click.prevent="emit('ir-a-registro')">Regístrate</a></p>
+        <p class="sin-cuenta">
+          ¿No tienes cuenta? <a href="#" @click.prevent="emit('ir-a-registro')">Regístrate</a>
+        </p>
       </div>
-
     </div>
   </div>
-
 </template>
 
 <style scoped>
@@ -104,7 +120,7 @@ async function iniciarSesionConGoogle() {
   position: relative;
   height: 100vh;
   overflow: hidden;
-  background: linear-gradient(135deg, #BFDBFE 0%, #FFFFFF 50%, #BFDBFE 100%);
+  background: linear-gradient(135deg, #bfdbfe 0%, #ffffff 50%, #bfdbfe 100%);
 }
 
 .titulo {
@@ -137,11 +153,12 @@ async function iniciarSesionConGoogle() {
   top: 15.8125rem;
   width: 36.8rem;
   height: 26rem;
-  background-color: #D9D9D9;
+  background-color: #d9d9d9;
   border-radius: 1.25rem;
   overflow: hidden;
-  box-shadow: 0 1rem 2.86875rem 1.1875rem rgba(26, 58, 96, 0.19),
-              0 0.25rem 1.0375rem 0 rgba(26, 58, 96, 0.06);
+  box-shadow:
+    0 1rem 2.86875rem 1.1875rem rgba(26, 58, 96, 0.19),
+    0 0.25rem 1.0375rem 0 rgba(26, 58, 96, 0.06);
   z-index: 1;
 }
 
@@ -153,7 +170,7 @@ async function iniciarSesionConGoogle() {
 }
 
 .texto-acento {
-  color: #3D8CE0;
+  color: #3d8ce0;
 }
 
 .descripcion {
@@ -161,7 +178,7 @@ async function iniciarSesionConGoogle() {
   font-size: 1.25rem;
   font-weight: 400;
   line-height: 2rem;
-  color: #3F3F46;
+  color: #3f3f46;
 }
 
 .accede-con {
@@ -169,7 +186,7 @@ async function iniciarSesionConGoogle() {
   align-items: center;
   height: 1.5rem;
   gap: 1rem;
-  color: #4B5563;
+  color: #4b5563;
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
 }
@@ -179,7 +196,7 @@ async function iniciarSesionConGoogle() {
   content: '';
   flex: 1;
   height: 0.0625rem;
-  background-color: #CBD5E1;
+  background-color: #cbd5e1;
 }
 
 .fila-social {
@@ -195,8 +212,8 @@ async function iniciarSesionConGoogle() {
   font-weight: 400;
   color: #111827;
   cursor: pointer;
-  background-color: #FFFFFF;
-  outline: 0.0625rem solid #D4D4D4;
+  background-color: #ffffff;
+  outline: 0.0625rem solid #d4d4d4;
   outline-offset: -0.0625rem;
   border: none;
   border-radius: 1rem;
@@ -216,23 +233,23 @@ async function iniciarSesionConGoogle() {
 }
 
 .social-boton:hover {
-  background-color: #F9FAFB;
+  background-color: #f9fafb;
 }
 
 .sin-cuenta {
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
-  color: #4B5563;
+  color: #4b5563;
 }
 
 .error-google {
   font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
-  color: #DC2626;
+  color: #dc2626;
 }
 
 .sin-cuenta a {
-  color: #0EA5E9;
+  color: #0ea5e9;
   font-weight: 500;
   text-decoration: underline;
 }
@@ -245,7 +262,7 @@ async function iniciarSesionConGoogle() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   box-sizing: border-box;
   padding: 0.5rem 1.5rem;
   z-index: 100;
@@ -266,7 +283,7 @@ async function iniciarSesionConGoogle() {
   font-family: 'Lexend', sans-serif;
   font-size: 2.425rem;
   font-weight: 500;
-  background: linear-gradient(90deg, #204BAC 0%, #1F6BC6 36%, #1F85DB 100%);
+  background: linear-gradient(90deg, #204bac 0%, #1f6bc6 36%, #1f85db 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -288,7 +305,7 @@ nav.navbar .navbar-acciones {
   font-size: 1rem;
   font-weight: 500;
   background-color: white;
-  border: 0.0625rem solid #D1D5DB;
+  border: 0.0625rem solid #d1d5db;
   border-radius: 1.5625rem;
   cursor: pointer;
   padding: 0.625rem 1.5rem;
@@ -298,15 +315,16 @@ nav.navbar .navbar-acciones {
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   font-weight: 600;
-  background-color: #4A90E2;
+  background-color: #4a90e2;
   border: none;
   border-radius: 1.5625rem;
   cursor: pointer;
   padding: 0.625rem 1.5rem;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
-.boton1:hover, .boton2:hover {
+.boton1:hover,
+.boton2:hover {
   opacity: 0.85;
 }
 </style>

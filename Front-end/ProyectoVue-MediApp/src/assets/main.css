@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import 'tailwindcss';
 
 @layer base {
   * {
@@ -14,7 +15,292 @@
 
 body {
   font-family: sans-serif;
-  background: linear-gradient(135deg, #D6E6F7 0%, #E7EEF7 50%, #CAE2F3 100%);
-  background-attachment: fixed; 
-  min-height: 80vh;              
+  background: linear-gradient(135deg, #60a5fa, #ffffff, #60a5fa);
+  background-attachment: fixed;
+  min-height: 80vh;
+}
+
+.navbar {
+  height: 5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  background-color: #ffffff;
+  border-bottom: 0.0625rem solid #e2e8f0;
+  box-shadow: 0 0.1875rem 0.625rem 0 rgba(24, 34, 52, 0.04);
+  box-sizing: border-box;
+  padding: 0 2rem 0 3rem;
+  z-index: 100;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-left: -1.4rem;
+  cursor: pointer;
+}
+
+.navbar-logo img {
+  width: 4.25rem;
+  height: 4.25rem;
+}
+
+.navbar-logo span {
+  font-family: Inter;
+  font-size: 2.0625rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  background: linear-gradient(90deg, #204bac 0%, #1f6bc6 36%, #1f85db 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-left: -0.5rem;
+  margin-top: 0.25rem;
+}
+
+.navbar-acciones {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 1.7rem;
+  margin-left: 14rem;
+}
+
+.campoo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  color: #1e293b;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: normal;
+  cursor: pointer;
+}
+
+.campoo-punto {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background-color: #ef4444;
+}
+
+.campoo:hover:not(.activo) {
+  color: #0f172a;
+}
+
+.campoo-indicador {
+  width: 3rem;
+  height: 0.125rem;
+  border-radius: 0.0625rem;
+  background: transparent;
+}
+
+.campoo.activo {
+  color: #3d6fc2;
+}
+
+.campoo.activo .campoo-indicador {
+  background-color: #3d6fc2;
+}
+
+.navbar-usuario-zona {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.navbar-divisor {
+  width: 0.0625rem;
+  height: 2.5rem;
+  background-color: #e2e8f0;
+}
+
+.navbar-usuario {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #f8fafc;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.navbar-usuario:hover {
+  background-color: #f1f5f9;
+}
+
+.navbar-usuario-avatar {
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: 1rem;
+  background-color: #eff6ff;
+  color: #3d6fc2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.navbar-usuario-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.navbar-usuario-nombre {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.navbar-usuario-rol {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.navbar-usuario svg {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.navbar-usuario-chevron {
+  transition: transform 0.2s ease;
+}
+
+.navbar-usuario-chevron-abierta {
+  transform: rotate(180deg);
+}
+
+.barra-desplegable {
+  position: fixed;
+  top: 6.75rem;
+  right: 2rem;
+  width: 18rem;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  box-shadow:
+    0 0.625rem 1.75rem -0.25rem rgba(24, 45, 75, 0.16),
+    0 0.125rem 0.375rem 0 rgba(24, 45, 75, 0.06);
+  outline: 0.0625rem solid #e2e8f0;
+  outline-offset: -0.0625rem;
+  transform: translateY(-1.5rem);
+  opacity: 0;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: 1rem;
+  background: #ffffff;
+}
+
+.dropdown-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.25rem;
+}
+
+.dropdown-nombre {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dropdown-rol {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.dropdown-divisor {
+  height: 0.0625rem;
+  background-color: #e2e8f0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: #0f172a;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  color: #3d6fc2;
+}
+
+.dropdown-item-destacado {
+  background-color: #f8fafc;
+}
+
+.dropdown-item-destacado:hover {
+  background-color: #f1f5f9;
+}
+
+.dropdown-item-danger {
+  color: #b91c1c;
+}
+
+.dropdown-item-danger svg {
+  color: #b91c1c;
+}
+
+.dropdown-item-danger:hover {
+  background-color: #fef2f2;
+}
+
+.barra-abierta {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.barra-desplegable button {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  cursor: pointer;
 }

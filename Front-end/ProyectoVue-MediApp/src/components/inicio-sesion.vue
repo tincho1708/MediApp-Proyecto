@@ -3,7 +3,12 @@ import { ref } from 'vue'
 import { useTurnosMedico } from '@/stores/turnosMedico'
 import { obtenerIdTokenGoogle } from '@/auth0'
 
-const emit = defineEmits(['ir-a-registro', 'bienvenida', 'ir-a-principal', 'ir-a-principal-usuario'])
+const emit = defineEmits([
+  'ir-a-registro',
+  'bienvenida',
+  'ir-a-principal',
+  'ir-a-principal-usuario',
+])
 
 const { resetTurnosMedico } = useTurnosMedico()
 
@@ -16,8 +21,14 @@ const error = ref('')
 const cargando = ref(false)
 const cargandoGoogle = ref(false)
 
-function guardarSesionYEntrar(tipo: 'Medico' | 'Paciente', data: { access_token: string; nombre: string }) {
-  localStorage.setItem('sesion', JSON.stringify({ token: data.access_token, tipo, nombre: data.nombre }))
+function guardarSesionYEntrar(
+  tipo: 'Medico' | 'Paciente',
+  data: { access_token: string; nombre: string },
+) {
+  localStorage.setItem(
+    'sesion',
+    JSON.stringify({ token: data.access_token, tipo, nombre: data.nombre }),
+  )
   if (tipo === 'Medico') {
     resetTurnosMedico()
     emit('ir-a-principal')
@@ -87,7 +98,6 @@ async function testearSubmit() {
         cargando.value = false
         return
       }
-
     } catch {
       error.value = 'No se pudo conectar al servidor'
       cargando.value = false
@@ -102,52 +112,63 @@ async function testearSubmit() {
 
 <template>
   <div class="pagina">
-  <div class="contenedor">
-    <button class="boton-atras" @click="emit('bienvenida')">
-      <svg style="width:1.125rem; height:0.9375rem;" viewBox="0 0 18 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0.292889 6.65691C-0.0976353 7.04743 -0.0976353 7.6806 0.292889 8.07112L6.65685 14.4351C7.04737 14.8256 7.68054 14.8256 8.07106 14.4351C8.46159 14.0446 8.46159 13.4114 8.07106 13.0209L2.41421 7.36401L8.07106 1.70716C8.46159 1.31664 8.46159 0.68347 8.07106 0.292946C7.68054 -0.0975785 7.04737 -0.0975785 6.65685 0.292946L0.292889 6.65691ZM17.1245 7.36401V6.36401L0.999996 6.36401V7.36401V8.36401L17.1245 8.36401V7.36401Z" fill="black"/>
-      </svg>
-      Volver atrás
-    </button>
-
-    <div class="titulo">Iniciar sesión</div>
-    <div class="subtitulo">Ingresa tus datos para acceder a tu cuenta.</div>
-
-    <div class="etiqueta-tipo">O inicia sesión con</div>
-    <div class="social-fila">
-      <button type="button" class="social-boton" :disabled="cargandoGoogle" @click="iniciarSesionConGoogle">
-        <img src="@/assets/imagenes/google.png" alt="Google"/>
-        {{ cargandoGoogle ? 'Conectando...' : 'Continuar con Google' }}
+    <div class="contenedor">
+      <button class="boton-atras" @click="emit('bienvenida')">
+        <svg style="width: 1.125rem; height: 0.9375rem" viewBox="0 0 18 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0.292889 6.65691C-0.0976353 7.04743 -0.0976353 7.6806 0.292889 8.07112L6.65685 14.4351C7.04737 14.8256 7.68054 14.8256 8.07106 14.4351C8.46159 14.0446 8.46159 13.4114 8.07106 13.0209L2.41421 7.36401L8.07106 1.70716C8.46159 1.31664 8.46159 0.68347 8.07106 0.292946C7.68054 -0.0975785 7.04737 -0.0975785 6.65685 0.292946L0.292889 6.65691ZM17.1245 7.36401V6.36401L0.999996 6.36401V7.36401V8.36401L17.1245 8.36401V7.36401Z" fill="black" />
+        </svg>
+        Volver atrás
       </button>
-      <button type="button" class="social-boton">
-        <img src="@/assets/imagenes/microsoft.png" alt="Microsoft"/>
-        Continuar con Microsoft
-      </button>
+
+      <div class="titulo">Iniciar sesión</div>
+      <div class="subtitulo">Ingresa tus datos para acceder a tu cuenta.</div>
+
+      <div class="etiqueta-tipo">O inicia sesión con</div>
+      <div class="social-fila">
+        <button type="button" class="social-boton" :disabled="cargandoGoogle" @click="iniciarSesionConGoogle">
+          <img src="@/assets/imagenes/google.png" alt="Google" />
+          {{ cargandoGoogle ? 'Conectando...' : 'Continuar con Google' }}
+        </button>
+        <button type="button" class="social-boton">
+          <img src="@/assets/imagenes/microsoft.png" alt="Microsoft" />
+          Continuar con Microsoft
+        </button>
+      </div>
+
+      <div class="separador"><span>O</span></div>
+
+      <form autocomplete="off" @submit.prevent="testearSubmit">
+        <div class="campo">
+          <svg style="width: 1.125rem; height: 1.125rem" class="icono-campo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke->
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="m22 6-10 7L2 6" />
+          </svg>
+          <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
+        </div>
+
+        <div class="campo">
+          <svg style="width: 1.125rem; height: 1.125rem" class="icono-campo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke->
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <input id="password" v-model="form.password" type="password" placeholder="Contraseña" required />
+        </div>
+
+        <p v-if="error" class="error">{{ error }}</p>
+
+        <button class="submit" type="submit" :disabled="cargando">
+          {{ cargando ? 'Iniciando...' : 'Iniciar sesión' }}
+        </button>
+
+        <p class="enlace">
+          <a href="#" class="underline" @click.prevent>¿Olvidaste tu contraseña?</a>
+        </p>
+        <p class="enlace">
+          ¿No tenés cuenta?
+          <a href="#" class="underline" @click.prevent="emit('ir-a-registro')">Registrate</a>
+        </p>
+      </form>
     </div>
-
-    <div class="separador"><span>O</span></div>
-
-    <form autocomplete="off" @submit.prevent="testearSubmit">
-      <div class="campo">
-        <svg style="width:1.125rem; height:1.125rem;" class="icono-campo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
-        <input id="email" v-model="form.email" type="email" placeholder="Correo electrónico" required />
-      </div>
-
-      <div class="campo">
-        <svg style="width:1.125rem; height:1.125rem;" class="icono-campo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <input id="password" v-model="form.password" type="password" placeholder="Contraseña" required />
-      </div>
-
-      <p v-if="error" class="error">{{ error }}</p>
-
-      <button class="submit" type="submit" :disabled="cargando">
-        {{ cargando ? 'Iniciando...' : 'Iniciar sesión' }}
-      </button>
-
-      <p class="enlace"><a href="#" class="underline" @click.prevent>¿Olvidaste tu contraseña?</a></p>
-      <p class="enlace">¿No tenés cuenta? <a href="#" class="underline" @click.prevent="emit('ir-a-registro')">Registrate</a></p>
-    </form>
-  </div>
   </div>
 </template>
 
@@ -168,7 +189,7 @@ async function testearSubmit() {
   margin: 2rem auto;
   padding: 2rem 2.25rem;
   border-radius: 1.5rem;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   box-shadow: 0 0.0625rem 1.85625rem 0.6875rem rgba(0, 0, 0, 0.08);
 }
 
@@ -180,7 +201,7 @@ async function testearSubmit() {
   cursor: pointer;
   padding: 0.5rem 1rem;
   border-radius: 0.75rem;
-  background: #F1F4F7;
+  background: #f1f4f7;
   border: none;
   display: flex;
   align-items: center;
@@ -190,11 +211,11 @@ async function testearSubmit() {
 }
 
 .boton-atras:hover {
-  background-color: #E4EAF0;
+  background-color: #e4eaf0;
 }
 
 .titulo {
-  color: #0F172A;
+  color: #0f172a;
   font-family: 'Inter', sans-serif;
   font-size: 2.25rem;
   font-weight: 700;
@@ -203,13 +224,13 @@ async function testearSubmit() {
 }
 
 .subtitulo {
-  color: #6B7280;
+  color: #6b7280;
   font-size: 1rem;
   margin-bottom: 1.5rem;
 }
 
 .etiqueta-tipo {
-  color: #6B7280;
+  color: #6b7280;
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
 }
@@ -230,8 +251,8 @@ async function testearSubmit() {
   font-size: 0.9375rem;
   font-weight: 500;
   color: #111827;
-  background-color: #FFFFFF;
-  border: 0.0625rem solid #D1D5DB;
+  background-color: #ffffff;
+  border: 0.0625rem solid #d1d5db;
   border-radius: 0.75rem;
   padding: 0.75rem;
   cursor: pointer;
@@ -239,7 +260,7 @@ async function testearSubmit() {
 }
 
 .social-boton:hover {
-  background-color: #F9FAFB;
+  background-color: #f9fafb;
 }
 
 .social-boton img {
@@ -252,7 +273,7 @@ async function testearSubmit() {
   display: flex;
   align-items: center;
   text-align: center;
-  color: #9CA3AF;
+  color: #9ca3af;
   font-size: 0.875rem;
   margin-bottom: 1.25rem;
 }
@@ -261,7 +282,7 @@ async function testearSubmit() {
 .separador::after {
   content: '';
   flex: 1;
-  border-bottom: 0.0625rem solid #D1D5DB;
+  border-bottom: 0.0625rem solid #d1d5db;
 }
 
 .separador span {
@@ -282,15 +303,15 @@ form {
 .icono-campo {
   position: absolute;
   left: 1rem;
-  color: #9CA3AF;
+  color: #9ca3af;
   pointer-events: none;
 }
 
 input {
   padding: 0.875rem 1rem 0.875rem 2.75rem;
   border-radius: 0.875rem;
-  border: 0.0625rem solid #D1D5DB;
-  background-color: #F9FAFB;
+  border: 0.0625rem solid #d1d5db;
+  background-color: #f9fafb;
   font-size: 1rem;
   width: 100%;
   min-width: 0;
@@ -306,7 +327,7 @@ input:focus {
   width: 100%;
   padding: 0.875rem;
   margin-top: 1.5rem;
-  background: linear-gradient(90deg, #6AA6F2 0%, #3D6FC2 100%);
+  background: linear-gradient(90deg, #6aa6f2 0%, #3d6fc2 100%);
   color: white;
   border: none;
   border-radius: 1rem;
@@ -323,7 +344,7 @@ input:focus {
 }
 
 .error {
-  color: #DC2626;
+  color: #dc2626;
   font-size: 0.85rem;
   margin-bottom: 0.5rem;
   text-align: center;
@@ -336,7 +357,7 @@ input:focus {
 }
 
 .enlace a {
-  color: #2563EB;
+  color: #3d6fc2;
   font-weight: 500;
 }
 </style>
