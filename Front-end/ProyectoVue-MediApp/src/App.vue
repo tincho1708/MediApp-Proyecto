@@ -17,13 +17,16 @@ import MiUsuario from './components/MiUsuario.vue'
 import MiUsuarioPaciente from './components/MiUsuario-Paciente.vue'
 import Notificaciones from './components/notificaciones.vue'
 import { useTurnosMedico } from '@/stores/turnosMedico'
+import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
 
 const vista = ref('bienvenida')
 const { resetTurnosMedico } = useTurnosMedico()
+const { resetConteoNoLeidas } = useConteoNoLeidas()
 
 function cerrarSesion() {
   localStorage.removeItem('sesion')
   resetTurnosMedico()
+  resetConteoNoLeidas()
   vista.value = 'bienvenida'
 }
 </script>

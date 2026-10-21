@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario-usuario', 'ir-a-reservar-turno', 'ir-a-mi-usuario-paciente', 'ir-a-notificaciones'])
+const { conteoNoLeidas, usarPollingConteoNoLeidas } = useConteoNoLeidas()
+usarPollingConteoNoLeidas()
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const nombreUsuario = sesion.nombre || 'Usuario'
@@ -164,7 +167,7 @@ const celdas = computed(() => {
         <button class="campoo" @click="emit('ir-a-reservar-turno')">Reservar turno<span class="campoo-indicador"></span></button>
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot<span class="campoo-indicador"></span></button>
         <button class="campoo">Profesionales<span class="campoo-indicador"></span></button>
-        <button class="campoo" @click="emit('ir-a-notificaciones')">Notificaciones<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-notificaciones')">Notificaciones<span v-if="conteoNoLeidas > 0" class="campoo-punto"></span><span class="campoo-indicador"></span></button>
       </div>
 
       <div class="navbar-usuario-zona">

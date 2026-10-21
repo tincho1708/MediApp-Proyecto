@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-calendario-usuario', 'ir-a-mi-usuario-paciente', 'ir-a-notificaciones'])
+const { conteoNoLeidas, usarPollingConteoNoLeidas } = useConteoNoLeidas()
+usarPollingConteoNoLeidas()
 const esta = ref(false)
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const nombreUsuario = sesion.nombre || 'Usuario'
@@ -74,10 +77,6 @@ function elegirMedico(m: Medico) {
   medicoSeleccionado.value = medicoSeleccionado.value?.id === m.id ? null : m
 }
 
-const coloresAvatar = ['#E0645C', '#6CC26A', '#E0A75C', '#5C9EE0', '#9C6CE0', '#5CC2B0']
-function colorAvatar(id: number) {
-  return coloresAvatar[id % coloresAvatar.length]
-}
 function iniciales(m: Medico) {
   return `${m.nombre.charAt(0)}${m.apellido.charAt(0)}`.toUpperCase()
 }
@@ -127,6 +126,7 @@ const mesActual = ref(hoy.getMonth())
 const añoActual = ref(hoy.getFullYear())
 
 const nombresMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 function mesAnterior() {
   if (mesActual.value === 0) {
@@ -273,6 +273,23 @@ const resumenFechaHora = computed(() => {
   return `${diaSeleccionado.value} de ${nombresMes[mesActual.value].toLowerCase()} - ${formatearHora(horaSeleccionada.value)}`
 })
 
+const fechaSeleccionadaTexto = computed(() => {
+  if (diaSeleccionado.value === null) return ''
+  const fecha = new Date(añoActual.value, mesActual.value, diaSeleccionado.value)
+  return `${nombresDia[fecha.getDay()]} ${diaSeleccionado.value} de ${nombresMes[mesActual.value].toLowerCase()}`
+})
+
+const fechaHoraElegidaTexto = computed(() => {
+  if (diaSeleccionado.value === null || horaSeleccionada.value === null) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(diaSeleccionado.value)}/${pad(mesActual.value + 1)}/${añoActual.value} · ${formatearHora(horaSeleccionada.value)}`
+})
+
+const fechaSeleccionadaTextoConAño = computed(() => {
+  if (!fechaSeleccionadaTexto.value) return ''
+  return `${fechaSeleccionadaTexto.value} de ${añoActual.value}`
+})
+
 function elegirHora(h: Horario) {
   horaSeleccionada.value = horaSeleccionada.value === h.hora ? null : h.hora
 }
@@ -335,7 +352,7 @@ async function confirmarReserva() {
         <button class="campoo activo">Reservar turno<span class="campoo-indicador"></span></button>
         <button class="campoo" @click="emit('ir-a-chatbot')">MediBot<span class="campoo-indicador"></span></button>
         <button class="campoo">Profesionales<span class="campoo-indicador"></span></button>
-        <button class="campoo" @click="emit('ir-a-notificaciones')">Notificaciones<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-notificaciones')">Notificaciones<span v-if="conteoNoLeidas > 0" class="campoo-punto"></span><span class="campoo-indicador"></span></button>
       </div>
 
       <div class="navbar-usuario-zona">
@@ -479,95 +496,156 @@ async function confirmarReserva() {
           </div>
           </div>
 
-          <div v-else-if="pasoActual === 2" key="paso2" class="flex flex-col gap-6 min-h-0 overflow-y-auto">
-            <div>
-              <div class="w-full mx-auto rounded-2xl p-7">
-                <div class="flex items-center justify-between mb-4">
-                  <button @click="mesAnterior" class="size-11 rounded-xl border border-zinc-300 flex items-center justify-center text-lg hover:bg-sky-50">←</button>
-                  <span class="text-3xl font-medium">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
-                  <button @click="mesSiguiente" class="size-11 rounded-xl border border-zinc-300 flex items-center justify-center text-lg hover:bg-sky-50">→</button>
-                </div>
-                <div class="grid grid-cols-7 gap-y-4 text-center">
-                  <button
-                    v-for="(celda, i) in celdas" :key="i"
-                    @click="elegirDia(celda)"
-                    :disabled="celda.otroMes || celda.pasado"
-                    class="size-11 mx-auto rounded-lg text-xl transition-colors"
-                    :class="[
-                      celda.otroMes ? 'text-zinc-300 cursor-default' : 'text-black font-medium hover:bg-sky-100',
-                      !celda.otroMes && celda.dia === diaSeleccionado ? 'bg-sky-500 text-white hover:bg-sky-500' : '',
-                      !celda.otroMes && celda.hoy && celda.dia !== diaSeleccionado ? 'text-sky-500 font-semibold' : ''
-                    ]"
-                  >{{ celda.dia }}</button>
-                </div>
+          <div v-else-if="pasoActual === 2" key="paso2" class="flex-1 min-h-0 flex flex-col gap-4">
+          <div class="flex-1 min-h-0 grid grid-cols-[1fr_28rem] gap-6">
+            <div class="min-h-0 flex flex-col gap-4">
+              <div class="flex items-center justify-between shrink-0">
+                <button @click="mesAnterior" class="size-9 shrink-0 rounded-xl bg-white outline-1 -outline-offset-1 outline-slate-200 text-sky-700 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
+                  <svg style="width:1rem; height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <span class="text-lg font-semibold text-slate-900">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
+                <button @click="mesSiguiente" class="size-9 shrink-0 rounded-xl bg-white outline-1 -outline-offset-1 outline-slate-200 text-sky-700 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
+                  <svg style="width:1rem; height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
               </div>
-            </div>
-            <div>
-              <div class="w-fit text-[1.5rem] font-normal font-['Inter'] pb-1 mb-4 border-b-2 border-black">Horarios Disponibles</div>
 
-              <p v-if="!diaSeleccionado" class="text-zinc-400">Elegí un día en el calendario para ver los horarios.</p>
-              <p v-else-if="cargandoHorarios" class="text-zinc-400">Cargando horarios...</p>
-              <p v-else-if="errorHorarios" class="text-red-500">{{ errorHorarios }}</p>
-              <p v-else-if="!horariosDelDia.length" class="text-zinc-400">No hay horarios disponibles para este día.</p>
+              <div class="grid grid-cols-7 shrink-0">
+                <div class="text-center text-xs text-slate-400 pb-1">LU</div>
+                <div class="text-center text-xs text-slate-400 pb-1">MA</div>
+                <div class="text-center text-xs text-slate-400 pb-1">MI</div>
+                <div class="text-center text-xs text-slate-400 pb-1">JU</div>
+                <div class="text-center text-xs text-slate-400 pb-1">VI</div>
+                <div class="text-center text-xs text-slate-400 pb-1">SA</div>
+                <div class="text-center text-xs text-slate-400 pb-1">DO</div>
+              </div>
 
-              <div v-else class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));">
+              <div class="flex-1 min-h-0 grid grid-cols-7 grid-rows-6 gap-2">
                 <button
-                  v-for="h in horariosDelDia" :key="h.id"
-                  @click="elegirHora(h)"
-                  class="px-7 bg-sky-200 py-3.5 rounded-xl  text-lg font-medium text-center transition-colors"
-                  :class="horaSeleccionada === h.hora ? 'bg-sky-500 border-sky-500 text-white' : 'border-sky-500 text-sky-600'"
-                >{{ horaTexto(h) }}</button>
+                  v-for="(celda, i) in celdas" :key="i"
+                  @click="elegirDia(celda)"
+                  :disabled="celda.otroMes || celda.pasado"
+                  class="relative rounded-xl flex flex-col items-center justify-center gap-[0.1875rem] text-sm font-medium transition-colors"
+                  :class="[
+                    celda.otroMes || celda.pasado ? 'text-slate-300 cursor-default' : 'text-slate-900 cursor-pointer hover:bg-slate-100',
+                    !celda.otroMes && celda.dia === diaSeleccionado ? 'bg-sky-700 text-white hover:bg-sky-700' : '',
+                  ]"
+                >{{ celda.dia }}</button>
               </div>
+
+              <p v-if="diaSeleccionado" class="text-xs text-sky-700 shrink-0">Fecha seleccionada: {{ fechaSeleccionadaTexto.toLowerCase() }}</p>
             </div>
 
-            <div class="flex w-full justify-between mt-2">
-              <button @click="volverAPaso1" class="px-6 py-3 bg-sky-100 rounded-xl hover:bg-sky-200">Atrás</button>
-              <button @click="continuarAPaso3"
-                v-if="diaSeleccionado && horaSeleccionada"
-                class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600"
-              >Continuar</button>
+            <div class="min-h-0 bg-slate-50 rounded-2xl p-6 flex flex-col gap-4 overflow-hidden">
+              <span class="text-lg font-semibold text-slate-900 shrink-0">Horarios disponibles</span>
+
+              <template v-if="diaSeleccionado">
+                <div class="shrink-0">
+                  <div class="text-sm font-medium text-sky-700">{{ fechaSeleccionadaTexto }}</div>
+                  <div v-if="medicoSeleccionado" class="text-sm text-slate-500 mt-1">{{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }} · {{ especialidadesTexto(medicoSeleccionado) }}</div>
+                </div>
+
+                <p v-if="cargandoHorarios" class="text-sm text-slate-400 shrink-0">Cargando horarios...</p>
+                <p v-else-if="errorHorarios" class="text-sm text-red-600 shrink-0">{{ errorHorarios }}</p>
+                <p v-else-if="!horariosDelDia.length" class="text-sm text-slate-400 shrink-0">No hay horarios disponibles para este día.</p>
+
+                <div v-else class="flex gap-3 overflow-x-auto pb-1 shrink-0">
+                  <button
+                    v-for="h in horariosDelDia" :key="h.id"
+                    @click="elegirHora(h)"
+                    class="shrink-0 w-24 h-11 rounded-xl text-sm font-medium cursor-pointer transition-colors"
+                    :class="horaSeleccionada === h.hora ? 'bg-sky-700 text-white' : 'bg-white outline-1 -outline-offset-1 outline-slate-200 text-sky-700 hover:bg-slate-100'"
+                  >{{ horaTexto(h) }}</button>
+                </div>
+
+                <template v-if="horaSeleccionada">
+                  <div class="h-px bg-slate-200 shrink-0"></div>
+                  <div class="shrink-0">
+                    <div class="text-xs font-medium text-slate-400 tracking-wide">TU ELECCIÓN</div>
+                    <div class="text-lg font-semibold text-sky-700 mt-1">{{ fechaHoraElegidaTexto }}</div>
+                    <p class="text-sm text-slate-500 mt-1">Continuá para revisar los datos antes de confirmar.</p>
+                  </div>
+                </template>
+              </template>
+              <p v-else class="text-sm text-slate-400">Elegí un día en el calendario para ver los horarios.</p>
             </div>
           </div>
 
-          <div v-else key="paso3" class="flex flex-col gap-6">
-            <div v-if="turnoConfirmado" class="flex flex-col items-center gap-4 py-6">
-              <p class="text-xl font-medium">¡Turno Reservado!</p>
-              <p class="text-zinc-500 text-center">Le avisamos a {{ medicoSeleccionado?.nombre }} {{ medicoSeleccionado?.apellido }} para que lo confirme.</p>
-              <button @click="emit('ir-a-principal-usuario')" class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600">Volver al inicio</button>
+          <div class="flex items-center justify-between shrink-0">
+            <button @click="volverAPaso1" class="flex items-center gap-2 h-11 px-4 bg-white outline-1 -outline-offset-1 outline-slate-200 rounded-xl text-sm font-medium text-sky-700 cursor-pointer hover:bg-slate-50 transition-colors">
+              <svg style="width:1rem; height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Volver
+            </button>
+            <button
+              @click="continuarAPaso3"
+              class="h-11 px-5 rounded-xl bg-sky-700 text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              :disabled="!diaSeleccionado || !horaSeleccionada"
+            >Continuar</button>
+          </div>
+          </div>
+
+          <div v-else key="paso3" class="flex-1 min-h-0 flex flex-col gap-6">
+            <div v-if="turnoConfirmado" class="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 text-center">
+              <div class="size-16 bg-blue-50 rounded-3xl flex items-center justify-center">
+                <svg style="width:2rem; height:2rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-700"><path d="M20 6 9 17l-5-5"/></svg>
+              </div>
+              <p class="text-2xl font-semibold text-slate-900">¡Turno reservado!</p>
+              <p class="text-sm text-slate-500 max-w-md">Le avisamos a {{ medicoSeleccionado?.nombre }} {{ medicoSeleccionado?.apellido }} para que lo confirme.</p>
+              <button @click="emit('ir-a-principal-usuario')" class="h-11 px-5 rounded-xl bg-sky-700 text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity">Volver al inicio</button>
             </div>
 
             <template v-else>
-              <div class="flex items-center justify-center" v-if="medicoSeleccionado">
-                <div class="w-[57.5rem] h-27 bg-blue-100 rounded-[2.0625rem]" style="display: flex; flex-direction: row; align-items: center; gap: 1.5rem;">
-
-                  <div>
-                    <div
-                      style="width: 5rem; height: 5rem; border-radius: 624.9375rem; margin-left: 1.25rem;"
-                      class="flex items-center justify-center text-white text-2xl font-medium"
-                      :style="{ backgroundColor: colorAvatar(medicoSeleccionado.id) }"
-                    >{{ iniciales(medicoSeleccionado) }}</div>
-                  </div>
-
-                  <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                    <div style="width: 100%; color: black; font-size: 1.875rem; line-height: 1; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}</div>
-                    <div style="width: 100%; color: rgba(0, 0, 0, 0.63); font-size: 0.8125rem; line-height: 1.2; font-family: Inter; font-weight: 400; word-wrap: break-word">{{ especialidadesTexto(medicoSeleccionado) }}</div>
-                    <div style="width: 100%; color: rgba(0, 0, 0, 0.63); font-size: 1rem; line-height: 1.2; font-family: Inter; font-weight: 400; text-decoration: underline; word-wrap: break-word">{{ resumenFechaHora }}</div>
-                  </div>
-
+            <div class="flex-1 min-h-0 grid grid-cols-[1fr_24rem] gap-6">
+              <div class="min-h-0 flex flex-col gap-4">
+                <div>
+                  <span class="text-lg font-semibold text-slate-900">3. Revisá los datos del turno</span>
+                  <p class="text-sm text-slate-500 mt-1">Comprobá el profesional, la fecha y el horario en el resumen.</p>
                 </div>
+
+                <div class="flex-1 min-h-0 flex flex-col gap-2">
+                  <span class="text-sm font-medium text-slate-900 shrink-0">Motivo de la consulta</span>
+                  <textarea
+                    v-model="motivoConsulta"
+                    placeholder="Contale al profesional el motivo de tu consulta…"
+                    class="flex-1 min-h-0 w-full bg-white outline-1 -outline-offset-1 outline-slate-200 rounded-2xl p-4 text-sm text-slate-900 placeholder:text-slate-400 resize-none"
+                  ></textarea>
+                </div>
+
+                <p v-if="errorReserva" class="text-sm text-red-600 shrink-0">{{ errorReserva }}</p>
               </div>
 
-              <div class="justify-start text-zinc-900 text-xl font-normal font-['Inter'] leading-10">Motivo de la consulta</div>
-              <textarea v-model="motivoConsulta" placeholder="Motivo de la consulta..." class="w-[59.0625rem] h-30 bg-white rounded-[2.0625rem] border border-stone-300 p-6 pl-8 pt-5 text-left align-top resize-none"></textarea>
-              <p v-if="errorReserva" class="text-red-500 text-center">{{ errorReserva }}</p>
+              <div class="min-h-0 bg-slate-50 rounded-2xl p-6 flex flex-col gap-4 overflow-hidden">
+                <span class="text-lg font-semibold text-slate-900 shrink-0">Tu reserva</span>
 
-              <div class="flex w-full justify-between">
-              <button @click="volverAPaso2" class="px-6 py-3 bg-sky-100 rounded-xl hover:bg-sky-200">Atrás</button>
+                <template v-if="medicoSeleccionado">
+                  <div class="flex items-center gap-3 shrink-0">
+                    <div class="size-11 shrink-0 rounded-full bg-blue-100 text-sky-700 flex items-center justify-center text-sm font-medium">{{ iniciales(medicoSeleccionado) }}</div>
+                    <div class="min-w-0">
+                      <div class="font-semibold text-slate-900 truncate">{{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}</div>
+                      <div class="text-sm text-slate-500 truncate">{{ especialidadesTexto(medicoSeleccionado) }}</div>
+                    </div>
+                  </div>
+
+                  <div class="h-px bg-slate-200 shrink-0"></div>
+
+                  <div class="shrink-0">
+                    <div class="text-xs font-medium text-slate-400 tracking-wide">FECHA Y HORA</div>
+                    <div class="text-sm font-medium text-slate-900 mt-1">{{ fechaSeleccionadaTextoConAño }}</div>
+                    <div class="text-lg font-semibold text-sky-700 mt-1">{{ horaSeleccionada !== null ? formatearHora(horaSeleccionada) : '' }}</div>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+              <div class="flex items-center justify-between shrink-0">
+                <button @click="volverAPaso2" class="flex items-center gap-2 h-11 px-4 bg-white outline-1 -outline-offset-1 outline-slate-200 rounded-xl text-sm font-medium text-sky-700 cursor-pointer hover:bg-slate-50 transition-colors">
+                  <svg style="width:1rem; height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  Volver
+                </button>
                 <button
                   @click="confirmarReserva"
-                  class="px-8 py-3 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                  class="h-11 px-5 rounded-xl bg-sky-700 text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                   :disabled="!medicoSeleccionado || reservando"
-                >{{ reservando ? 'Reservando...' : 'Continuar' }}</button>
+                >{{ reservando ? 'Reservando...' : 'Confirmar turno' }}</button>
               </div>
             </template>
           </div>

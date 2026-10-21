@@ -343,6 +343,7 @@ const celdas = computed(() => {
 }
 
 .campoo {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -357,6 +358,16 @@ const celdas = computed(() => {
   font-weight: 500;
   line-height: normal;
   cursor: pointer;
+}
+
+.campoo-punto {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background-color: #EF4444;
 }
 
 .campoo:hover:not(.activo) {

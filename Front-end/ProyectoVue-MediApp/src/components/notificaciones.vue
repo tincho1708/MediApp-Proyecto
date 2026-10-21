@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal-usuario', 'ir-a-chatbot', 'ir-a-calendario-usuario', 'ir-a-reservar-turno', 'ir-a-mi-usuario-paciente', 'ir-a-notificaciones'])
+const { resetConteoNoLeidas } = useConteoNoLeidas()
 
 const esta = ref(false)
 
@@ -51,6 +53,7 @@ async function marcarTodasComoLeidas() {
     } catch {
     }
   }
+  resetConteoNoLeidas()
 }
 
 onMounted(cargarNotificaciones)
@@ -63,11 +66,44 @@ const notificacionesFiltradas = computed(() => {
   return notificaciones.value
 })
 
-function formatearFecha(fecha: string) {
+function formatearHora(fecha: string) {
   const f = new Date(fecha)
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(f.getDate())}/${pad(f.getMonth() + 1)} - ${pad(f.getHours())}:${pad(f.getMinutes())}`
+  return `${pad(f.getHours())}:${pad(f.getMinutes())}`
 }
+
+function formatearFechaCorta(fecha: string) {
+  const f = new Date(fecha)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(f.getDate())}/${pad(f.getMonth() + 1)}/${f.getFullYear()}`
+}
+
+const nombresMes = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+
+function formatearFechaGrupo(fecha: string) {
+  const f = new Date(fecha)
+  return `${f.getDate()} de ${nombresMes[f.getMonth()]} de ${f.getFullYear()}`
+}
+
+function tituloNotificacion(n: NotificacionPaciente) {
+  if (n.mensaje.includes('rechazado')) return 'Solicitud rechazada'
+  if (n.mensaje.includes('aceptado')) return 'Solicitud aceptada'
+  return 'Notificación'
+}
+
+function esAceptada(n: NotificacionPaciente) {
+  return n.mensaje.includes('aceptado')
+}
+
+const gruposNotificaciones = computed(() => {
+  const mapa = new Map<string, NotificacionPaciente[]>()
+  for (const n of notificacionesFiltradas.value) {
+    const clave = formatearFechaGrupo(n.fecha)
+    if (!mapa.has(clave)) mapa.set(clave, [])
+    mapa.get(clave)!.push(n)
+  }
+  return [...mapa.entries()].map(([fecha, items]) => ({ fecha, items }))
+})
 </script>
 
 <template>
@@ -126,43 +162,73 @@ function formatearFecha(fecha: string) {
       </div>
     </div>
 
-    <div class="titulo-pagina w-fit text-zinc-900 text-5xl font-semibold font-['Inter'] pb-2 mb-6 border-b-2 border-black">Notificaciones</div>
-
-    <div class="contenido-pagina font-['Inter']">
-      <div class="gap-6 flex flex-row">
+    <div class="h-screen overflow-hidden bg-linear-to-br from-blue-100 via-violet-100 to-blue-200 pt-[4.9rem] flex flex-col font-['Inter']">
+      <div class="flex items-start justify-between max-w-[82rem] w-full mx-auto px-16 pt-10 pb-6 shrink-0">
+        <div>
+          <div class="text-3xl font-semibold text-slate-900">Notificaciones</div>
+          <p class="text-sm text-slate-500 mt-1.5">Mantenete al día con tus turnos y recordatorios.</p>
+        </div>
         <button
-          class="w-34 h-13 pb-0.5 rounded-[1.25rem] outline-[0.09375rem] outline-offset-[-0.09375rem] outline-black inline-flex justify-center items-center transition-colors"
-          :class="filtro === 'todos' ? 'bg-zinc-200' : 'bg-white hover:bg-zinc-100'"
-          @click="filtro = 'todos'"
+          class="flex items-center gap-2 h-11 px-4 bg-white outline-1 -outline-offset-1 outline-slate-200 rounded-xl text-sm font-medium text-sky-700 cursor-pointer hover:bg-slate-50 transition-colors"
+          @click="marcarTodasComoLeidas"
         >
-          <div class="text-center justify-center font-normal text-black text-[1rem] font-['Inter']">Todos</div>
-        </button>
-        <button
-          class="w-34 h-13 pb-0.5 rounded-[1.25rem] outline-[0.09375rem] outline-offset-[-0.09375rem] outline-black inline-flex justify-center items-center transition-colors"
-          :class="filtro === 'turnos' ? 'bg-zinc-200' : 'bg-white hover:bg-zinc-100'"
-          @click="filtro = 'turnos'"
-        >
-          <div class="text-center justify-center text-black text-[1rem] font-normal font-['Inter']">Turnos</div>
-        </button>
-        <button
-          class="w-34 h-13 pb-0.5 rounded-[1.25rem] outline-[0.09375rem] outline-offset-[-0.09375rem] outline-black inline-flex justify-center items-center transition-colors"
-          :class="filtro === 'recordatorios' ? 'bg-zinc-200' : 'bg-white hover:bg-zinc-100'"
-          @click="filtro = 'recordatorios'"
-        >
-          <div class="text-center justify-center text-black text-[1rem] font-normal font-['Inter']">Recordatorios</div>
+          <svg style="width:1rem; height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          Marcar todas como leídas
         </button>
       </div>
-      <p v-if="cargando" class="text-zinc-400 mt-10 text-2xl">Cargando notificaciones...</p>
-      <p v-else-if="error" class="text-red-500 mt-10 text-2xl">{{ error }}</p>
-      <p v-else-if="!notificacionesFiltradas.length" class="text-zinc-400 mt-10 text-2xl">No tenés notificaciones.</p>
 
-      <div
-        v-for="n in notificacionesFiltradas"
-        :key="n.id"
-        class="w-[84.6rem] h-20 flex items-center justify-between bg-white rounded-[2.5rem] shadow-[0rem_0rem_1.875rem_0.75rem_rgba(0,0,0,0.25)] mt-10 border border-sky-500"
-      >
-        <span class="ml-8 text-2xl font-normal font-['Inter']">{{ n.mensaje }}</span>
-        <span class="mr-10 text-black/50 text-xl font-normal font-['Inter'] shrink-0">{{ formatearFecha(n.fecha) }}</span>
+      <div class="flex-1 min-h-0 max-w-[82rem] w-full mx-auto px-16 pb-10">
+        <div class="h-full bg-white rounded-3xl shadow-[0_0.5rem_1.5rem_-0.25rem_rgba(34,66,105,0.11),0_0.125rem_0.375rem_0_rgba(34,66,105,0.06)] outline-1 -outline-offset-1 outline-slate-200 p-6 flex flex-col gap-6 min-h-0">
+          <div class="flex items-center gap-3 shrink-0">
+            <button
+              class="h-11 px-5 rounded-xl text-sm font-medium cursor-pointer transition-colors"
+              :class="filtro === 'todos' ? 'bg-blue-50 text-sky-700' : 'bg-white outline-1 -outline-offset-1 outline-slate-200 text-sky-700 hover:bg-slate-50'"
+              @click="filtro = 'todos'"
+            >Todas</button>
+            <button
+              class="h-11 px-5 rounded-xl text-sm font-medium cursor-pointer transition-colors"
+              :class="filtro === 'turnos' ? 'bg-blue-50 text-sky-700' : 'bg-white outline-1 -outline-offset-1 outline-slate-200 text-sky-700 hover:bg-slate-50'"
+              @click="filtro = 'turnos'"
+            >Turnos</button>
+            <button
+              class="h-11 px-5 rounded-xl text-sm font-medium cursor-pointer transition-colors"
+              :class="filtro === 'recordatorios' ? 'bg-blue-50 text-sky-700' : 'bg-white outline-1 -outline-offset-1 outline-slate-200 text-sky-700 hover:bg-slate-50'"
+              @click="filtro = 'recordatorios'"
+            >Recordatorios</button>
+            <div class="flex-1"></div>
+            <span class="text-xs text-slate-400 whitespace-nowrap">{{ notificacionesFiltradas.length }} notificacion{{ notificacionesFiltradas.length !== 1 ? 'es' : '' }}</span>
+          </div>
+
+          <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6">
+            <p v-if="cargando" class="text-slate-400 text-sm">Cargando notificaciones...</p>
+            <p v-else-if="error" class="text-red-600 text-sm">{{ error }}</p>
+            <p v-else-if="!notificacionesFiltradas.length" class="text-slate-400 text-sm text-center py-6">No tenés notificaciones.</p>
+
+            <div v-else v-for="grupo in gruposNotificaciones" :key="grupo.fecha" class="flex flex-col gap-3 shrink-0">
+              <div class="text-sm font-medium text-slate-500">{{ grupo.fecha }}</div>
+
+              <div
+                v-for="n in grupo.items" :key="n.id"
+                class="flex items-start gap-5 p-6 bg-white outline-1 -outline-offset-1 outline-slate-200 rounded-2xl"
+              >
+                <div class="size-11 shrink-0 rounded-xl bg-blue-50 flex items-center justify-center">
+                  <svg style="width:1.25rem; height:1.25rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-700"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+                </div>
+                <div class="flex-1 min-w-0 flex flex-col gap-2">
+                  <div class="text-lg font-semibold text-slate-900">{{ tituloNotificacion(n) }}</div>
+                  <div class="text-sm text-slate-500">{{ n.mensaje }}</div>
+                  <button v-if="esAceptada(n)" class="text-sm font-medium text-sky-700 text-left cursor-pointer hover:underline" @click="emit('ir-a-calendario-usuario')">Ver en mi calendario →</button>
+                </div>
+                <div class="flex flex-col items-end gap-2 shrink-0">
+                  <span class="text-sm font-medium text-slate-500">{{ formatearHora(n.fecha) }}</span>
+                  <span class="text-xs text-slate-400">{{ formatearFechaCorta(n.fecha) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <p v-if="!cargando && !error && notificacionesFiltradas.length" class="text-sm text-slate-400 text-center shrink-0">No tenés más notificaciones.</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -170,13 +236,4 @@ function formatearFecha(fecha: string) {
 </template>
 
 <style scoped>
-.titulo-pagina {
-  margin-top: 7.5rem;
-  margin-left: 2.5rem;
-}
-
-.contenido-pagina {
-  margin-left: 2.5rem;
-  margin-right: 2.5rem;
-}
 </style>

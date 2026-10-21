@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
 
 const emit = defineEmits([
   'ir-a-bienvenida',
@@ -21,6 +22,9 @@ const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const token = sesion.token as string | undefined
 const esMedico = sesion.tipo === 'Medico'
 const nombreUsuario = sesion.nombre || 'Usuario'
+
+const { conteoNoLeidas, usarPollingConteoNoLeidas } = useConteoNoLeidas()
+usarPollingConteoNoLeidas()
 
 const API = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
@@ -243,7 +247,7 @@ function formatear(texto: string) {
         <button class="campoo" @click="emit('ir-a-reservar-turno')">Reservar turno<span class="campoo-indicador"></span></button>
         <button class="campoo activo">MediBot<span class="campoo-indicador"></span></button>
         <button class="campoo">Profesionales<span class="campoo-indicador"></span></button>
-        <button class="campoo" @click="emit('ir-a-notificaciones')">Notificaciones<span class="campoo-indicador"></span></button>
+        <button class="campoo" @click="emit('ir-a-notificaciones')">Notificaciones<span v-if="conteoNoLeidas > 0" class="campoo-punto"></span><span class="campoo-indicador"></span></button>
       </template>
     </div>
 
