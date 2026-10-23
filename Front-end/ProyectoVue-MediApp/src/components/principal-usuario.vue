@@ -108,7 +108,7 @@ function especialidadTurno(t: Turno) {
   const especialidad = t.medico.especialidades[0]?.nombre_especialidad
   if (especialidad)
     return especialidad.charAt(0).toUpperCase() + especialidad.slice(1).toLowerCase()
-  return `${t.medico.nombre} ${t.medico.apellido}`
+  return 'Consulta'
 }
 
 const hoy = new Date()
@@ -304,13 +304,23 @@ const celdas = computed(() => {
                 </div>
 
                 <div class="pu-fila-turno-info">
-                  <div class="pu-fila-turno-especialidad">{{ especialidadTurno(t) }}</div>
-                  <div class="pu-fila-turno-hora">
-                    <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="9" />
-                      <path d="M12 7v5l3 3" />
-                    </svg>
-                    {{ formatearHora(t.fecha_hora) }}
+                  <div class="pu-fila-turno-columna">
+                    <span class="pu-fila-turno-etiqueta">Tipo de turno</span>
+                    <span class="pu-fila-turno-valor">{{ especialidadTurno(t) }}</span>
+                  </div>
+                  <div class="pu-fila-turno-columna">
+                    <span class="pu-fila-turno-etiqueta">Profesional</span>
+                    <span class="pu-fila-turno-valor">{{ t.medico.nombre }} {{ t.medico.apellido }}</span>
+                  </div>
+                  <div class="pu-fila-turno-columna">
+                    <span class="pu-fila-turno-etiqueta">Horario</span>
+                    <span class="pu-fila-turno-valor pu-fila-turno-reloj">
+                      <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M12 7v5l3 3" />
+                      </svg>
+                      {{ formatearHora(t.fecha_hora) }}
+                    </span>
                   </div>
                 </div>
 
@@ -488,7 +498,8 @@ const celdas = computed(() => {
 .pu-estado-turnos {
   color: #9ca3af;
   font-family: 'Inter', sans-serif;
-  margin: 0.5rem 0;
+  height: 10.75rem;
+  padding-top: 0.5rem;
 }
 
 .pu-error {
@@ -499,8 +510,7 @@ const celdas = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  /* Muestra hasta 2 turnos (5rem c/u + gap); con más aparece el scroll interno */
-  max-height: 10.75rem;
+  height: 10.75rem;
   overflow-y: auto;
   padding-right: 0.25rem;
   scrollbar-width: thin;
@@ -565,11 +575,28 @@ const celdas = computed(() => {
 .pu-fila-turno-info {
   flex: 1;
   min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 6rem;
+  gap: 1.5rem;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
 }
 
-.pu-fila-turno-especialidad {
-  font-family: 'Inter', sans-serif;
-  font-size: 1rem;
+.pu-fila-turno-columna {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pu-fila-turno-etiqueta {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.pu-fila-turno-valor {
+  font-size: 1.125rem;
   font-weight: 700;
   color: #111827;
   white-space: nowrap;
@@ -577,13 +604,11 @@ const celdas = computed(() => {
   text-overflow: ellipsis;
 }
 
-.pu-fila-turno-hora {
+.pu-fila-turno-reloj {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  margin-top: 0.25rem;
-  font-size: 0.85rem;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .pu-chevron {
