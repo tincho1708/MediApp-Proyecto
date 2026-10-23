@@ -114,6 +114,29 @@ function especialidadTurno(t: Turno) {
 const hoy = new Date()
 const mesActual = ref(hoy.getMonth())
 const añoActual = ref(hoy.getFullYear())
+const diaSeleccionado = ref(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()))
+
+const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+
+function esMismoDia(fecha: Date, dia: Date) {
+  return fecha.getFullYear() === dia.getFullYear() && fecha.getMonth() === dia.getMonth() && fecha.getDate() === dia.getDate()
+}
+
+function seleccionarDia(celda: { dia?: number; otroMes?: boolean }) {
+  if (celda.otroMes || !celda.dia) return
+  diaSeleccionado.value = new Date(añoActual.value, mesActual.value, celda.dia)
+}
+
+const turnosDiaSeleccionado = computed(() =>
+  turnos.value
+    .filter((t) => t.estado?.estado === 'aceptado' && esMismoDia(new Date(t.fecha_hora), diaSeleccionado.value))
+    .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime()),
+)
+
+const diaSeleccionadoTexto = computed(() => {
+  const d = diaSeleccionado.value
+  return `${nombresDia[d.getDay()]} ${d.getDate()} de ${nombresMes[d.getMonth()].toLowerCase()}`
+})
 
 const nombresMes = [
   'Enero',
@@ -180,6 +203,7 @@ const celdas = computed(() => {
         d === hoy.getDate() &&
         mesActual.value === hoy.getMonth() &&
         añoActual.value === hoy.getFullYear(),
+      seleccionado: esMismoDia(new Date(añoActual.value, mesActual.value, d), diaSeleccionado.value),
       conTurno: diasConTurno.value.has(d),
     })
   }
@@ -381,7 +405,7 @@ const celdas = computed(() => {
               <div class="pu-cal-nombre-dia">SA</div>
               <div class="pu-cal-nombre-dia">DO</div>
 
-              <div v-for="(celda, i) in celdas" :key="i" class="pu-cal-dia" :class="{ 'pu-cal-hoy': celda.hoy, 'pu-cal-otro-mes': celda.otroMes }">
+              <div v-for="(celda, i) in celdas" :key="i" class="pu-cal-dia" :class="{ 'pu-cal-hoy': celda.seleccionado, 'pu-cal-dia-hoy': celda.hoy && !celda.seleccionado, 'pu-cal-otro-mes': celda.otroMes }" @click="seleccionarDia(celda)">
                 {{ celda.dia }}
                 <span v-if="celda.conTurno" class="pu-cal-punto"></span>
               </div>
@@ -389,6 +413,17 @@ const celdas = computed(() => {
 
             <div class="pu-cal-leyenda">
               <span class="pu-cal-punto-leyenda"></span>Días con turnos
+            </div>
+
+            <div class="pu-cal-resumen">
+              <div class="pu-cal-resumen-header">
+                <span class="pu-cal-resumen-fecha">{{ diaSeleccionadoTexto }}</span>
+                <span class="pu-cal-resumen-cantidad">{{ turnosDiaSeleccionado.length ? `${turnosDiaSeleccionado.length} turno${turnosDiaSeleccionado.length !== 1 ? 's' : ''}` : 'Sin turnos' }}</span>
+              </div>
+              <div v-if="turnosDiaSeleccionado.length" class="pu-cal-resumen-horas">
+                <button v-for="t in turnosDiaSeleccionado" :key="t.id_turno" class="pu-cal-resumen-hora" @click="emit('ir-a-calendario-usuario', t.fecha_hora)">{{ formatearHora(t.fecha_hora) }}</button>
+              </div>
+              <p v-else class="pu-cal-resumen-vacio">No tenés turnos para este día.</p>
             </div>
 
             <button class="pu-cal-ver-completo" @click="emit('ir-a-calendario-usuario')">
@@ -715,10 +750,17 @@ const celdas = computed(() => {
   font-size: 0.85rem;
   color: #334155;
   border-radius: 0.75rem;
+  cursor: pointer;
+}
+
+.pu-cal-dia-hoy {
+  color: #3d6fc2;
+  font-weight: 700;
 }
 
 .pu-cal-otro-mes {
   color: #cbd5e1;
+  cursor: default;
 }
 
 .pu-cal-hoy {
@@ -776,7 +818,76 @@ const celdas = computed(() => {
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s ease;
-  margin-top: 5.8rem;
+  margin-top: 0.675rem;
+}
+
+.pu-cal-resumen {
+  height: 4.625rem;
+  margin-top: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background-color: #eff6ff;
+  border-radius: 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.pu-cal-resumen-header {
+  height: 1.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.pu-cal-resumen-fecha {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pu-cal-resumen-cantidad {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: #3d6fc2;
+}
+
+.pu-cal-resumen-horas {
+  height: 1.75rem;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pu-cal-resumen-hora {
+  flex: 1 0 4.5rem;
+  border: none;
+  border-radius: 0.625rem;
+  background-color: #ffffff;
+  color: #3d6fc2;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pu-cal-resumen-hora:hover {
+  background-color: #dbeafe;
+}
+
+.pu-cal-resumen-vacio {
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
 .pu-cal-ver-completo:hover {
