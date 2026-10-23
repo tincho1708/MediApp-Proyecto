@@ -21,39 +21,31 @@ async function iniciarSesionConGoogle() {
   try {
     const idToken = await obtenerIdTokenGoogle()
 
-    const intentos: Array<'paciente' | 'medico'> = ['paciente', 'medico']
-    for (const tipo of intentos) {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_token: idToken, tipo }),
-      })
-      const data = await res.json()
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_token: idToken }),
+    })
+    const data = await res.json()
 
-      if (res.ok) {
-        localStorage.setItem(
-          'sesion',
-          JSON.stringify({
-            token: data.access_token,
-            tipo: tipo === 'medico' ? 'Medico' : 'Paciente',
-            nombre: data.nombre,
-          }),
-        )
-        if (tipo === 'medico') {
-          resetTurnosMedico()
-          emit('ir-a-principal')
-        } else {
-          emit('ir-a-principal-usuario')
-        }
-        return
+    if (res.ok) {
+      localStorage.setItem(
+        'sesion',
+        JSON.stringify({
+          token: data.access_token,
+          tipo: data.tipo === 'medico' ? 'Medico' : 'Paciente',
+          nombre: data.nombre,
+        }),
+      )
+      if (data.tipo === 'medico') {
+        resetTurnosMedico()
+        emit('ir-a-principal')
+      } else {
+        emit('ir-a-principal-usuario')
       }
-      if (res.status === 403) {
-        errorGoogle.value = data.detail
-        return
-      }
+      return
     }
-
-    errorGoogle.value = 'No existe una cuenta con ese Google. Registrate primero.'
+    errorGoogle.value = data.detail || 'No se pudo iniciar sesión con Google.'
   } catch {
     errorGoogle.value = 'No se pudo iniciar sesión con Google.'
   } finally {

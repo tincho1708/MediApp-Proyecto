@@ -43,26 +43,18 @@ async function iniciarSesionConGoogle() {
   try {
     const idToken = await obtenerIdTokenGoogle()
 
-    const intentos: Array<'paciente' | 'medico'> = ['paciente', 'medico']
-    for (const tipo of intentos) {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_token: idToken, tipo }),
-      })
-      const data = await res.json()
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_token: idToken }),
+    })
+    const data = await res.json()
 
-      if (res.ok) {
-        guardarSesionYEntrar(tipo === 'medico' ? 'Medico' : 'Paciente', data)
-        return
-      }
-      if (res.status === 403) {
-        error.value = data.detail
-        return
-      }
+    if (res.ok) {
+      guardarSesionYEntrar(data.tipo === 'medico' ? 'Medico' : 'Paciente', data)
+      return
     }
-
-    error.value = 'No existe una cuenta con ese Google. Registrate primero.'
+    error.value = data.detail || 'No se pudo iniciar sesión con Google.'
   } catch {
     error.value = 'No se pudo iniciar sesión con Google.'
   } finally {
