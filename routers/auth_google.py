@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from pydantic import BaseModel
+from typing import Optional
 import httpx
 import random
 import os
@@ -80,12 +81,22 @@ class GoogleLoginRequest(BaseModel):
 
 class GoogleAuthRequest(BaseModel):
     id_token: str
-    tipo: str
+    tipo: Optional[str] = None
+
+
+def _buscar_usuario(db: Session, google_id: str, email: str):
+    for campo in ("google_id", "mail"):
+        valor = google_id if campo == "google_id" else email
+        for tipo, Modelo in (("medico", Medico), ("paciente", Paciente)):
+            usuario = db.query(Modelo).filter(getattr(Modelo, campo) == valor).first()
+            if usuario:
+                return tipo, usuario
+    return None, None
 
 
 @router.post("")
 def auth_google(data: GoogleAuthRequest, db: Session = Depends(get_db)):
-    if data.tipo not in ("medico", "paciente"):
+    if data.tipo not in (None, "medico", "paciente"):
         raise HTTPException(status_code=400, detail="Tipo debe ser 'medico' o 'paciente'")
 
     payload = verify_auth0_token(data.id_token)
@@ -96,35 +107,36 @@ def auth_google(data: GoogleAuthRequest, db: Session = Depends(get_db)):
     if not payload.get("email_verified"):
         raise HTTPException(status_code=403, detail="El mail de Google no está verificado")
 
-    Modelo = Medico if data.tipo == "medico" else Paciente
-    usuario = db.query(Modelo).filter(Modelo.google_id == google_id).first()
+    tipo, usuario = _buscar_usuario(db, google_id, email)
     nuevo = False
 
-    if not usuario:
-        usuario = db.query(Modelo).filter(Modelo.mail == email).first()
-        if usuario:
+    if usuario:
+        if not usuario.google_id:
             usuario.google_id = google_id
-            usuario.email_verificado = True
-        else:
-            nuevo = True
-            nombre = payload.get("given_name") or payload.get("name", "").split()[0]
-            apellido = payload.get("family_name") or (payload.get("name", "").split()[-1] if " " in payload.get("name", "") else "")
-            usuario = Modelo(nombre=nombre, apellido=apellido, mail=email,
-                             google_id=google_id, email_verificado=True)
-            if data.tipo == "medico":
-                usuario.setup_token = str(uuid.uuid4())
-            db.add(usuario)
-            db.flush()
-            if data.tipo == "medico":
-                for dia in range(5):
-                    for hora in range(9, 17):
-                        db.add(HorarioMedico(id_medico=usuario.id, dia_semana=dia, hora=hora))
+        usuario.email_verificado = True
+    else:
+        nuevo = True
+        tipo = data.tipo or "paciente"
+        Modelo = Medico if tipo == "medico" else Paciente
+        partes = payload.get("name", "").split()
+        nombre = payload.get("given_name") or (partes[0] if partes else email.split("@")[0])
+        apellido = payload.get("family_name") or (partes[-1] if len(partes) > 1 else "")
+        usuario = Modelo(nombre=nombre, apellido=apellido, mail=email,
+                         google_id=google_id, email_verificado=True)
+        if tipo == "medico":
+            usuario.setup_token = str(uuid.uuid4())
+        db.add(usuario)
+        db.flush()
+        if tipo == "medico":
+            for dia in range(5):
+                for hora in range(9, 17):
+                    db.add(HorarioMedico(id_medico=usuario.id, dia_semana=dia, hora=hora))
 
     db.commit()
 
-    token = create_access_token({"sub": str(usuario.id), "tipo": data.tipo})
-    response = {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre, "nuevo": nuevo}
-    if data.tipo == "medico" and usuario.setup_token:
+    token = create_access_token({"sub": str(usuario.id), "tipo": tipo})
+    response = {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre, "tipo": tipo, "nuevo": nuevo}
+    if tipo == "medico" and usuario.setup_token:
         response["setup_token"] = usuario.setup_token
         response["medico_id"] = usuario.id
     return response
