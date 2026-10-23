@@ -154,7 +154,7 @@ async function iniciarSesionConGoogle() {
   width: 36.8rem;
   height: 26rem;
   background-color: #d9d9d9;
-  border-radius: 1.25rem;
+  border-radius: 1.15rem;
   overflow: hidden;
   box-shadow:
     0 1rem 2.86875rem 1.1875rem rgba(26, 58, 96, 0.19),
