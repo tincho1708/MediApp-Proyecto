@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
 
-// Si se llega desde "Solicitar turno" en Profesionales, viene el médico ya elegido
 const props = defineProps<{ medicoInicialId?: number | null }>()
 const emit = defineEmits([
   'ir-a-bienvenida',
@@ -46,6 +45,8 @@ const errorMedicos = ref('')
 
 const especialidadSeleccionada = ref<number | null>(null)
 const medicoSeleccionado = ref<Medico | null>(null)
+const especialidadTurnoId = ref<number | null>(null)
+const busquedaMedico = ref('')
 
 async function cargarMedicos() {
   cargandoMedicos.value = true
@@ -56,8 +57,8 @@ async function cargarMedicos() {
     medicos.value = await res.json()
     const medicoInicial = medicos.value.find((m) => m.id === props.medicoInicialId)
     if (medicoInicial) {
-      medicoSeleccionado.value = medicoInicial
-      continuarAPaso2()
+      elegirMedico(medicoInicial)
+      if (puedeContinuarPaso1.value) continuarAPaso2()
     }
   } catch {
     errorMedicos.value = 'No se pudieron cargar los profesionales. Intentá de nuevo más tarde.'
@@ -81,26 +82,40 @@ const especialidadesDisponibles = computed<Especialidad[]>(() => {
 })
 
 const medicosFiltrados = computed(() => {
-  if (especialidadSeleccionada.value === null) return medicos.value
-  return medicos.value.filter((m) =>
-    m.especialidades.some((e) => e.id_especialidad === especialidadSeleccionada.value),
+  const texto = busquedaMedico.value.trim().toLowerCase()
+  return medicos.value.filter(
+    (m) =>
+      (especialidadSeleccionada.value === null || m.especialidades.some((e) => e.id_especialidad === especialidadSeleccionada.value)) &&
+      (!texto || `${m.nombre} ${m.apellido}`.toLowerCase().includes(texto) || m.especialidades.some((e) => e.nombre_especialidad.toLowerCase().includes(texto))),
   )
 })
 
-function elegirEspecialidad(id: number) {
-  especialidadSeleccionada.value = especialidadSeleccionada.value === id ? null : id
-  if (
-    medicoSeleccionado.value &&
-    !medicoSeleccionado.value.especialidades.some(
-      (e) => e.id_especialidad === especialidadSeleccionada.value,
-    )
-  ) {
+function alCambiarFiltro() {
+  if (medicoSeleccionado.value && especialidadSeleccionada.value !== null && !medicoSeleccionado.value.especialidades.some((e) => e.id_especialidad === especialidadSeleccionada.value)) {
     medicoSeleccionado.value = null
   }
+  asignarEspecialidadPorDefecto()
+}
+
+const especialidadesDelMedico = computed(() => medicoSeleccionado.value?.especialidades ?? [])
+
+const especialidadTurnoTexto = computed(() => {
+  const elegida = especialidadesDelMedico.value.find((e) => e.id_especialidad === especialidadTurnoId.value)
+  return elegida?.nombre_especialidad ?? (medicoSeleccionado.value ? especialidadesTexto(medicoSeleccionado.value) : '')
+})
+
+const puedeContinuarPaso1 = computed(() => !!medicoSeleccionado.value && (especialidadesDelMedico.value.length === 0 || especialidadTurnoId.value !== null))
+
+function asignarEspecialidadPorDefecto() {
+  const especialidades = especialidadesDelMedico.value
+  if (especialidades.length === 1) especialidadTurnoId.value = especialidades[0].id_especialidad
+  else if (especialidades.some((e) => e.id_especialidad === especialidadSeleccionada.value)) especialidadTurnoId.value = especialidadSeleccionada.value
+  else especialidadTurnoId.value = null
 }
 
 function elegirMedico(m: Medico) {
   medicoSeleccionado.value = medicoSeleccionado.value?.id === m.id ? null : m
+  asignarEspecialidadPorDefecto()
 }
 
 function iniciales(m: Medico) {
@@ -116,7 +131,6 @@ const pasoActual = ref(1)
 
 const nombresPaso = ['Profesional', 'Fecha y hora', 'Revisar datos']
 
-// Una vez confirmada la reserva, todos los pasos quedan completos
 function pasoCompletado(n: number) {
   return turnoConfirmado.value || pasoActual.value > n
 }
@@ -132,7 +146,7 @@ function claseTextoPaso(n: number) {
 }
 
 function continuarAPaso2() {
-  if (!medicoSeleccionado.value) return
+  if (!medicoSeleccionado.value || !puedeContinuarPaso1.value) return
   pasoActual.value = 2
   cargarHorarios(medicoSeleccionado.value.id)
 }
@@ -311,11 +325,6 @@ function horaTexto(h: Horario) {
   return formatearHora(h.hora)
 }
 
-const resumenFechaHora = computed(() => {
-  if (diaSeleccionado.value === null || horaSeleccionada.value === null) return ''
-  return `${diaSeleccionado.value} de ${nombresMes[mesActual.value].toLowerCase()} - ${formatearHora(horaSeleccionada.value)}`
-})
-
 const fechaSeleccionadaTexto = computed(() => {
   if (diaSeleccionado.value === null) return ''
   const fecha = new Date(añoActual.value, mesActual.value, diaSeleccionado.value)
@@ -364,6 +373,7 @@ async function confirmarReserva() {
         medico_id: medicoSeleccionado.value.id,
         fecha_hora: fechaHoraISO.value,
         notas: motivoConsulta.value || null,
+        especialidad_id: especialidadTurnoId.value,
       }),
     })
     const data = await res.json()
@@ -449,7 +459,6 @@ async function confirmarReserva() {
     </div>
 
     <div class="h-screen overflow-hidden bg-linear-to-br from-blue-100 via-violet-100 to-blue-200 pt-[4.9rem] flex flex-col font-['Inter']">
-      <!-- Contenedor común: título, pasos y tarjeta comparten el mismo ancho y borde izquierdo -->
       <div class="flex-1 min-h-0 flex flex-col max-w-328 w-full mx-auto px-4 sm:px-8">
         <div class="flex items-start justify-between gap-4 pt-10 pb-6 shrink-0">
           <div v-if="turnoConfirmado">
@@ -461,7 +470,7 @@ async function confirmarReserva() {
           <div v-else>
             <div class="text-3xl font-semibold text-slate-900">Reservar turno</div>
             <p class="text-sm text-slate-500 mt-1.5">
-              Elegí la especialidad y el profesional con quien querés atenderte.
+              Encontrá a tu profesional y elegí el tipo de consulta que necesitás.
             </p>
           </div>
           <span class="text-sm font-medium text-sky-700 whitespace-nowrap"
@@ -487,97 +496,67 @@ async function confirmarReserva() {
 
         <div class="bg-white rounded-3xl shadow-[0_0.5rem_1.5rem_-0.25rem_rgba(34,66,105,0.11),0_0.125rem_0.375rem_0_rgba(34,66,105,0.06)] outline-1 -outline-offset-1 outline-slate-200 p-6 w-full mb-8 flex-1 min-h-0 flex flex-col gap-6">
           <Transition name="fade" mode="out-in">
-            <div v-if="pasoActual === 1" key="paso1" class="flex-1 min-h-0 flex flex-col gap-4">
-              <div class="flex-1 min-h-0 grid grid-cols-[1fr_22rem] gap-6">
-                <div class="min-h-0 flex flex-col gap-6">
-                  <span class="text-lg font-semibold text-slate-900 shrink-0"
-                    >1. Seleccioná un profesional</span
-                  >
+            <div v-if="pasoActual === 1" key="paso1" class="flex-1 min-h-0 flex flex-col gap-3">
+              <div class="shrink-0 flex items-center justify-between gap-4">
+                <span class="text-xl font-semibold text-slate-900">Elegí un profesional</span>
+                <span class="text-xs text-slate-500">{{ medicosFiltrados.length }} profesional{{ medicosFiltrados.length !== 1 ? 'es' : '' }} disponible{{ medicosFiltrados.length !== 1 ? 's' : '' }}</span>
+              </div>
 
-                  <div v-if="especialidadesDisponibles.length" class="flex flex-col gap-3 shrink-0">
-                    <span class="text-sm font-medium text-slate-900">Especialidad</span>
-                    <div class="flex flex-wrap gap-3">
-                      <button v-for="esp in especialidadesDisponibles" :key="esp.id_especialidad" @click="elegirEspecialidad(esp.id_especialidad)" class="h-11 px-4 rounded-xl text-sm font-medium cursor-pointer transition-colors" :class=" especialidadSeleccionada === esp.id_especialidad ? 'bg-sky-700 text-white' : 'bg-white outline-1 -outline-offset-1 outline-slate-200 text-sky-700 hover:bg-slate-50' ">
-                        {{ esp.nombre_especialidad }}
-                      </button>
-                    </div>
-                  </div>
+              <div class="shrink-0 flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <label class="flex-1 h-11 px-3 bg-slate-50 rounded-xl outline-1 -outline-offset-1 outline-slate-200 flex items-center gap-3">
+                  <svg style="width: 1.25rem; height: 1.25rem" class="shrink-0 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+                  <input v-model="busquedaMedico" type="text" placeholder="Buscá por nombre, apellido o especialidad" class="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-500 outline-none" />
+                </label>
+                <label class="relative sm:w-80 shrink-0">
+                  <select v-model="especialidadSeleccionada" class="w-full h-11 pl-3 pr-10 appearance-none bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-slate-900 cursor-pointer" @change="alCambiarFiltro">
+                    <option :value="null">Especialidad: Todas</option>
+                    <option v-for="esp in especialidadesDisponibles" :key="esp.id_especialidad" :value="esp.id_especialidad">Especialidad: {{ esp.nombre_especialidad }}</option>
+                  </select>
+                  <svg style="width: 1rem; height: 1rem" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                </label>
+              </div>
 
-                  <p v-if="cargandoMedicos" class="text-slate-400 text-sm">
-                    Cargando profesionales...
-                  </p>
-                  <p v-else-if="errorMedicos" class="text-red-500 text-sm">{{ errorMedicos }}</p>
-                  <p v-else-if="!medicosFiltrados.length" class="text-slate-400 text-sm">
-                    No hay profesionales disponibles para esta especialidad.
-                  </p>
+              <p v-if="cargandoMedicos" class="flex-1 text-sm text-slate-400">Cargando profesionales...</p>
+              <p v-else-if="errorMedicos" class="flex-1 text-sm text-red-500">{{ errorMedicos }}</p>
+              <p v-else-if="!medicosFiltrados.length" class="flex-1 text-sm text-slate-400">No encontramos profesionales con esos filtros.</p>
 
-                  <div v-else class="flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto">
-                    <button v-for="m in medicosFiltrados" :key="m.id" @click="elegirMedico(m)" class="shrink-0 flex items-center gap-4 px-5 py-4 rounded-2xl text-left cursor-pointer transition-colors" :class=" medicoSeleccionado?.id === m.id ? 'bg-blue-50 outline-1 -outline-offset-1 outline-sky-700' : 'bg-white outline-1 -outline-offset-1 outline-slate-200 hover:bg-slate-50' ">
-                      <div class="size-12 shrink-0 rounded-full bg-blue-100 text-sky-700 flex items-center justify-center text-sm font-medium">
-                        {{ iniciales(m) }}
-                      </div>
-                      <div class="flex-1 min-w-0">
-                        <div class="font-semibold text-slate-900 truncate">
-                          {{ m.nombre }} {{ m.apellido }}
-                        </div>
-                        <div class="text-sm text-slate-500 truncate">
-                          {{ especialidadesTexto(m) }}
-                        </div>
-                      </div>
-                      <div class="size-6 shrink-0 rounded-xl flex items-center justify-center transition-colors" :class=" medicoSeleccionado?.id === m.id ? 'bg-sky-700' : 'bg-white outline-1 -outline-offset-1 outline-slate-200' ">
-                        <svg v-if="medicoSeleccionado?.id === m.id" style="width: 0.875rem; height: 0.875rem" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M20 6 9 17l-5-5" />
-                        </svg>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="min-h-0 bg-slate-50 rounded-2xl p-6 flex flex-col gap-4 overflow-hidden">
-                  <span class="text-lg font-semibold text-slate-900 shrink-0">Tu reserva</span>
-
-                  <template v-if="medicoSeleccionado">
-                    <div class="flex items-center gap-3 shrink-0">
-                      <div class="size-11 shrink-0 rounded-full bg-blue-100 text-sky-700 flex items-center justify-center text-sm font-medium">
-                        {{ iniciales(medicoSeleccionado) }}
-                      </div>
-                      <div class="min-w-0">
-                        <div class="font-semibold text-slate-900 truncate">
-                          {{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}
-                        </div>
-                        <div class="text-sm text-slate-500 truncate">
-                          {{ especialidadesTexto(medicoSeleccionado) }}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="h-px bg-slate-200 shrink-0"></div>
-
-                    <div class="shrink-0">
-                      <div class="text-xs font-medium text-slate-400 tracking-wide">
-                        FECHA Y HORA
-                      </div>
-                      <div class="text-sm text-slate-500 mt-1">
-                        {{ resumenFechaHora || 'A elegir en el siguiente paso' }}
-                      </div>
-                    </div>
-                  </template>
-                  <p v-else class="text-sm text-slate-400">
-                    Seleccioná un profesional para continuar.
-                  </p>
+              <div v-else class="flex-1 min-h-0 overflow-y-auto">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <button v-for="m in medicosFiltrados" :key="m.id" class="h-18 px-3 rounded-xl flex items-center gap-3 text-left cursor-pointer transition-colors min-w-0" :class="medicoSeleccionado?.id === m.id ? 'bg-blue-50 outline-1 -outline-offset-1 outline-sky-700' : 'bg-white outline-1 -outline-offset-1 outline-slate-200 hover:bg-slate-50'" @click="elegirMedico(m)">
+                    <span class="size-9 shrink-0 rounded-2xl bg-blue-50 text-sky-700 text-xs font-semibold flex items-center justify-center">{{ iniciales(m) }}</span>
+                    <span class="flex-1 min-w-0 flex flex-col">
+                      <span class="text-base font-semibold text-slate-900 truncate">{{ m.nombre }} {{ m.apellido }}</span>
+                      <span class="text-xs text-slate-500 truncate">{{ m.especialidades.map((e) => e.nombre_especialidad).join(' · ') || 'Sin especialidad' }}</span>
+                      <span class="text-xs text-slate-500 truncate">{{ m.mail }}</span>
+                    </span>
+                    <span class="size-5 shrink-0 rounded-full flex items-center justify-center" :class="medicoSeleccionado?.id === m.id ? 'bg-sky-700' : 'bg-white outline-1 -outline-offset-1 outline-slate-300'">
+                      <svg v-if="medicoSeleccionado?.id === m.id" style="width: 0.75rem; height: 0.75rem" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                    </span>
+                  </button>
                 </div>
               </div>
 
-              <div class="flex items-center justify-between shrink-0">
-                <button @click="emit('ir-a-principal-usuario')" class="flex items-center gap-2 h-11 px-4 bg-white outline-1 -outline-offset-1 outline-slate-200 rounded-xl text-sm font-medium text-sky-700 cursor-pointer hover:bg-slate-50 transition-colors">
-                  <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5M12 19l-7-7 7-7" />
-                  </svg>
-                  Volver
-                </button>
-                <button @click="continuarAPaso2" class="h-11 px-5 rounded-xl bg-sky-700 text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed" :disabled="!medicoSeleccionado">
-                  Continuar
-                </button>
+
+              <div class="shrink-0 px-4 py-3 bg-blue-50 rounded-2xl flex flex-col gap-2.5">
+                <div class="flex items-center justify-between gap-4">
+                  <span class="text-lg font-semibold text-slate-900">Seleccioná el tipo de turno</span>
+                  <span v-if="medicoSeleccionado" class="text-xs text-slate-500 truncate">Con {{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}</span>
+                </div>
+                <div v-if="medicoSeleccionado && especialidadesDelMedico.length" class="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-3">
+                  <button v-for="esp in especialidadesDelMedico" :key="esp.id_especialidad" class="h-11 px-3 bg-white rounded-xl flex items-center gap-3 text-left cursor-pointer transition-colors min-w-0" :class="especialidadTurnoId === esp.id_especialidad ? 'outline-1 -outline-offset-1 outline-sky-700' : 'outline-1 -outline-offset-1 outline-slate-200 hover:bg-slate-50'" @click="especialidadTurnoId = esp.id_especialidad">
+                    <span class="size-5 shrink-0 rounded-full flex items-center justify-center" :class="especialidadTurnoId === esp.id_especialidad ? 'bg-sky-700' : 'bg-white outline-1 -outline-offset-1 outline-slate-300'">
+                      <svg v-if="especialidadTurnoId === esp.id_especialidad" style="width: 0.75rem; height: 0.75rem" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                    </span>
+                    <span class="text-sm font-semibold text-slate-900 truncate">{{ esp.nombre_especialidad }}</span>
+                  </button>
+                </div>
+                <p v-else-if="medicoSeleccionado" class="h-11 flex items-center text-sm text-slate-500">Este profesional todavía no cargó sus especialidades.</p>
+                <p v-else class="h-11 flex items-center text-sm text-slate-500">Elegí un profesional para ver los tipos de turno que atiende.</p>
+              </div>
+
+              <div class="shrink-0 flex items-center justify-between gap-4">
+                <button class="w-36 h-11 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-sky-700 cursor-pointer hover:bg-slate-50 transition-colors" @click="emit('ir-a-principal-usuario')">Volver</button>
+                <button class="w-52 h-11 rounded-xl bg-sky-700 text-white text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed" :disabled="!puedeContinuarPaso1" @click="continuarAPaso2">Continuar</button>
               </div>
             </div>
 
@@ -623,8 +602,7 @@ async function confirmarReserva() {
 
                 <div class="min-h-0 bg-slate-50 rounded-2xl p-6 flex flex-col gap-4 overflow-hidden">
                   <span class="text-lg font-semibold text-slate-900 shrink-0"
-                    >Horarios disponibles</span
-                  >
+                    >Horarios disponibles</span>
 
                   <template v-if="diaSeleccionado">
                     <div class="shrink-0">
@@ -633,7 +611,7 @@ async function confirmarReserva() {
                       </div>
                       <div v-if="medicoSeleccionado" class="text-sm text-slate-500 mt-1">
                         {{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }} ·
-                        {{ especialidadesTexto(medicoSeleccionado) }}
+                        {{ especialidadTurnoTexto }}
                       </div>
                     </div>
 
@@ -712,7 +690,7 @@ async function confirmarReserva() {
                         >Dr. {{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}</span
                       >
                       <span class="text-sm text-slate-500 truncate">{{
-                        especialidadesTexto(medicoSeleccionado)
+                        especialidadTurnoTexto
                       }}</span>
                       <span v-if="motivoConsulta" class="text-xs text-slate-500 line-clamp-2"
                         >Motivo: {{ motivoConsulta }}</span
@@ -778,7 +756,7 @@ async function confirmarReserva() {
                             {{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}
                           </div>
                           <div class="text-sm text-slate-500 truncate">
-                            {{ especialidadesTexto(medicoSeleccionado) }}
+                            {{ especialidadTurnoTexto }}
                           </div>
                         </div>
                       </div>

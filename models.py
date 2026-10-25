@@ -95,10 +95,12 @@ class Turno(Base):
     id_pacientes = Column(Integer, ForeignKey("pacientes.id"), nullable=False)
     id_medicos = Column(Integer, ForeignKey("medicos.id"), nullable=False)
     id_estado = Column(Integer, ForeignKey("estado_turno.id"), nullable=False)
+    id_especialidad = Column(Integer, ForeignKey("especialidad.id_especialidad"), nullable=True)
 
     paciente = relationship("Paciente", back_populates="turnos")
     medico = relationship("Medico", back_populates="turnos")
     estado = relationship("EstadoTurno", back_populates="turnos")
+    especialidad = relationship("Especialidad")
 
 
 class HorarioMedico(Base):

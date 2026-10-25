@@ -102,6 +102,7 @@ class TurnoCreate(BaseModel):
     medico_id: int
     fecha_hora: datetime.datetime
     notas: Optional[str] = None
+    especialidad_id: Optional[int] = None
 
 
 class EstadoTurnoResponse(BaseModel):
@@ -142,6 +143,7 @@ class TurnoResponse(BaseModel):
     estado: EstadoTurnoResponse
     paciente: PacienteBasico
     medico: MedicoBasico
+    especialidad: Optional[EspecialidadResponse] = None
 
     class Config:
         from_attributes = True

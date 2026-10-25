@@ -26,8 +26,18 @@ def solicitar_turno(
 ):
     paciente_id = int(user["sub"])
 
-    if not db.query(Medico).filter(Medico.id == data.medico_id, Medico.email_verificado == True).first():
+    medico = db.query(Medico).options(joinedload(Medico.especialidades)).filter(Medico.id == data.medico_id, Medico.email_verificado == True).first()
+    if not medico:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
+
+    ids_especialidades = [e.id_especialidad for e in medico.especialidades]
+    especialidad_id = data.especialidad_id
+    if especialidad_id is None and len(ids_especialidades) == 1:
+        especialidad_id = ids_especialidades[0]
+    if especialidad_id is None and len(ids_especialidades) > 1:
+        raise HTTPException(status_code=400, detail="Elegí el tipo de turno")
+    if especialidad_id is not None and especialidad_id not in ids_especialidades:
+        raise HTTPException(status_code=400, detail="El profesional no atiende esa especialidad")
 
     if data.fecha_hora <= datetime.now():
         raise HTTPException(status_code=400, detail="La fecha debe ser futura")
@@ -57,6 +67,7 @@ def solicitar_turno(
         fecha_hora=data.fecha_hora,
         notas=data.notas,
         id_estado=estado_pendiente.id,
+        id_especialidad=especialidad_id,
     )
     db.add(turno)
     db.flush()
@@ -71,7 +82,7 @@ def solicitar_turno(
     db.add(notificacion)
     db.commit()
     db.refresh(turno)
-    return db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades)).filter(Turno.id_turno == turno.id_turno).first()
+    return db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades), joinedload(Turno.especialidad)).filter(Turno.id_turno == turno.id_turno).first()
 
 
 @router.get("/mis-turnos", response_model=List[TurnoMedicoResponse])
@@ -79,7 +90,7 @@ def mis_turnos(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    query = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades))
+    query = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades), joinedload(Turno.especialidad))
 
     if user["tipo"] == "paciente":
         turnos = query.filter(Turno.id_pacientes == int(user["sub"])).order_by(Turno.fecha_hora).all()
@@ -94,7 +105,7 @@ def aceptar_turno(
     db: Session = Depends(get_db),
     user: dict = Depends(solo_medico),
 ):
-    turno = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades)).filter(Turno.id_turno == turno_id).first()
+    turno = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades), joinedload(Turno.especialidad)).filter(Turno.id_turno == turno_id).first()
     if not turno:
         raise HTTPException(status_code=404, detail="Turno no encontrado")
     if turno.id_medicos != int(user["sub"]):
@@ -120,7 +131,7 @@ def rechazar_turno(
     db: Session = Depends(get_db),
     user: dict = Depends(solo_medico),
 ):
-    turno = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades)).filter(Turno.id_turno == turno_id).first()
+    turno = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades), joinedload(Turno.especialidad)).filter(Turno.id_turno == turno_id).first()
     if not turno:
         raise HTTPException(status_code=404, detail="Turno no encontrado")
     if turno.id_medicos != int(user["sub"]):
@@ -146,7 +157,7 @@ def cancelar_turno(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    turno = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades)).filter(Turno.id_turno == turno_id).first()
+    turno = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades), joinedload(Turno.especialidad)).filter(Turno.id_turno == turno_id).first()
     if not turno:
         raise HTTPException(status_code=404, detail="Turno no encontrado")
 
@@ -189,7 +200,7 @@ def actualizar_notas_medico(
     db: Session = Depends(get_db),
     user: dict = Depends(solo_medico),
 ):
-    turno = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades)).filter(Turno.id_turno == turno_id).first()
+    turno = db.query(Turno).options(joinedload(Turno.estado), joinedload(Turno.paciente), joinedload(Turno.medico).joinedload(Medico.especialidades), joinedload(Turno.especialidad)).filter(Turno.id_turno == turno_id).first()
     if not turno:
         raise HTTPException(status_code=404, detail="Turno no encontrado")
     if turno.id_medicos != int(user["sub"]):
