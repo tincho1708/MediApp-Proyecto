@@ -314,7 +314,7 @@ function formatear(texto: string) {
     </div>
   </div>
 
-  <div class="h-screen overflow-hidden bg-linear-to-br from-blue-100 via-violet-100 to-blue-200 pt-[4.9rem] flex flex-col font-['Inter']">
+  <div class="h-screen overflow-hidden pt-[4.9rem] flex flex-col font-['Inter']">
     <div class="flex-1 min-h-0 max-w-328 w-full mx-auto px-16 py-10 flex flex-col gap-8">
       <div class="shrink-0">
         <div class="text-3xl font-semibold text-slate-900">MediBot</div>

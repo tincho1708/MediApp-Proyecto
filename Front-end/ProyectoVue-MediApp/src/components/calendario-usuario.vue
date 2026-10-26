@@ -299,7 +299,7 @@ function fechaLarga(d: Date) {
       </div>
     </div>
 
-    <div class="h-screen overflow-hidden bg-linear-to-br from-blue-100 via-violet-100 to-blue-200 pt-[4.9rem] flex flex-col font-['Inter']">
+    <div class="h-screen overflow-hidden pt-[4.9rem] flex flex-col font-['Inter']">
       <div class="flex items-start justify-between max-w-328 w-full mx-auto px-16 pt-10 pb-6 shrink-0">
         <div>
           <div class="text-3xl font-semibold text-slate-900">Mi calendario</div>
@@ -349,7 +349,7 @@ function fechaLarga(d: Date) {
             <div class="flex-1 min-h-0 grid grid-cols-7 grid-rows-6 gap-0.5">
               <div v-for="(celda, i) in celdas" :key="i" class="relative rounded-xl flex flex-col items-center justify-center gap-0.75 text-sm font-medium cursor-pointer transition-colors" :class=" celda.seleccionado ? 'bg-[#3D6FC2] text-white' : celda.otroMes ? 'text-slate-400 cursor-default' : 'text-slate-900 hover:bg-slate-100' " @click="seleccionarDia(celda)">
                 <span>{{ celda.dia }}</span>
-                <span v-if="celda.conTurno" class="w-[0.1875rem] h-[0.1875rem] rounded-full" :class="celda.seleccionado ? 'bg-white' : 'bg-[#3D6FC2]'"></span>
+                <span v-if="celda.conTurno" class="w-0.75 h-0.75 rounded-full" :class="celda.seleccionado ? 'bg-white' : 'bg-[#3D6FC2]'"></span>
               </div>
             </div>
           </div>

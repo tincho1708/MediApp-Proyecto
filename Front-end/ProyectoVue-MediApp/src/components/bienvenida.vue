@@ -112,7 +112,6 @@ async function iniciarSesionConGoogle() {
   position: relative;
   height: 100vh;
   overflow: hidden;
-  background: linear-gradient(135deg, #bfdbfe 0%, #ffffff 50%, #bfdbfe 100%);
 }
 
 .titulo {
@@ -246,50 +245,12 @@ async function iniciarSesionConGoogle() {
   text-decoration: underline;
 }
 
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #ffffff;
-  box-sizing: border-box;
-  padding: 0.5rem 1.5rem;
-  z-index: 100;
-}
-
-.navbar-logo {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-.navbar-logo img {
-  width: 5.775rem;
-  height: 5.775rem;
-}
-
-.navbar-logo span {
-  font-family: 'Lexend', sans-serif;
-  font-size: 2.425rem;
-  font-weight: 500;
-  background: linear-gradient(90deg, #204bac 0%, #1f6bc6 36%, #1f85db 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-left: -0.875rem;
-  margin-top: 0.4375rem;
-}
-
 nav.navbar .navbar-acciones {
   display: flex;
-  flex: none;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.75rem;
-  margin-left: auto;
+  gap: 1.55rem;
+  margin-right: 2rem;
 }
 
 .boton1 {
@@ -298,21 +259,23 @@ nav.navbar .navbar-acciones {
   font-weight: 500;
   background-color: white;
   border: 0.0625rem solid #d1d5db;
-  border-radius: 1.5625rem;
+  border-radius: 1rem;
   cursor: pointer;
   padding: 0.625rem 1.5rem;
   color: #000000;
+  width: 10.5rem;
 }
 .boton2 {
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   font-weight: 600;
-  background-color: #4a90e2;
+  background: linear-gradient(90deg, #008CFF 0%, #186FB7 100%);
   border: none;
-  border-radius: 1.5625rem;
+  border-radius: 1rem;
   cursor: pointer;
   padding: 0.625rem 1.5rem;
   color: #ffffff;
+  width: 10.5rem;
 }
 
 .boton1:hover,

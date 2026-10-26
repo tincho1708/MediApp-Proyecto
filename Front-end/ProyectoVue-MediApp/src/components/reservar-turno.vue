@@ -458,7 +458,7 @@ async function confirmarReserva() {
       </div>
     </div>
 
-    <div class="h-screen overflow-hidden bg-linear-to-br from-blue-100 via-violet-100 to-blue-200 pt-[4.9rem] flex flex-col font-['Inter']">
+    <div class="h-screen overflow-hidden pt-[4.9rem] flex flex-col font-['Inter']">
       <div class="flex-1 min-h-0 flex flex-col max-w-328 w-full mx-auto px-4 sm:px-8">
         <div class="flex items-start justify-between gap-4 pt-10 pb-6 shrink-0">
           <div v-if="turnoConfirmado">

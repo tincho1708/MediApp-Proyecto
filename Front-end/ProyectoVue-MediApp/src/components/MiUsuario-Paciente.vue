@@ -10,6 +10,7 @@ const emit = defineEmits([
   'ir-a-calendario-usuario',
   'ir-a-reservar-turno',
   'ir-a-notificaciones',
+  'ir-a-seguridad-usuario',
 ])
 const { conteoNoLeidas, usarPollingConteoNoLeidas } = useConteoNoLeidas()
 usarPollingConteoNoLeidas()
@@ -26,6 +27,16 @@ const form = ref({
   ciudad: '',
   codigoPostal: '',
 })
+
+const campos: { clave: keyof typeof form.value; label: string; placeholder: string; tipo?: string; completo?: boolean }[] = [
+  { clave: 'nombre', label: 'Nombre', placeholder: 'Ingresá tu nombre' },
+  { clave: 'apellido', label: 'Apellido', placeholder: 'Ingresá tu apellido' },
+  { clave: 'email', label: 'Correo electrónico', placeholder: 'nombre@ejemplo.com', tipo: 'email' },
+  { clave: 'telefono', label: 'Teléfono', placeholder: '+54 11 0000 0000', tipo: 'tel' },
+  { clave: 'direccion', label: 'Dirección', placeholder: 'Ingresá tu dirección', completo: true },
+  { clave: 'ciudad', label: 'Ciudad', placeholder: 'Ingresá tu ciudad' },
+  { clave: 'codigoPostal', label: 'Código postal', placeholder: 'Ingresá tu código postal' },
+]
 
 function cancelarCambios() {
   form.value = {
@@ -70,8 +81,7 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
           Profesionales<span class="campoo-indicador"></span>
         </button>
         <button class="campoo" @click="emit('ir-a-notificaciones')">
-          Notificaciones<span v-if="conteoNoLeidas > 0" class="campoo-punto"></span
-          ><span class="campoo-indicador"></span>
+          Notificaciones<span v-if="conteoNoLeidas > 0" class="campoo-punto"></span><span class="campoo-indicador"></span>
         </button>
       </div>
 
@@ -117,96 +127,72 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
       </div>
     </div>
 
-    <div class="titulo-pagina w-fit text-zinc-900 text-4xl font-bold font-['Inter'] pb-2 mb-6 border-b-2 border-black">
-      Mi usuario
+    <div class="titulo-pagina font-['Inter'] mb-6">
+      <div class="text-3xl font-semibold text-zinc-900">Configuración</div>
+      <div class="text-sm text-[#61718B] mt-2">Actualizá tus datos personales y administrá tu cuenta.</div>
     </div>
 
-    <div class="contenido-pagina flex gap-6 font-['Inter']">
-      <div class="w-64 bg-white rounded-2xl border border-sky-500 shadow-[0rem_0.25rem_1.25rem_0.125rem_rgba(0,0,0,0.15)] p-4 flex flex-col gap-1 shrink-0">
-        <div class="flex items-center gap-3 px-3 py-2 rounded-xl bg-sky-500 text-white">
+    <div class="contenido-pagina flex gap-6 font-['Inter'] text-sm font-medium">
+      <div class="w-60 bg-white rounded-3xl border border-[#D7E2F0] shadow-[0px_8px_24px_-4px_rgba(34,66,105,0.11)] p-5 flex flex-col gap-2 shrink-0 text-[#61718B]">
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-[#EDF5FF] text-[#176FB7]">
           <svg style="width: 1.125rem; height: 1.125rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="8" r="4" />
             <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
           </svg>
           Mi usuario
         </div>
-        <div class="flex items-center gap-3 px-3 py-2 rounded-xl text-black/70">
+        <button class="flex items-center gap-3 p-3 rounded-xl hover:bg-[#F8FAFC]" @click="emit('ir-a-seguridad-usuario')">
           <svg style="width: 1.125rem; height: 1.125rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
           </svg>
           Seguridad
-        </div>
-        <div class="flex items-center gap-3 px-3 py-2 rounded-xl text-black/70">
-          <svg style="width: 1.125rem; height: 1.125rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 0 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 0 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15Z" />
+        </button>
+        <div class="flex items-center gap-3 p-3 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2.5V4.16667M10 15.8333V17.5M2.5 10H4.16667M15.8333 10H17.5M4.66667 4.66667L5.83333 5.83333M14.1667 14.1667L15.3333 15.3333M4.66667 15.3333L5.83333 14.1667M14.1667 5.83333L15.3333 4.66667M13.3333 10C13.3333 10.8841 12.9821 11.7319 12.357 12.357C11.7319 12.9821 10.8841 13.3333 10 13.3333C9.11594 13.3333 8.2681 12.9821 7.64298 12.357C7.01786 11.7319 6.66667 10.8841 6.66667 10C6.66667 9.11594 7.01786 8.2681 7.64298 7.64298C8.2681 7.01786 9.11594 6.66667 10 6.66667C10.8841 6.66667 11.7319 7.01786 12.357 7.64298C12.9821 8.2681 13.3333 9.11594 13.3333 10Z" stroke-width="1.41667" stroke-linecap="round" stroke-linejoin="round" stroke="#61718B"/>
           </svg>
           Preferencias
         </div>
 
-        <div class="flex-1"></div>
-        <hr class="border-zinc-200 my-2" />
-        <button class="flex items-center gap-3 px-3 py-2 rounded-xl bg-red-100 text-red-500 font-medium" @click="emit('ir-a-bienvenida')">
+        <button class="mt-auto flex items-center gap-3 p-3 rounded-xl text-[#BE185D]" @click="emit('ir-a-bienvenida')">
           <svg style="width: 1.125rem; height: 1.125rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          Cerrar sesion
+          Cerrar sesión
         </button>
       </div>
 
-      <div class="flex-1 bg-white rounded-2xl border border-sky-500 shadow-[0rem_0.25rem_1.25rem_0.125rem_rgba(0,0,0,0.15)] p-8">
-        <div class="flex items-start gap-8">
-          <div class="flex flex-col items-center shrink-0">
-            <div class="w-28 h-28 rounded-full bg-zinc-100 border-2 border-sky-300 flex items-center justify-center">
-              <svg style="width: 3rem; height: 3rem" viewBox="0 0 24 24" fill="none" stroke="#7dd3fc" stroke-width="2">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
-              </svg>
+      <div class="flex-1 bg-white rounded-3xl border border-[#D7E2F0] shadow-[0px_8px_24px_-4px_rgba(34,66,105,0.11)] p-6 flex flex-col">
+        <div class="mb-4">
+          <div class="text-lg font-semibold text-zinc-900">Mi usuario</div>
+          <div class="text-sm text-[#61718B]">Tus datos de contacto y tu información personal.</div>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-row gap-4 items-center shrink-0">
+            <div class="w-14 h-14 rounded-3xl bg-[#EDF5FF] flex items-center justify-center">
+              <div class="text-lg font-semibold text-[#176FB7]">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
             </div>
-            <button class="mt-3 px-5 py-2 rounded-full bg-sky-500 text-white text-sm font-semibold">
+            <button class="w-36 h-11 rounded-xl border border-[#D7E2F0] bg-white text-[#176FB7] text-sm font-medium hover:bg-[#EDF5FF]">
               Cambiar foto
             </button>
           </div>
 
-          <div class="flex-1 grid grid-cols-2 gap-x-6 gap-y-4">
-            <div class="col-span-2">
-              <label class="block text-sm font-semibold text-black mb-1">Nombre</label>
-              <input v-model="form.nombre" type="text" placeholder="Ingresa tu nombre" class="w-full rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-2.5 text-zinc-700 placeholder-zinc-400" />
-            </div>
-            <div class="col-span-2">
-              <label class="block text-sm font-semibold text-black mb-1">Apellido</label>
-              <input v-model="form.apellido" type="text" placeholder="Ingresa tu apellido" class="w-full rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-2.5 text-zinc-700 placeholder-zinc-400" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-black mb-1">Correo electrónico</label>
-              <input v-model="form.email" type="email" placeholder="nombre@ejemplo.com" class="w-full rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-2.5 text-zinc-700 placeholder-zinc-400" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-black mb-1">Teléfono</label>
-              <input v-model="form.telefono" type="tel" placeholder="+54 11 0000 0000" class="w-full rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-2.5 text-zinc-700 placeholder-zinc-400" />
-            </div>
-            <div class="col-span-2">
-              <label class="block text-sm font-semibold text-black mb-1">Dirección</label>
-              <input v-model="form.direccion" type="text" placeholder="Ingresa tu dirección" class="w-full rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-2.5 text-zinc-700 placeholder-zinc-400" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-black mb-1">Ciudad</label>
-              <input v-model="form.ciudad" type="text" placeholder="Ingresa tu ciudad" class="w-full rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-2.5 text-zinc-700 placeholder-zinc-400" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-black mb-1">Código postal</label>
-              <input v-model="form.codigoPostal" type="text" placeholder="Ingresa tu código postal" class="w-full rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-2.5 text-zinc-700 placeholder-zinc-400" />
+          <div class="grid grid-cols-2 gap-x-6 gap-y-3">
+            <div v-for="campo in campos" :key="campo.clave" :class="{ 'col-span-2': campo.completo }">
+              <label class="block text-sm font-medium text-zinc-900 mb-1.5">{{ campo.label }}</label>
+              <input v-model="form[campo.clave]" :type="campo.tipo || 'text'" :placeholder="campo.placeholder" class="w-full h-11 rounded-xl bg-white border border-[#D7E2F0] px-4 text-sm text-zinc-900 placeholder-zinc-900 focus:outline-none focus:border-[#176FB7]" />
             </div>
           </div>
         </div>
 
-        <div class="flex justify-end gap-3 mt-8">
-          <button class="px-6 py-2.5 rounded-xl bg-zinc-100 text-zinc-700 font-medium hover:bg-zinc-200" @click="cancelarCambios">
+        <div class="flex justify-end gap-3 mt-auto pt-6">
+          <button class="w-32 h-11 rounded-xl border border-[#D7E2F0] bg-white text-[#176FB7] text-sm font-medium hover:bg-[#EDF5FF]" @click="cancelarCambios">
             Cancelar
           </button>
-          <button class="px-6 py-2.5 rounded-xl bg-sky-500 text-white font-semibold hover:bg-sky-600">
+          <button class="w-52 h-11 rounded-xl bg-[#4270B0] text-white text-sm font-medium hover:bg-[#365E96]">
             Guardar cambios
           </button>
         </div>
@@ -217,7 +203,7 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
 <style scoped>
 .titulo-pagina {
-  margin-top: 7.5rem;
+  margin-top: 6rem;
   margin-left: 2.5rem;
 }
 

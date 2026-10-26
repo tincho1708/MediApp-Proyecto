@@ -17,6 +17,7 @@ import ReservarTurno from './components/reservar-turno.vue'
 import Profesionales from './components/profesionales.vue'
 import MiUsuarioPaciente from './components/MiUsuario-Paciente.vue'
 import Notificaciones from './components/notificaciones.vue'
+import SeguridadUsuario from './components/seguridad-usuario.vue'
 import { useTurnosMedico } from '@/stores/turnosMedico'
 import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
 
@@ -91,7 +92,9 @@ function cerrarSesion() {
 
     <Profesionales v-else-if="vista === 'profesionales'" key="profesionales" @ir-a-bienvenida="cerrarSesion" @ir-a-principal-usuario="vista = 'principalUsuario'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-reservar-turno="irAReservarTurno" @ir-a-mi-usuario-paciente="vista = 'miUsuarioPaciente'" @ir-a-notificaciones="vista = 'notificaciones'" />
 
-    <MiUsuarioPaciente v-else-if="vista === 'miUsuarioPaciente'" key="miUsuarioPaciente" @ir-a-bienvenida="cerrarSesion" @ir-a-principal-usuario="vista = 'principalUsuario'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-reservar-turno="irAReservarTurno()" @ir-a-profesionales="vista = 'profesionales'" @ir-a-calendario-usuario="irACalendarioUsuario()" @ir-a-notificaciones="vista = 'notificaciones'" />
+    <MiUsuarioPaciente v-else-if="vista === 'miUsuarioPaciente'" key="miUsuarioPaciente" @ir-a-bienvenida="cerrarSesion" @ir-a-principal-usuario="vista = 'principalUsuario'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-reservar-turno="irAReservarTurno()" @ir-a-profesionales="vista = 'profesionales'" @ir-a-calendario-usuario="irACalendarioUsuario()" @ir-a-notificaciones="vista = 'notificaciones'" @ir-a-seguridad-usuario="vista = 'seguridadUsuario'" />
+
+    <SeguridadUsuario v-else-if="vista === 'seguridadUsuario'" key="seguridadUsuario" @ir-a-bienvenida="cerrarSesion" @ir-a-principal-usuario="vista = 'principalUsuario'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-reservar-turno="irAReservarTurno()" @ir-a-profesionales="vista = 'profesionales'" @ir-a-notificaciones="vista = 'notificaciones'" @ir-a-mi-usuario-paciente="vista = 'miUsuarioPaciente'" />
 
     <Notificaciones v-else-if="vista === 'notificaciones'" key="notificaciones" @ir-a-bienvenida="cerrarSesion" @ir-a-principal-usuario="vista = 'principalUsuario'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-reservar-turno="irAReservarTurno()" @ir-a-profesionales="vista = 'profesionales'" @ir-a-calendario-usuario="irACalendarioUsuario()" @ir-a-mi-usuario-paciente="vista = 'miUsuarioPaciente'" />
   </Transition>

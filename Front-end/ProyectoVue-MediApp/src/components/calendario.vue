@@ -206,7 +206,7 @@ async function guardarCambios() {
       </div>
     </div>
 
-    <div class="min-h-screen lg:h-screen lg:overflow-hidden bg-linear-to-br from-blue-100 via-violet-100 to-blue-200 pt-[4.9rem] flex flex-col font-['Inter']">
+    <div class="min-h-screen lg:h-screen lg:overflow-hidden pt-[4.9rem] flex flex-col font-['Inter']">
       <div class="flex-1 min-h-0 max-w-328 w-full mx-auto px-4 sm:px-8 pt-8 pb-6 flex flex-col gap-6">
         <div class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div v-if="turnoEditando">

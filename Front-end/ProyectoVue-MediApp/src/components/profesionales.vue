@@ -209,7 +209,7 @@ function solicitarTurno(m: Medico) {
       </div>
     </div>
 
-    <div class="min-h-screen bg-linear-to-br from-blue-100 via-violet-100 to-blue-200 pt-[4.9rem] font-['Inter']">
+    <div class="min-h-screen pt-[4.9rem] font-['Inter']">
       <div class="max-w-328 w-full mx-auto px-4 sm:px-8 pt-10 pb-12 flex flex-col gap-6">
         <div>
           <h1 class="text-3xl font-semibold text-slate-900">Encontrá a tu profesional</h1>
