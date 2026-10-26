@@ -19,6 +19,49 @@ const nombreUsuario = sesion.nombre || 'Usuario'
 
 const esta = ref(false)
 
+const passwords = ref({ actual: '', nueva: '', confirmar: '' })
+const campos: { clave: keyof typeof passwords.value; label: string; placeholder: string }[] = [
+  { clave: 'actual', label: 'Contraseña actual', placeholder: '••••••••••••' },
+  { clave: 'nueva', label: 'Nueva contraseña', placeholder: 'Ingresá tu nueva contraseña' },
+  { clave: 'confirmar', label: 'Confirmar nueva contraseña', placeholder: 'Repetí tu nueva contraseña' },
+]
+const mensaje = ref('')
+const error = ref(false)
+const guardando = ref(false)
+
+function cancelarCambios() {
+  passwords.value = { actual: '', nueva: '', confirmar: '' }
+  mensaje.value = ''
+}
+
+function mostrar(texto: string, esError: boolean) {
+  mensaje.value = texto
+  error.value = esError
+}
+
+async function actualizarPassword() {
+  const { actual, nueva, confirmar } = passwords.value
+  if (!actual || !nueva || !confirmar) return mostrar('Completá todos los campos.', true)
+  if (nueva !== confirmar) return mostrar('Las contraseñas nuevas no coinciden.', true)
+
+  guardando.value = true
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/pacientes/password`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sesion.token}` },
+      body: JSON.stringify({ password_actual: actual, password_nueva: nueva }),
+    })
+    const data = await res.json()
+    if (!res.ok) return mostrar(data.detail || 'No se pudo actualizar la contraseña.', true)
+    passwords.value = { actual: '', nueva: '', confirmar: '' }
+    mostrar(data.message, false)
+  } catch {
+    mostrar('No se pudo conectar con el servidor.', true)
+  } finally {
+    guardando.value = false
+  }
+}
+
 function cerrarAlClickFuera() {
   esta.value = false
 }
@@ -146,21 +189,19 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
             Cambiar contraseña
           </div>
 
-          <div v-for="campo in [
-            { label: 'Contraseña actual', placeholder: '••••••••••••' },
-            { label: 'Nueva contraseña', placeholder: 'Ingresá tu nueva contraseña' },
-            { label: 'Confirmar nueva contraseña', placeholder: 'Repetí tu nueva contraseña' },]" :key="campo.label">
+          <div v-for="campo in campos" :key="campo.clave">
             <label class="block text-sm font-medium text-zinc-900 mb-1.5">{{ campo.label }}</label>
-            <input type="password" :placeholder="campo.placeholder" class="w-full h-11 rounded-xl bg-white border border-[#D7E2F0] px-4 text-sm font-normal text-zinc-900 placeholder-zinc-900 focus:outline-none focus:border-[#176FB7]" />
+            <input v-model="passwords[campo.clave]" type="password" :placeholder="campo.placeholder" class="w-full h-11 rounded-xl bg-white border border-[#D7E2F0] px-4 text-sm font-normal text-zinc-900 placeholder-zinc-900 focus:outline-none focus:border-[#176FB7]" />
           </div>
         </div>
 
-        <div class="flex justify-end gap-3 mt-auto pt-6">
-          <button class="w-32 h-11 rounded-xl border border-[#D7E2F0] bg-white text-[#176FB7] text-sm font-medium hover:bg-[#EDF5FF]">
+        <div class="flex justify-end items-center gap-3 mt-auto pt-6">
+          <span v-if="mensaje" class="mr-auto text-sm" :class="error ? 'text-[#BE185D]' : 'text-green-600'">{{ mensaje }}</span>
+          <button class="w-32 h-11 rounded-xl border border-[#D7E2F0] bg-white text-[#176FB7] text-sm font-medium hover:bg-[#EDF5FF]" @click="cancelarCambios">
             Cancelar
           </button>
-          <button class="w-52 h-11 rounded-xl bg-[#4270B0] text-white text-sm font-medium hover:bg-[#365E96]">
-            Actualizar contraseña
+          <button class="w-52 h-11 rounded-xl bg-[#4270B0] text-white text-sm font-medium hover:bg-[#365E96] disabled:opacity-60" :disabled="guardando" @click="actualizarPassword">
+            {{ guardando ? 'Guardando...' : 'Actualizar contraseña' }}
           </button>
         </div>
       </div>

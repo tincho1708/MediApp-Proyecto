@@ -72,6 +72,11 @@ class PacienteLogin(BaseModel):
     password: str
 
 
+class CambiarPassword(BaseModel):
+    password_actual: str
+    password_nueva: str
+
+
 class PacienteResponse(BaseModel):
     id: int
     nombre: str

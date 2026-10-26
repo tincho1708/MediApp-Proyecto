@@ -6,9 +6,10 @@ import uuid
 
 from database import get_db
 from models import Paciente
-from schemas import PacienteRegister, PacienteLogin, PacienteResponse, Token, Message
+from schemas import PacienteRegister, PacienteLogin, PacienteResponse, Token, Message, CambiarPassword
 from auth_utils import hash_password, verify_password, create_access_token
 from email_utils import send_verification_email
+from deps import solo_paciente
 
 router = APIRouter(prefix="/auth/pacientes", tags=["Auth Pacientes"])
 
@@ -81,3 +82,18 @@ def login_paciente(data: PacienteLogin, db: Session = Depends(get_db)):
 
     token = create_access_token({"sub": str(paciente.id), "tipo": "paciente"})
     return {"access_token": token, "token_type": "bearer", "nombre": paciente.nombre}
+
+
+@router.put("/password", response_model=Message)
+def cambiar_password_paciente(data: CambiarPassword, user: dict = Depends(solo_paciente), db: Session = Depends(get_db)):
+    paciente = db.query(Paciente).filter(Paciente.id == int(user["sub"])).first()
+    if not paciente:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+    if not paciente.password_hash:
+        raise HTTPException(status_code=400, detail="Tu cuenta usa inicio de sesión con Google y no tiene contraseña")
+    if not verify_password(data.password_actual, paciente.password_hash):
+        raise HTTPException(status_code=400, detail="La contraseña actual es incorrecta")
+
+    paciente.password_hash = hash_password(data.password_nueva)
+    db.commit()
+    return {"message": "Contraseña actualizada correctamente"}
