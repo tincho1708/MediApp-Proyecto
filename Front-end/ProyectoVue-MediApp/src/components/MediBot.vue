@@ -365,7 +365,7 @@ function formatear(texto: string) {
           </div>
         </div>
 
-        <div class="flex-1 min-h-0 bg-white rounded-3xl shadow-[0_0.5rem_1.5rem_-0.25rem_rgba(34,66,105,0.11),0_0.125rem_0.375rem_0_rgba(34,66,105,0.06)] outline-1 -outline-offset-1 outline-slate-200 p-6 flex flex-col gap-4 min-h-0">
+        <div class="flex-1 bg-white rounded-3xl shadow-[0_0.5rem_1.5rem_-0.25rem_rgba(34,66,105,0.11),0_0.125rem_0.375rem_0_rgba(34,66,105,0.06)] outline-1 -outline-offset-1 outline-slate-200 p-6 flex flex-col gap-4 min-h-0">
           <div class="flex items-center gap-2 shrink-0">
             <svg style="width: 1.25rem; height: 1.25rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="text-[#3D6FC2]">
               <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" />
@@ -388,7 +388,7 @@ function formatear(texto: string) {
                   Escribí tu consulta o elegí una sugerencia para empezar.
                 </p>
               </div>
-              <div class="flex gap-3 w-full max-w-[54rem]">
+              <div class="flex gap-3 w-full max-w-216">
                 <button v-for="s in sugerencias" :key="s.titulo" class="flex-1 min-w-0 p-3 bg-slate-50 rounded-2xl outline-1 -outline-offset-1 outline-slate-200 text-left cursor-pointer hover:bg-slate-100 transition-colors" @click="enviar(s.desc)">
                   <div class="text-sm font-medium text-[#3D6FC2] truncate">{{ s.titulo }}</div>
                   <div class="text-xs text-slate-400 mt-1 line-clamp-2">{{ s.desc }}</div>

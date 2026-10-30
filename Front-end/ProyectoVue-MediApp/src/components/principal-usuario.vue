@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
+import { useMiStore } from '@/stores/useMiStore'
 
 const emit = defineEmits([
   'ir-a-profesionales',
@@ -69,6 +70,15 @@ async function cargarTurnos(silencioso = false) {
 }
 
 onMounted(() => cargarTurnos())
+
+const store = useMiStore()
+const textoDeEntrada = ref()
+const alHacerClick = (fechaHora: string) => {
+  textoDeEntrada.value = fechaHora
+  store.guardarVariable(textoDeEntrada.value)
+  console.log(textoDeEntrada.value)
+  emit('ir-a-calendario-usuario')
+}
 
 let intervaloTurnos: ReturnType<typeof setInterval> | undefined
 onMounted(() => {
@@ -321,7 +331,7 @@ const celdas = computed(() => {
             </p>
 
             <div v-else class="pu-lista-turnos">
-              <div v-for="t in proximosTurnos" :key="t.id_turno" class="pu-fila-turno" @click="emit('ir-a-calendario-usuario', t.fecha_hora)">
+              <div v-for="t in proximosTurnos" :key="t.id_turno" class="pu-fila-turno" @click="alHacerClick(t.fecha_hora)">
                 <div class="pu-fecha-badge">
                   <span class="pu-fecha-dia">{{ diaNumero(t.fecha_hora) }}</span>
                   <span class="pu-fecha-mes">{{ mesAbrev(t.fecha_hora) }}</span>
@@ -442,7 +452,7 @@ const celdas = computed(() => {
 
 <style scoped>
 .pu-contenido {
-  background-color: #eaf2fb;
+  background: linear-gradient(90deg, #9ac5f2 0%, #e7eef7 50%, #cae2f3 100%);
   min-height: 100vh;
   padding-top: 4.9rem;
 }

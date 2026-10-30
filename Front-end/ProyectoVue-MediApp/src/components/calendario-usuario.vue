@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
+import { useMiStore } from '@/stores/useMiStore'
+
+const store = useMiStore()
 
 const props = defineProps<{ fechaInicial?: string | null }>()
 const emit = defineEmits([
@@ -26,8 +29,11 @@ onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
 const hoy = new Date()
-// Si se llega desde un turno puntual, el calendario abre en ese día
-const fechaInicial = props.fechaInicial ? new Date(props.fechaInicial) : hoy
+
+const fechaGuardada = store.variable ?? props.fechaInicial
+const fechaInicial = fechaGuardada ? new Date(fechaGuardada) : hoy
+store.guardarVariable(null)
+
 const mesActual = ref(fechaInicial.getMonth())
 const añoActual = ref(fechaInicial.getFullYear())
 
