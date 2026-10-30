@@ -192,7 +192,7 @@ const turnosSeleccionado = computed(() => turnosAceptados.value.filter((t) => es
       </div>
     </div>
 
-    <div class="min-h-screen lg:h-screen lg:overflow-hidden pt-[4.9rem] flex flex-col font-['Inter']">
+    <div class="pm-contenido min-h-screen lg:h-screen lg:overflow-hidden pt-[4.9rem] flex flex-col font-['Inter']">
       <div class="max-w-328 w-full mx-auto px-4 sm:px-8 pt-10 pb-6 flex flex-col gap-8">
         <div class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -297,3 +297,9 @@ const turnosSeleccionado = computed(() => turnosAceptados.value.filter((t) => es
     </div>
   </div>
 </template>
+
+<style scoped>
+.pm-contenido {
+  background: linear-gradient(90deg, #9ac5f2 0%, #e7eef7 50%, #cae2f3 100%);
+}
+</style>
