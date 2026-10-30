@@ -309,7 +309,7 @@ async function guardarCambios() {
             <div class="shrink-0 flex flex-col gap-2">
               <p v-if="errorGuardar" class="text-sm text-red-600">{{ errorGuardar }}</p>
               <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-                <button class="sm:w-32 h-12 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-[#3D6FC2] cursor-pointer hover:bg-slate-50 transition-colors" @click="cerrarEdicion">Descartar cambios</button>
+                <button class="sm:w-44 h-12 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-[#3D6FC2] cursor-pointer hover:bg-slate-50 transition-colors" @click="cerrarEdicion">Descartar cambios</button>
                 <button class="sm:w-60 h-12 bg-[#3D6FC2] rounded-xl flex items-center justify-center gap-2 text-sm font-medium text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed" :disabled="guardando" @click="guardarCambios">
                   <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
                   {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
