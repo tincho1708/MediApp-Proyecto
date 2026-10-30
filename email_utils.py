@@ -18,7 +18,7 @@ def _send(to: str, subject: str, html: str):
     msg["To"] = to
     msg.attach(MIMEText(html, "html"))
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10, source_address=("0.0.0.0", 0)) as server:
         server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
         server.sendmail(GMAIL_USER, to, msg.as_string())
 
