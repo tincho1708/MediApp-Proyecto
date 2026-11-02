@@ -9,6 +9,7 @@ export type TurnoMedico = {
   id_pacientes: number
   id_medicos: number
   estado: { id: number; estado: string }
+  especialidad?: { id_especialidad: number; nombre_especialidad: string } | null
   paciente: { id: number; nombre: string; apellido: string; mail: string }
   medico: {
     id: number

@@ -505,6 +505,17 @@ const celdas = computed(() => {
   padding: 0 2.5rem 2.5rem;
 }
 
+.pu-columna-izquierda {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pu-columna-derecha {
+  min-width: 0;
+  display: flex;
+}
+
 .pu-tarjeta {
   background-color: #ffffff;
   border-radius: 1.25rem;
@@ -513,6 +524,7 @@ const celdas = computed(() => {
 }
 
 .pu-tarjeta-turnos {
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
@@ -543,7 +555,7 @@ const celdas = computed(() => {
 .pu-estado-turnos {
   color: #9ca3af;
   font-family: 'Inter', sans-serif;
-  height: 10.75rem;
+  flex: 1 0 10.75rem;
   padding-top: 0.5rem;
 }
 
@@ -555,7 +567,7 @@ const celdas = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  height: 10.75rem;
+  flex: 1 0 10.75rem;
   overflow-y: auto;
   padding-right: 0.25rem;
   scrollbar-width: thin;
@@ -706,11 +718,18 @@ const celdas = computed(() => {
   margin-bottom: 1rem;
 }
 
+.pu-calendario {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .pu-cal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 }
 
 .pu-cal-nav-btn {
@@ -739,6 +758,7 @@ const celdas = computed(() => {
 }
 
 .pu-cal-grid {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.25rem;
@@ -755,7 +775,7 @@ const celdas = computed(() => {
 
 .pu-cal-dia {
   position: relative;
-  padding: 0.5rem 0;
+  padding: 0.3rem 0;
   font-family: 'Inter', sans-serif;
   font-size: 0.85rem;
   color: #334155;

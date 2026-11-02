@@ -16,41 +16,14 @@ function cerrarAlClickFuera() {
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
-const { turnos, usarPollingTurnos } = useTurnosMedico()
-
-usarPollingTurnos()
-
 const nombresMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-
 const hoy = new Date()
 
 function esMismoDia(fechaHora: string | Date, dia: Date) {
   const f = new Date(fechaHora)
   return f.getFullYear() === dia.getFullYear() && f.getMonth() === dia.getMonth() && f.getDate() === dia.getDate()
 }
-
-function ordenarPorFecha(lista: TurnoMedico[]) {
-  return [...lista].sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
-}
-
-function yaPaso(t: TurnoMedico) {
-  return new Date(t.fecha_hora).getTime() < Date.now()
-}
-
-const turnosAceptados = computed(() => turnos.value.filter((t) => t.estado?.estado === 'aceptado'))
-
-const turnosHoy = computed(() => ordenarPorFecha(turnosAceptados.value.filter((t) => esMismoDia(t.fecha_hora, hoy))))
-
-const turnosHoyPendientes = computed(() => turnosHoy.value.filter((t) => !yaPaso(t)).length)
-
-const progresoHoy = computed(() => (turnosHoy.value.length ? ((turnosHoy.value.length - turnosHoyPendientes.value) / turnosHoy.value.length) * 100 : 0))
-
-const proximosTurnos = computed(() => ordenarPorFecha(turnosAceptados.value.filter((t) => !yaPaso(t))).slice(0, 3))
-
-const proximoTurno = computed(() => proximosTurnos.value[0] ?? null)
-
-const agenda = computed(() => (turnosHoy.value.length ? turnosHoy.value : proximosTurnos.value))
 
 function formatearHora(fechaHora: string) {
   const f = new Date(fechaHora)
@@ -67,11 +40,30 @@ function fechaCorta(d: Date) {
   return `${nombresDia[d.getDay()]} ${d.getDate()} de ${nombresMes[d.getMonth()].toLowerCase()}`
 }
 
+const { turnos, usarPollingTurnos } = useTurnosMedico()
+usarPollingTurnos()
+
+const coloresTurno = ['bg-indigo-500', 'bg-teal-600', 'bg-blue-400']
+
 function nombrePaciente(t: TurnoMedico) {
   return `${t.paciente.nombre} ${t.paciente.apellido}`
 }
 
-const coloresTurno = ['bg-indigo-500', 'bg-teal-600', 'bg-blue-400']
+function ordenarPorFecha(lista: TurnoMedico[]) {
+  return [...lista].sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
+}
+
+function yaPaso(t: TurnoMedico) {
+  return new Date(t.fecha_hora).getTime() < Date.now()
+}
+
+const turnosAceptados = computed(() => turnos.value.filter((t) => t.estado?.estado === 'aceptado'))
+const turnosHoy = computed(() => ordenarPorFecha(turnosAceptados.value.filter((t) => esMismoDia(t.fecha_hora, hoy))))
+const turnosHoyPendientes = computed(() => turnosHoy.value.filter((t) => !yaPaso(t)).length)
+const progresoHoy = computed(() => (turnosHoy.value.length ? ((turnosHoy.value.length - turnosHoyPendientes.value) / turnosHoy.value.length) * 100 : 0))
+const proximosTurnos = computed(() => ordenarPorFecha(turnosAceptados.value.filter((t) => !yaPaso(t))).slice(0, 3))
+const proximoTurno = computed(() => proximosTurnos.value[0] ?? null)
+const agenda = computed(() => (turnosHoy.value.length ? turnosHoy.value : proximosTurnos.value))
 
 const mesActual = ref(hoy.getMonth())
 const añoActual = ref(hoy.getFullYear())
@@ -130,6 +122,58 @@ function seleccionarDia(fecha?: Date) {
 }
 
 const turnosSeleccionado = computed(() => turnosAceptados.value.filter((t) => esMismoDia(t.fecha_hora, seleccionado.value)).length)
+
+const UNA_HORA = 60 * 60 * 1000
+const CINCO_DIAS = 5 * 24 * UNA_HORA
+const CLAVE_FICHAS_CERRADAS = 'fichasCerradas'
+
+const ahora = ref(Date.now())
+let intervaloAhora: ReturnType<typeof setInterval> | undefined
+
+onMounted(() => {
+  intervaloAhora = setInterval(() => (ahora.value = Date.now()), 30000)
+})
+onBeforeUnmount(() => {
+  if (intervaloAhora !== undefined) clearInterval(intervaloAhora)
+})
+
+const fichasCerradas = ref<number[]>(JSON.parse(localStorage.getItem(CLAVE_FICHAS_CERRADAS) || '[]'))
+const fichasPospuestas = ref<number[]>([])
+
+function turnoTerminado(t: TurnoMedico) {
+  const fin = new Date(t.fecha_hora).getTime() + UNA_HORA
+  return t.estado?.estado === 'aceptado' && fin <= ahora.value && ahora.value - fin <= CINCO_DIAS
+}
+
+const turnoPopup = computed(() =>
+  ordenarPorFecha(turnos.value.filter(turnoTerminado))
+    .reverse()
+    .find((t) => !fichasCerradas.value.includes(t.id_turno) && !fichasPospuestas.value.includes(t.id_turno)) ?? null,
+)
+
+function inicialesPaciente(t: TurnoMedico) {
+  return `${t.paciente.nombre.charAt(0)}${t.paciente.apellido.charAt(0)}`.toUpperCase()
+}
+
+function especialidadTurno(t: TurnoMedico) {
+  const especialidad = t.especialidad?.nombre_especialidad
+  return especialidad ? especialidad.charAt(0).toUpperCase() + especialidad.slice(1).toLowerCase() : 'Consulta'
+}
+
+function fechaLarga(fechaHora: string) {
+  const f = new Date(fechaHora)
+  return `${f.getDate()} de ${nombresMes[f.getMonth()].toLowerCase()} de ${f.getFullYear()}`
+}
+
+function cerrarFicha() {
+  if (!turnoPopup.value) return
+  fichasCerradas.value.push(turnoPopup.value.id_turno)
+  localStorage.setItem(CLAVE_FICHAS_CERRADAS, JSON.stringify(fichasCerradas.value))
+}
+
+function posponerFicha() {
+  if (turnoPopup.value) fichasPospuestas.value.push(turnoPopup.value.id_turno)
+}
 </script>
 
 <template>
@@ -192,8 +236,61 @@ const turnosSeleccionado = computed(() => turnosAceptados.value.filter((t) => es
       </div>
     </div>
 
-    <div class="pm-contenido min-h-screen lg:h-screen lg:overflow-hidden pt-[4.9rem] flex flex-col font-['Inter']">
-      <div class="max-w-328 w-full mx-auto px-4 sm:px-8 pt-10 pb-6 flex flex-col gap-8">
+    <div v-if="turnoPopup" class="fixed inset-0 z-200 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-['Inter']" @click.self="posponerFicha">
+      <div :key="turnoPopup.id_turno" class="relative w-147.5 h-144.5 bg-white rounded-3xl shadow-[0_0.75rem_2rem_-0.5rem_rgba(20,51,87,0.1)] p-6">
+        <button type="button" aria-label="Cerrar" class="absolute top-6 right-6 size-8 rounded-xl bg-[#F4F7FB] text-[#176FB7] flex items-center justify-center cursor-pointer hover:bg-[#EDF5FF] transition-colors" @click="cerrarFicha">
+          <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
+
+        <div class="w-full h-full flex flex-col gap-4">
+          <div class="flex flex-col gap-0.5">
+            <div class="text-[#176FB7] text-[0.625rem] font-semibold leading-5">FICHA MÉDICA PENDIENTE</div>
+            <div class="text-zinc-900 text-xl font-semibold leading-8">Completá la ficha del turno</div>
+            <div class="text-[#61718B] text-[0.825rem] font-normal leading-5">Retomá el registro de tu última consulta.</div>
+          </div>
+          <div class="w-full h-20 px-4 bg-[#EDF5FF] rounded-xl flex items-center gap-4">
+            <div class="size-11 shrink-0 bg-white rounded-3xl flex justify-center items-center">
+              <div class="text-[#176FB7] text-base font-semibold leading-5">{{ inicialesPaciente(turnoPopup) }}</div>
+            </div>
+            <div class="flex-1 min-w-0 flex flex-col gap-1">
+              <div class="text-zinc-900 text-base font-semibold leading-5 truncate">{{ nombrePaciente(turnoPopup) }}</div>
+              <div class="text-[#61718B] text-[0.625rem] font-normal leading-5 truncate">{{ especialidadTurno(turnoPopup) }}</div>
+            </div>
+            <div class="shrink-0 flex flex-col gap-1 mr-15">
+              <div class="text-zinc-900 text-[0.825rem] font-semibold leading-5">{{ fechaLarga(turnoPopup.fecha_hora) }}</div>
+              <div class="text-[#61718B] text-[0.725rem] font-normal leading-5">{{ formatearHora(turnoPopup.fecha_hora) }} · Turno finalizado</div>
+            </div>
+          </div>
+
+          <form class="flex-1 min-h-0 flex flex-col gap-4" @submit.prevent="cerrarFicha">
+            <div class="flex-1 min-h-0 flex flex-col gap-2">
+              <div class="flex justify-between items-center">
+                <label for="ficha" class="text-[#182234] text-[0.95rem] font-semibold leading-5">Escribir ficha médica</label>
+                <span class="text-[#61718B] text-[0.725rem] font-normal leading-5">Solo para el profesional</span>
+              </div>
+              <textarea id="ficha" name="ficha" placeholder="Escribí la evolución de la consulta, observaciones e indicaciones para el seguimiento del paciente…" class="flex-1 min-h-0 w-full p-3 rounded-xl bg-white border border-[#D7E2F0] text-sm text-zinc-900 placeholder:text-xs placeholder:text-[#61718B] resize-none focus:outline-none focus:border-[#176FB7]"></textarea>
+            </div>
+            <label class="relative w-full h-20 shrink-0 px-5 bg-[#F4F7FB] rounded-xl border border-dashed border-[#D7E2F0] flex items-center gap-4 cursor-pointer">
+              <input type="file" name="archivo" accept=".pdf,.jpg,.jpeg,.png" class="absolute inset-0 opacity-0 cursor-pointer" />
+              <svg class="shrink-0 text-[#176FB7]" style="width: 1.5rem; height: 1.5rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+              <div class="flex-1 min-w-0 flex flex-col gap-1">
+                <span class="text-zinc-900 text-[0.95rem] font-semibold leading-5 truncate">O subí una ficha ya preparada</span>
+                <span class="text-[#61718B] text-xs font-normal leading-5 truncate">Arrastrá un archivo PDF, JPG o PNG · Hasta 10 MB</span>
+              </div>
+              <span class="shrink-0 text-[#176FB7] text-sm font-medium">Elegir archivo</span>
+            </label>
+            <div class="shrink-0 flex justify-between gap-3">
+              <button type="button" class="w-44 h-11 rounded-xl bg-[#F4F7FB] text-[#176FB7] text-sm font-medium cursor-pointer hover:bg-[#EDF5FF] transition-colors" @click="posponerFicha">Completar después</button>
+              <button type="submit" class="w-52 h-11 rounded-xl bg-[#4270B0] text-white text-sm font-medium cursor-pointer hover:bg-[#365E96] transition-colors">Guardar ficha médica</button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="pm-contenido min-h-screen pt-[4.9rem] flex flex-col font-['Inter']">
+      <div class="max-w-328 w-full mx-auto px-4 sm:px-8 pt-10 pb-10 flex flex-col gap-6">
         <div class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 class="text-4xl font-semibold text-gray-800">Bienvenido, {{ nombreUsuario }}</h1>
@@ -265,7 +362,7 @@ const turnosSeleccionado = computed(() => turnosAceptados.value.filter((t) => es
             </div>
           </div>
 
-          <div class="bg-white rounded-3xl shadow-[0_0.75rem_2rem_-0.5rem_rgba(20,51,87,0.1)] p-7 flex flex-col gap-4">
+          <div class="bg-white rounded-3xl shadow-[0_0.75rem_2rem_-0.5rem_rgba(20,51,87,0.1)] p-6 flex flex-col gap-4">
             <div class="shrink-0 flex items-center justify-between">
               <span class="text-2xl font-semibold text-gray-800">{{ nombresMes[mesActual] }} {{ añoActual }}</span>
               <div class="flex gap-2">
@@ -279,7 +376,7 @@ const turnosSeleccionado = computed(() => turnosAceptados.value.filter((t) => es
             </div>
 
             <div class="grid grid-cols-7 gap-y-1">
-              <button v-for="(celda, i) in celdas" :key="i" class="h-10 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-base transition-colors" :class="celda.otroMes ? 'text-gray-400 cursor-default' : celda.seleccionado ? 'bg-sky-700 text-white font-semibold' : celda.hoy ? 'text-sky-700 font-semibold hover:bg-slate-100 cursor-pointer' : 'text-gray-800 hover:bg-slate-100 cursor-pointer'" :disabled="celda.otroMes" @click="seleccionarDia(celda.fecha)">
+              <button v-for="(celda, i) in celdas" :key="i" class="h-8 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-base transition-colors" :class="celda.otroMes ? 'text-gray-400 cursor-default' : celda.seleccionado ? 'bg-sky-700 text-white font-semibold' : celda.hoy ? 'text-sky-700 font-semibold hover:bg-slate-100 cursor-pointer' : 'text-gray-800 hover:bg-slate-100 cursor-pointer'" :disabled="celda.otroMes" @click="seleccionarDia(celda.fecha)">
                 {{ celda.dia }}
                 <span class="size-1 rounded-full" :class="celda.conTurno ? (celda.seleccionado ? 'bg-white' : 'bg-sky-700') : 'bg-transparent'"></span>
               </button>
