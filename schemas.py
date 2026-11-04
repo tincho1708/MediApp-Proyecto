@@ -174,15 +174,10 @@ class NotificacionResponse(BaseModel):
         from_attributes = True
 
 
-class DevolucionCreate(BaseModel):
-    id_paciente: int
-    contenido: str
-    id_turno: Optional[int] = None
-
-
 class DevolucionResponse(BaseModel):
     id: int
-    contenido: str
+    contenido: Optional[str]
+    archivo_nombre: Optional[str]
     fecha: datetime.datetime
     leida: bool
     id_medico: int

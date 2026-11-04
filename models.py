@@ -1,5 +1,5 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table, Text, Float
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, LargeBinary, String, Table, Text, Float
+from sqlalchemy.orm import deferred, relationship
 from database import Base
 import datetime
 
@@ -177,7 +177,10 @@ class Devolucion(Base):
     id_medico = Column(Integer, ForeignKey("medicos.id"), nullable=False)
     id_paciente = Column(Integer, ForeignKey("pacientes.id"), nullable=False)
     id_turno = Column(Integer, ForeignKey("turno.id_turno"), nullable=True)
-    contenido = Column(Text, nullable=False)
+    contenido = Column(Text, nullable=True)
+    archivo_nombre = Column(String(255), nullable=True)
+    archivo_tipo = Column(String(100), nullable=True)
+    archivo_datos = deferred(Column(LargeBinary, nullable=True))
     fecha = Column(DateTime, default=datetime.datetime.utcnow)
     leida = Column(Boolean, default=False)
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
 
 const emit = defineEmits([
@@ -33,27 +33,43 @@ type Medico = {
   mail: string
   especialidades: Especialidad[]
 }
-type Turno = { id_medicos: number; fecha_hora: string; estado: { estado: string } }
-type Horario = { dia_semana: number; hora: number }
+type Turno = {
+  id_turno: number
+  id_medicos: number
+  fecha_hora: string
+  estado: { estado: string }
+  especialidad?: Especialidad | null
+}
+type Devolucion = {
+  id: number
+  id_turno: number | null
+  contenido: string | null
+  archivo_nombre: string | null
+  fecha: string
+}
 
 // ---- Carga de datos ----
 const medicos = ref<Medico[]>([])
 const especialidades = ref<Especialidad[]>([])
 const misTurnos = ref<Turno[]>([])
+const misDevoluciones = ref<Devolucion[]>([])
 const cargando = ref(true)
 const error = ref('')
 
 async function cargarDatos() {
+  const headers = { Authorization: `Bearer ${sesion.token}` }
   try {
-    const [resMedicos, resEspecialidades, resTurnos] = await Promise.all([
+    const [resMedicos, resEspecialidades, resTurnos, resDevoluciones] = await Promise.all([
       fetch(`${API}/medicos`),
       fetch(`${API}/especialidades`),
-      fetch(`${API}/turnos/mis-turnos`, { headers: { Authorization: `Bearer ${sesion.token}` } }),
+      fetch(`${API}/turnos/mis-turnos`, { headers }),
+      fetch(`${API}/devoluciones/mis-devoluciones`, { headers }),
     ])
     if (!resMedicos.ok) throw new Error()
     medicos.value = await resMedicos.json()
     if (resEspecialidades.ok) especialidades.value = await resEspecialidades.json()
     if (resTurnos.ok) misTurnos.value = await resTurnos.json()
+    if (resDevoluciones.ok) misDevoluciones.value = await resDevoluciones.json()
   } catch {
     error.value = 'No se pudieron cargar los profesionales. Intentá de nuevo más tarde.'
   } finally {
@@ -97,38 +113,41 @@ const misMedicos = computed(() =>
 )
 const todosFiltrados = computed(() => medicos.value.filter(coincide))
 
-// ---- Perfil ----
-const nombresDia = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+const POR_PAGINA_MIS_MEDICOS = 4
+const POR_PAGINA_DIRECTORIO = 12
 
-const perfil = ref<Medico | null>(null)
-const horariosPerfil = ref<Horario[]>([])
-const cargandoHorarios = ref(false)
+const paginaMisMedicos = ref(1)
+const paginaDirectorio = ref(1)
 
-async function verPerfil(m: Medico) {
-  perfil.value = m
-  horariosPerfil.value = []
-  cargandoHorarios.value = true
-  try {
-    const res = await fetch(`${API}/medicos/${m.id}/horarios`)
-    if (res.ok) horariosPerfil.value = await res.json()
-  } finally {
-    cargandoHorarios.value = false
-  }
-}
+const totalPaginasMisMedicos = computed(() => Math.ceil(misMedicos.value.length / POR_PAGINA_MIS_MEDICOS))
+const totalPaginasDirectorio = computed(() => Math.ceil(todosFiltrados.value.length / POR_PAGINA_DIRECTORIO))
 
-const diasAtencion = computed(() => {
-  const porDia = new Map<number, number[]>()
-  for (const h of horariosPerfil.value) {
-    porDia.set(h.dia_semana, [...(porDia.get(h.dia_semana) ?? []), h.hora])
-  }
-  const pad = (n: number) => `${String(n).padStart(2, '0')}:00`
-  return [...porDia.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([dia, horas]) => ({
-      dia: nombresDia[dia],
-      rango: `${pad(Math.min(...horas))} – ${pad(Math.max(...horas) + 1)}`,
-    }))
+const misMedicosPagina = computed(() => {
+  const inicio = (paginaMisMedicos.value - 1) * POR_PAGINA_MIS_MEDICOS
+  return misMedicos.value.slice(inicio, inicio + POR_PAGINA_MIS_MEDICOS)
 })
+const directorioPagina = computed(() => {
+  const inicio = (paginaDirectorio.value - 1) * POR_PAGINA_DIRECTORIO
+  return todosFiltrados.value.slice(inicio, inicio + POR_PAGINA_DIRECTORIO)
+})
+
+const primeroDirectorio = computed(() => (paginaDirectorio.value - 1) * POR_PAGINA_DIRECTORIO + 1)
+const ultimoDirectorio = computed(() => primeroDirectorio.value + directorioPagina.value.length - 1)
+
+watch([busqueda, especialidadId], () => {
+  paginaMisMedicos.value = 1
+  paginaDirectorio.value = 1
+})
+
+// ---- Perfil ----
+const perfil = ref<Medico | null>(null)
+
+function verPerfil(m: Medico) {
+  perfil.value = m
+  busquedaFichas.value = ''
+  errorDescarga.value = ''
+  fichaAbierta.value = null
+}
 
 function iniciales(m: Medico) {
   return `${m.nombre.charAt(0)}${m.apellido.charAt(0)}`.toUpperCase()
@@ -139,9 +158,93 @@ function especialidadesTexto(m: Medico) {
 function solicitarTurno(m: Medico) {
   emit('ir-a-reservar-turno', m.id)
 }
+
+// ---- Pop up: turnos y fichas del médico ----
+const nombresMes = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+
+const busquedaFichas = ref('')
+const fichaAbierta = ref<number | null>(null)
+const errorDescarga = ref('')
+
+const dosDigitos = (n: number) => String(n).padStart(2, '0')
+
+function fechaNumerica(fecha: Date) {
+  return `${dosDigitos(fecha.getDate())}/${dosDigitos(fecha.getMonth() + 1)}/${fecha.getFullYear()}`
+}
+function fechaLarga(fecha: Date) {
+  return `${fecha.getDate()} de ${nombresMes[fecha.getMonth()]} de ${fecha.getFullYear()}`
+}
+function hora(fecha: Date) {
+  return `${dosDigitos(fecha.getHours())}:${dosDigitos(fecha.getMinutes())}`
+}
+function nombreEspecialidad(t: Turno) {
+  return t.especialidad?.nombre_especialidad ?? (perfil.value ? especialidadesTexto(perfil.value) : '')
+}
+function fechaCompartida(d: Devolucion) {
+  return fechaNumerica(new Date(`${d.fecha}Z`))
+}
+function tipoFicha(d: Devolucion) {
+  if (d.contenido && d.archivo_nombre) return 'Ficha escrita y archivo'
+  return d.archivo_nombre ? 'Ficha adjunta' : 'Ficha escrita'
+}
+
+const turnosDelPerfil = computed(() => misTurnos.value.filter((t) => t.id_medicos === perfil.value?.id && t.estado.estado === 'aceptado'))
+
+const fichasPerfil = computed(() =>
+  turnosDelPerfil.value
+    .filter((t) => new Date(t.fecha_hora).getTime() < Date.now())
+    .sort((a, b) => new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime())
+    .map((turno) => ({
+      turno,
+      fecha: new Date(turno.fecha_hora),
+      devolucion: misDevoluciones.value.find((d) => d.id_turno === turno.id_turno) ?? null,
+    })),
+)
+
+const fichasFiltradas = computed(() => {
+  const texto = busquedaFichas.value.trim().toLowerCase()
+  if (!texto) return fichasPerfil.value
+  return fichasPerfil.value.filter(({ turno, fecha, devolucion }) =>
+    [fechaNumerica(fecha), fechaLarga(fecha), nombreEspecialidad(turno), devolucion?.contenido ?? '', devolucion?.archivo_nombre ?? '']
+      .some((valor) => valor.toLowerCase().includes(texto)),
+  )
+})
+
+const cantidadFichas = computed(() => fichasPerfil.value.filter((f) => f.devolucion).length)
+
+const proximoTurno = computed(() => {
+  const proximos = turnosDelPerfil.value
+    .filter((t) => new Date(t.fecha_hora).getTime() >= Date.now())
+    .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime())
+  return proximos[0] ?? null
+})
+
+function alternarFicha(idTurno: number) {
+  fichaAbierta.value = fichaAbierta.value === idTurno ? null : idTurno
+}
+
+async function descargarArchivo(d: Devolucion) {
+  errorDescarga.value = ''
+  try {
+    const res = await fetch(`${API}/devoluciones/${d.id}/archivo`, {
+      headers: { Authorization: `Bearer ${sesion.token}` },
+    })
+    if (!res.ok) throw new Error()
+
+    const url = URL.createObjectURL(await res.blob())
+    const enlace = document.createElement('a')
+    enlace.href = url
+    enlace.download = d.archivo_nombre ?? 'ficha'
+    enlace.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    errorDescarga.value = 'No se pudo descargar el archivo. Intentá de nuevo.'
+  }
+}
 </script>
 
 <template>
+
   <div>
     <div class="navbar">
       <button @click="emit('ir-a-principal-usuario')">
@@ -209,164 +312,264 @@ function solicitarTurno(m: Medico) {
       </div>
     </div>
 
-    <div class="min-h-screen pt-[4.9rem] font-['Inter']">
-      <div class="max-w-328 w-full mx-auto px-4 sm:px-8 pt-10 pb-12 flex flex-col gap-6">
+    <div v-show="!perfil" class="min-h-screen pt-[4.9rem] font-['Inter']">
+      <div class="w-full px-4 sm:px-16 pt-10 pb-10 flex flex-col gap-5">
         <div>
-          <h1 class="text-3xl font-semibold text-slate-900">Encontrá a tu profesional</h1>
-          <p class="text-sm text-slate-500 mt-2">
-            Buscá por nombre o especialidad y solicitá tu próximo turno.
-          </p>
+          <h1 class="text-3xl font-semibold text-[#182234]">Profesionales</h1>
+          <p class="text-sm text-[#61718B] mt-1">Tus médicos y nuevas opciones de atención, en un mismo lugar.</p>
         </div>
 
-        <!-- Buscador -->
-        <div class="tarjeta p-4 sm:px-6 sm:py-7 flex flex-col sm:flex-row gap-3">
-          <label class="flex-1 h-11 px-3 bg-slate-50 rounded-xl flex items-center gap-3">
-            <svg style="width: 1.25rem; height: 1.25rem" class="text-slate-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.5-3.5" />
-            </svg>
-            <input v-model="busqueda" type="text" placeholder="Buscar por nombre o especialidad" class="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-500 outline-none" />
-          </label>
-          <select v-model="especialidadId" class="sm:w-64 h-11 px-4 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-[#3D6FC2] cursor-pointer">
-            <option :value="null">Todas las especialidades</option>
-            <option v-for="e in especialidades" :key="e.id_especialidad" :value="e.id_especialidad">
-              {{ e.nombre_especialidad }}
-            </option>
-          </select>
-        </div>
-
-        <p v-if="cargando" class="text-sm text-slate-500">Cargando profesionales...</p>
+        <p v-if="cargando" class="text-sm text-[#61718B]">Cargando profesionales...</p>
         <p v-else-if="error" class="text-sm text-red-600">{{ error }}</p>
 
         <template v-else>
-          <!-- Mis médicos -->
-          <section v-if="misMedicos.length" class="flex flex-col gap-4">
-            <div>
-              <h2 class="text-lg font-semibold text-slate-900">Mis médicos</h2>
-              <p class="text-xs text-slate-500">
-                Profesionales con los que ya tenés un vínculo o un turno próximo.
-              </p>
-            </div>
-            <div class="grilla">
-              <div v-for="m in misMedicos" :key="m.id" class="tarjeta p-6 flex flex-col gap-3">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="avatar">{{ iniciales(m) }}</div>
-                  <div class="min-w-0">
-                    <div class="text-lg font-semibold text-slate-900 truncate">
-                      {{ m.nombre }} {{ m.apellido }}
-                    </div>
-                    <div class="text-xs text-slate-500 truncate">{{ especialidadesTexto(m) }}</div>
-                  </div>
-                </div>
-                <span class="text-xs text-[#3D6FC2]">{{ vinculos.get(m.id) }}</span>
-                <div class="acciones">
-                  <button class="boton-secundario" @click="verPerfil(m)">Ver perfil</button>
-                  <button class="boton-primario" @click="solicitarTurno(m)">Solicitar turno</button>
-                </div>
+          <section v-if="misMedicos.length" class="px-6 py-5 bg-[#EDF5FF] rounded-2xl outline-1 -outline-offset-1 outline-[#D7E2F0] flex flex-col gap-4">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <h2 class="text-xl font-semibold text-[#3D6FC2]">Mis médicos</h2>
+                <p class="text-xs text-[#61718B]">Accedé a su información y a las fichas que compartieron con vos.</p>
               </div>
+              <div class="shrink-0 flex items-center gap-4">
+                <span class="text-sm font-semibold text-[#3D6FC2]">{{ misMedicos.length }} médico{{ misMedicos.length !== 1 ? 's' : '' }}</span>
+                <template v-if="totalPaginasMisMedicos > 1">
+                  <button class="boton-pagina" :disabled="paginaMisMedicos === 1" @click="paginaMisMedicos--">‹ Anterior</button>
+                  <button class="boton-pagina" :disabled="paginaMisMedicos === totalPaginasMisMedicos" @click="paginaMisMedicos++">Siguiente ›</button>
+                </template>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
+              <button v-for="m in misMedicosPagina" :key="m.id" class="tarjeta-medico" @click="verPerfil(m)">
+                <span class="avatar-medico">{{ iniciales(m) }}</span>
+                <span class="flex-1 min-w-0 flex flex-col gap-0.5">
+                  <span class="text-sm font-semibold text-[#182234] truncate">{{ m.nombre }} {{ m.apellido }}</span>
+                  <span class="text-xs text-[#61718B] truncate">{{ especialidadesTexto(m) }}</span>
+                </span>
+                <span class="shrink-0 text-xl text-[#3D6FC2]">›</span>
+              </button>
             </div>
           </section>
 
-          <!-- Todos los profesionales -->
-          <section class="flex flex-col gap-4">
-            <div>
-              <h2 class="text-lg font-semibold text-slate-900">Todos los profesionales</h2>
-              <p class="text-xs text-slate-500">Explorá el directorio de MediApp.</p>
+          <section class="p-6 bg-white rounded-2xl shadow-[0_0.25rem_1rem_0_rgba(26,51,89,0.08)] flex flex-col gap-4">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h2 class="text-xl font-semibold text-[#182234]">Encontrá nuevos profesionales</h2>
+                <p class="text-xs text-[#61718B]">Explorá el directorio y elegí con quién atenderte.</p>
+              </div>
+              <span class="shrink-0 text-xs text-[#61718B]">{{ todosFiltrados.length }} profesional{{ todosFiltrados.length !== 1 ? 'es' : '' }}</span>
             </div>
-            <p v-if="!todosFiltrados.length" class="text-sm text-slate-500">
-              No encontramos profesionales con esos filtros.
-            </p>
-            <div v-else class="grilla">
-              <div v-for="m in todosFiltrados" :key="m.id" class="tarjeta p-6 flex flex-col gap-3">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="avatar">{{ iniciales(m) }}</div>
-                  <div class="min-w-0">
-                    <div class="text-lg font-semibold text-slate-900 truncate">
-                      {{ m.nombre }} {{ m.apellido }}
-                    </div>
-                    <div class="text-xs text-slate-500 truncate">{{ especialidadesTexto(m) }}</div>
-                  </div>
-                </div>
-                <span v-if="vinculos.has(m.id)" class="text-xs text-[#3D6FC2]"
-                  >También en Mis médicos</span
-                >
-                <div class="acciones">
-                  <button class="boton-secundario" @click="verPerfil(m)">Ver perfil</button>
-                  <button class="boton-primario" @click="solicitarTurno(m)">Solicitar turno</button>
+
+            <div class="grid grid-cols-1 sm:grid-cols-[1fr_18rem] gap-3">
+              <label class="h-11 px-4 bg-[#F4F7FB] rounded-lg flex items-center gap-2.5">
+                <svg style="width: 1.25rem; height: 1.25rem" class="text-[#61718B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" />
+                </svg>
+                <input v-model="busqueda" type="text" placeholder="Buscar por nombre o especialidad…" class="w-full bg-transparent text-sm text-[#182234] placeholder:text-[#61718B] outline-none" />
+              </label>
+              <select v-model="especialidadId" class="filtro cursor-pointer">
+                <option :value="null">Especialidad</option>
+                <option v-for="e in especialidades" :key="e.id_especialidad" :value="e.id_especialidad">
+                  {{ e.nombre_especialidad }}
+                </option>
+              </select>
+            </div>
+
+            <p v-if="!todosFiltrados.length" class="text-sm text-[#61718B]">No encontramos profesionales con esos filtros.</p>
+
+            <template v-else>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
+                <button v-for="m in directorioPagina" :key="m.id" class="tarjeta-medico" @click="verPerfil(m)">
+                  <span class="avatar-medico">{{ iniciales(m) }}</span>
+                  <span class="flex-1 min-w-0 flex flex-col gap-0.5">
+                    <span class="text-sm font-semibold text-[#182234] truncate">{{ m.nombre }} {{ m.apellido }}</span>
+                    <span class="text-xs text-[#61718B] truncate">{{ especialidadesTexto(m) }}</span>
+                  </span>
+                  <span class="shrink-0 text-xl text-[#3D6FC2]">›</span>
+                </button>
+              </div>
+
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <span class="text-xs text-[#61718B]">Mostrando {{ primeroDirectorio }}–{{ ultimoDirectorio }} de {{ todosFiltrados.length }} profesionales</span>
+                <div class="flex flex-wrap items-center gap-2 text-sm">
+                  <button class="boton-pagina mr-2" :disabled="paginaDirectorio === 1" @click="paginaDirectorio--">‹ Anterior</button>
+                  <button v-for="n in totalPaginasDirectorio" :key="n" class="size-10 rounded-lg flex items-center justify-center cursor-pointer" :class="n === paginaDirectorio ? 'bg-[#3D6FC2] font-semibold text-white' : 'text-[#61718B] hover:bg-[#F4F7FB]'" @click="paginaDirectorio = n">{{ n }}</button>
+                  <button class="boton-pagina ml-2" :disabled="paginaDirectorio === totalPaginasDirectorio" @click="paginaDirectorio++">Siguiente ›</button>
                 </div>
               </div>
-            </div>
+            </template>
           </section>
         </template>
       </div>
     </div>
 
-    <!-- Modal de perfil -->
-    <div v-if="perfil" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 font-['Inter']" @click="perfil = null">
-      <div class="bg-white rounded-3xl p-6 sm:p-8 w-lg max-w-full max-h-full overflow-y-auto flex flex-col gap-5" @click.stop>
-        <div class="flex items-center gap-4">
-          <div class="avatar size-14! text-base!">{{ iniciales(perfil) }}</div>
-          <div class="min-w-0">
-            <div class="text-xl font-semibold text-slate-900 truncate">
-              {{ perfil.nombre }} {{ perfil.apellido }}
-            </div>
-            <div class="text-sm text-slate-500">{{ especialidadesTexto(perfil) }}</div>
-          </div>
-        </div>
-
-        <div class="p-4 bg-slate-50 rounded-2xl flex flex-col gap-2 text-sm">
+    <!-- pop up -->
+    <div v-if="perfil" class="pop-up-fondo fixed inset-x-0 bottom-0 top-[4.9rem] z-50 overflow-y-auto lg:overflow-hidden font-['Inter']">
+      <div class="lg:h-full px-4 sm:px-16 py-6 flex flex-col gap-5">
+        <div class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span class="text-slate-400">Email: </span
-            ><span class="text-slate-900">{{ perfil.mail }}</span>
+            <h1 class="text-3xl font-semibold text-[#182234]">Mi profesional y mis fichas</h1>
+            <p class="text-sm text-[#61718B] mt-1">Consultá los datos de tu profesional y la información que compartió con vos.</p>
           </div>
-          <div v-if="perfil.telefono">
-            <span class="text-slate-400">Teléfono: </span
-            ><span class="text-slate-900">{{ perfil.telefono }}</span>
-          </div>
+          <button class="shrink-0 h-11 px-6 bg-[#F4F7FB] rounded-xl text-base font-medium text-[#3D6FC2] cursor-pointer hover:bg-[#EDF5FF] transition-colors" @click="perfil = null">← Volver a profesionales</button>
         </div>
 
-        <div class="flex flex-col gap-2">
-          <span class="text-sm font-semibold text-slate-900">Días de atención</span>
-          <p v-if="cargandoHorarios" class="text-sm text-slate-400">Cargando horarios...</p>
-          <p v-else-if="!diasAtencion.length" class="text-sm text-slate-400">
-            Este profesional todavía no cargó sus horarios.
-          </p>
-          <div v-else class="flex flex-col gap-1">
-            <div v-for="d in diasAtencion" :key="d.dia" class="flex justify-between text-sm">
-              <span class="text-slate-500">{{ d.dia }}</span>
-              <span class="font-medium text-[#3D6FC2]">{{ d.rango }}</span>
+        <div class="lg:flex-1 lg:min-h-0 flex flex-col lg:flex-row gap-6">
+          <section class="tarjeta-pop-up lg:w-80 shrink-0 p-6 flex flex-col justify-between gap-4">
+            <div class="flex flex-col gap-4">
+              <div class="size-16 rounded-full bg-[#EDF5FF] text-2xl font-semibold text-[#3D6FC2] flex items-center justify-center">{{ iniciales(perfil) }}</div>
+              <div class="text-2xl font-semibold text-[#182234] wrap-break-word">{{ perfil.nombre }} {{ perfil.apellido }}</div>
+              <div class="text-base font-semibold text-[#3D6FC2]">{{ especialidadesTexto(perfil) }}</div>
+              <div class="text-xs text-[#61718B]">Matrícula nacional · No informada</div>
             </div>
-          </div>
-        </div>
 
-        <div class="acciones">
-          <button class="boton-secundario" @click="perfil = null">Cerrar</button>
-          <button class="boton-primario" @click="solicitarTurno(perfil)">Solicitar turno</button>
+            <div class="h-px shrink-0 bg-[#D7E2F0]"></div>
+
+            <div class="flex flex-col gap-1.5">
+              <span class="text-base font-semibold text-[#182234]">Sobre la profesional</span>
+              <p class="text-sm text-[#61718B]">Atención en {{ especialidadesTexto(perfil) }} con seguimiento personalizado.</p>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-[#61718B]">Modalidad de atención</span>
+              <span class="text-sm font-semibold text-[#182234]">Presencial</span>
+            </div>
+
+            <div v-if="proximoTurno" class="shrink-0 px-4 py-3 bg-[#EDF5FF] rounded-xl flex flex-col gap-1.5">
+              <span class="text-xs font-semibold text-[#3D6FC2]">TU PRÓXIMO TURNO</span>
+              <span class="text-base font-semibold text-[#182234]">{{ fechaNumerica(new Date(proximoTurno.fecha_hora)) }} · {{ hora(new Date(proximoTurno.fecha_hora)) }}</span>
+              <span class="text-xs text-[#61718B]">{{ nombreEspecialidad(proximoTurno) }}</span>
+            </div>
+
+            <button class="shrink-0 h-11 bg-[#3D6FC2] rounded-xl text-base font-medium text-white cursor-pointer hover:opacity-90 transition-opacity" @click="solicitarTurno(perfil)">Solicitar nuevo turno</button>
+          </section>
+
+          <section class="tarjeta-pop-up flex-1 min-w-0 min-h-96 lg:min-h-0 p-6 flex flex-col gap-3.5">
+            <div class="shrink-0 flex items-start justify-between gap-4">
+              <div>
+                <h2 class="text-xl font-semibold text-[#182234]">Mis fichas médicas</h2>
+                <p class="text-xs text-[#61718B]">Las fichas que {{ perfil.nombre }} {{ perfil.apellido }} compartió con vos.</p>
+              </div>
+              <span class="shrink-0 text-xs font-semibold text-[#3D6FC2]">{{ cantidadFichas }} ficha{{ cantidadFichas !== 1 ? 's' : '' }}</span>
+            </div>
+
+            <input v-model="busquedaFichas" type="text" placeholder="Buscar por fecha o contenido…" class="shrink-0 h-11 px-4 bg-[#F4F7FB] rounded-lg text-sm text-[#182234] placeholder:text-[#61718B] outline-none" />
+
+            <p v-if="errorDescarga" class="shrink-0 text-xs text-red-600">{{ errorDescarga }}</p>
+
+            <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3.5">
+              <p v-if="!fichasPerfil.length" class="text-sm text-[#61718B]">Todavía no tuviste turnos con este profesional.</p>
+              <p v-else-if="!fichasFiltradas.length" class="text-sm text-[#61718B]">No encontramos fichas con esa búsqueda.</p>
+
+              <template v-for="{ turno, fecha, devolucion } in fichasFiltradas" :key="turno.id_turno">
+                <article v-if="devolucion && fichaAbierta === turno.id_turno" class="shrink-0 p-5 bg-[#EDF5FF] rounded-xl flex flex-col gap-3.5">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="min-w-0">
+                      <button class="text-left text-lg font-semibold text-[#182234] cursor-pointer" @click="alternarFicha(turno.id_turno)">{{ fechaLarga(fecha) }} · {{ hora(fecha) }}</button>
+                      <div class="text-xs text-[#61718B]">{{ nombreEspecialidad(turno) }}</div>
+                    </div>
+                    <span class="shrink-0 text-xs font-semibold text-[#3D6FC2]">{{ tipoFicha(devolucion) }}</span>
+                  </div>
+                  <div class="h-px bg-[#D7E2F0]"></div>
+
+                  <h3 class="text-base font-semibold text-[#182234]">Resumen de la consulta</h3>
+                  <p v-if="devolucion.contenido" class="text-sm text-[#182234] whitespace-pre-line wrap-break-word">{{ devolucion.contenido }}</p>
+                  <p v-else class="text-sm text-[#61718B]">No hay ficha escrita para este turno.</p>
+
+                  <div class="flex flex-wrap items-center justify-between gap-3">
+                    <span class="text-xs text-[#61718B]">Compartida por {{ perfil.nombre }} {{ perfil.apellido }} · {{ fechaCompartida(devolucion) }}</span>
+                    <button v-if="devolucion.archivo_nombre" class="text-sm font-semibold text-[#3D6FC2] cursor-pointer hover:underline" @click="descargarArchivo(devolucion)">Descargar archivo ↓</button>
+                  </div>
+                </article>
+
+                <div v-else class="shrink-0 min-h-16 px-4 py-3 bg-[#F4F7FB] rounded-[0.625rem] flex items-center justify-between gap-4">
+                  <div class="min-w-0">
+                    <div class="text-base font-semibold text-[#182234]">{{ fechaNumerica(fecha) }} · {{ hora(fecha) }}</div>
+                    <div class="text-xs text-[#61718B] truncate">{{ nombreEspecialidad(turno) }}<template v-if="devolucion"> · {{ tipoFicha(devolucion) }}</template></div>
+                  </div>
+                  <button v-if="devolucion" class="shrink-0 text-sm font-semibold text-[#3D6FC2] cursor-pointer hover:underline" @click="alternarFicha(turno.id_turno)">Abrir ficha ›</button>
+                </div>
+              </template>
+            </div>
+          </section>
         </div>
       </div>
     </div>
+
   </div>
+
 </template>
 
 <style scoped>
-@reference "tailwindcss";
-
-.tarjeta {
-  @apply bg-white rounded-3xl outline-1 -outline-offset-1 outline-slate-200 shadow-[0_0.5rem_1.5rem_-0.25rem_rgba(34,66,105,0.11),0_0.125rem_0.375rem_0_rgba(34,66,105,0.06)];
+.tarjeta-medico {
+  width: 100%;
+  min-width: 0;
+  height: 5rem;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  outline: 1px solid #d7e2f0;
+  outline-offset: -1px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
-.grilla {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6;
+.tarjeta-medico:hover {
+  background-color: #f4f7fb;
 }
-.avatar {
-  @apply size-11 shrink-0 rounded-full bg-blue-50 text-[#3D6FC2] text-sm font-medium flex items-center justify-center;
+.avatar-medico {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #edf5ff;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #3d6fc2;
 }
-.acciones {
-  @apply mt-auto pt-2 flex gap-3;
+.boton-pagina {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #3d6fc2;
+  cursor: pointer;
 }
-.boton-secundario {
-  @apply flex-2 h-10 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-[#3D6FC2] cursor-pointer hover:bg-slate-50 transition-colors;
+.boton-pagina:hover {
+  text-decoration: underline;
 }
-.boton-primario {
-  @apply flex-3 h-10 bg-[#3D6FC2] rounded-xl text-sm font-medium text-white cursor-pointer hover:opacity-90 transition-opacity;
+.boton-pagina:disabled {
+  font-weight: 400;
+  color: #61718b;
+  text-decoration: none;
+  cursor: not-allowed;
+}
+.filtro {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  outline: 1px solid #d7e2f0;
+  outline-offset: -1px;
+  font-size: 0.75rem;
+  text-align: center;
+  color: #61718b;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2361718B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.875rem;
+}
+.pop-up-fondo {
+  background: linear-gradient(135deg, #bfdbfe 0%, #ffffff 50%, #bfdbfe 100%);
+}
+.tarjeta-pop-up {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 1rem 0 rgba(26, 51, 89, 0.08);
 }
 </style>

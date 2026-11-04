@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useTurnosMedico, type TurnoMedico } from '@/stores/turnosMedico'
+import { useMiStore } from '@/stores/useMiStore'
+
+const store = useMiStore()
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-principal', 'ir-a-chatbot', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-mis-pacientes', 'ir-a-configuracion'])
 
@@ -24,9 +27,13 @@ const nombresMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Juli
 const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 const hoy = new Date()
-const mesActual = ref(hoy.getMonth())
-const añoActual = ref(hoy.getFullYear())
-const seleccionado = ref(hoy)
+const fechaGuardada = store.variable
+const fechaInicial = fechaGuardada ? new Date(fechaGuardada) : hoy
+store.guardarVariable(null)
+
+const mesActual = ref(fechaInicial.getMonth())
+const añoActual = ref(fechaInicial.getFullYear())
+const seleccionado = ref(fechaInicial)
 
 function esMismoDia(fecha: string | Date, dia: Date) {
   const f = new Date(fecha)

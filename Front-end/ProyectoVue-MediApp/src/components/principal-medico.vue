@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useTurnosMedico, type TurnoMedico } from '@/stores/turnosMedico'
+import { useMiStore } from '@/stores/useMiStore'
 
 const emit = defineEmits(['ir-a-bienvenida', 'ir-a-chatbot', 'ir-a-calendario', 'ir-a-MediPlus', 'ir-a-solicitudes', 'ir-a-mis-pacientes', 'ir-a-configuracion'])
+
+const store = useMiStore()
+const textoDeEntrada = ref()
+const alHacerClick = (fechaHora: string) => {
+  textoDeEntrada.value = fechaHora
+  store.guardarVariable(textoDeEntrada.value)
+  emit('ir-a-calendario')
+}
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const nombreUsuario = sesion.nombre || 'Usuario'
@@ -139,17 +148,32 @@ onBeforeUnmount(() => {
 
 const fichasCerradas = ref<number[]>(JSON.parse(localStorage.getItem(CLAVE_FICHAS_CERRADAS) || '[]'))
 const fichasPospuestas = ref<number[]>([])
+const turnosConDevolucion = ref<number[]>([])
+const devolucionesCargadas = ref(false)
+
+async function cargarTurnosConDevolucion() {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/devoluciones/turnos-con-devolucion`, {
+      headers: { Authorization: `Bearer ${sesion.token}` },
+    })
+    if (res.ok) turnosConDevolucion.value = await res.json()
+  } finally {
+    devolucionesCargadas.value = true
+  }
+}
+
+onMounted(cargarTurnosConDevolucion)
 
 function turnoTerminado(t: TurnoMedico) {
   const fin = new Date(t.fecha_hora).getTime() + UNA_HORA
   return t.estado?.estado === 'aceptado' && fin <= ahora.value && ahora.value - fin <= CINCO_DIAS
 }
 
-const turnoPopup = computed(() =>
-  ordenarPorFecha(turnos.value.filter(turnoTerminado))
-    .reverse()
-    .find((t) => !fichasCerradas.value.includes(t.id_turno) && !fichasPospuestas.value.includes(t.id_turno)) ?? null,
-)
+const turnoPopup = computed(() => {
+  if (!devolucionesCargadas.value) return null
+  const ocultos = [...fichasCerradas.value, ...fichasPospuestas.value, ...turnosConDevolucion.value]
+  return ordenarPorFecha(turnos.value.filter(turnoTerminado)).reverse().find((t) => !ocultos.includes(t.id_turno)) ?? null
+})
 
 function inicialesPaciente(t: TurnoMedico) {
   return `${t.paciente.nombre.charAt(0)}${t.paciente.apellido.charAt(0)}`.toUpperCase()
@@ -165,14 +189,80 @@ function fechaLarga(fechaHora: string) {
   return `${f.getDate()} de ${nombresMes[f.getMonth()].toLowerCase()} de ${f.getFullYear()}`
 }
 
+const TIPOS_FICHA = ['application/pdf', 'image/jpeg', 'image/png']
+const TAMANO_MAXIMO_FICHA = 10 * 1024 * 1024
+
+const textoFicha = ref('')
+const archivoFicha = ref<File | null>(null)
+const errorFicha = ref('')
+const guardandoFicha = ref(false)
+
+function limpiarFicha() {
+  textoFicha.value = ''
+  archivoFicha.value = null
+  errorFicha.value = ''
+}
+
+function elegirArchivoFicha(evento: Event) {
+  const archivo = (evento.target as HTMLInputElement).files?.[0]
+  if (!archivo) return
+  if (!TIPOS_FICHA.includes(archivo.type)) {
+    errorFicha.value = 'El archivo tiene que ser PDF, JPG o PNG.'
+    return
+  }
+  if (archivo.size > TAMANO_MAXIMO_FICHA) {
+    errorFicha.value = 'El archivo no puede superar los 10 MB.'
+    return
+  }
+  archivoFicha.value = archivo
+  errorFicha.value = ''
+}
+
+async function guardarFicha() {
+  if (!turnoPopup.value) return
+  if (!textoFicha.value.trim() && !archivoFicha.value) {
+    errorFicha.value = 'Escribí la devolución o subí un archivo.'
+    return
+  }
+
+  const idTurno = turnoPopup.value.id_turno
+  const datos = new FormData()
+  datos.append('id_turno', String(idTurno))
+  if (textoFicha.value.trim()) datos.append('contenido', textoFicha.value)
+  if (archivoFicha.value) datos.append('archivo', archivoFicha.value)
+
+  guardandoFicha.value = true
+  errorFicha.value = ''
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/devoluciones`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${sesion.token}` },
+      body: datos,
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      errorFicha.value = data.detail || 'No se pudo guardar la devolución.'
+      return
+    }
+    turnosConDevolucion.value.push(idTurno)
+    limpiarFicha()
+  } catch {
+    errorFicha.value = 'No se pudo conectar con el servidor.'
+  } finally {
+    guardandoFicha.value = false
+  }
+}
+
 function cerrarFicha() {
   if (!turnoPopup.value) return
   fichasCerradas.value.push(turnoPopup.value.id_turno)
   localStorage.setItem(CLAVE_FICHAS_CERRADAS, JSON.stringify(fichasCerradas.value))
+  limpiarFicha()
 }
 
 function posponerFicha() {
   if (turnoPopup.value) fichasPospuestas.value.push(turnoPopup.value.id_turno)
+  limpiarFicha()
 }
 </script>
 
@@ -262,26 +352,27 @@ function posponerFicha() {
             </div>
           </div>
 
-          <form class="flex-1 min-h-0 flex flex-col gap-4" @submit.prevent="cerrarFicha">
+          <form class="flex-1 min-h-0 flex flex-col gap-4" @submit.prevent="guardarFicha">
             <div class="flex-1 min-h-0 flex flex-col gap-2">
               <div class="flex justify-between items-center">
                 <label for="ficha" class="text-[#182234] text-[0.95rem] font-semibold leading-5">Escribir ficha médica</label>
-                <span class="text-[#61718B] text-[0.725rem] font-normal leading-5">Solo para el profesional</span>
+                <span class="text-[#61718B] text-[0.725rem] font-normal leading-5">La va a ver el paciente</span>
               </div>
-              <textarea id="ficha" name="ficha" placeholder="Escribí la evolución de la consulta, observaciones e indicaciones para el seguimiento del paciente…" class="flex-1 min-h-0 w-full p-3 rounded-xl bg-white border border-[#D7E2F0] text-sm text-zinc-900 placeholder:text-xs placeholder:text-[#61718B] resize-none focus:outline-none focus:border-[#176FB7]"></textarea>
+              <textarea id="ficha" v-model="textoFicha" name="ficha" placeholder="Escribí la evolución de la consulta, observaciones e indicaciones para el seguimiento del paciente…" class="flex-1 min-h-0 w-full p-3 rounded-xl bg-white border border-[#D7E2F0] text-sm text-zinc-900 placeholder:text-xs placeholder:text-[#61718B] resize-none focus:outline-none focus:border-[#176FB7]"></textarea>
             </div>
             <label class="relative w-full h-20 shrink-0 px-5 bg-[#F4F7FB] rounded-xl border border-dashed border-[#D7E2F0] flex items-center gap-4 cursor-pointer">
-              <input type="file" name="archivo" accept=".pdf,.jpg,.jpeg,.png" class="absolute inset-0 opacity-0 cursor-pointer" />
+              <input type="file" name="archivo" accept=".pdf,.jpg,.jpeg,.png" class="absolute inset-0 opacity-0 cursor-pointer" @change="elegirArchivoFicha" />
               <svg class="shrink-0 text-[#176FB7]" style="width: 1.5rem; height: 1.5rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               <div class="flex-1 min-w-0 flex flex-col gap-1">
                 <span class="text-zinc-900 text-[0.95rem] font-semibold leading-5 truncate">O subí una ficha ya preparada</span>
-                <span class="text-[#61718B] text-xs font-normal leading-5 truncate">Arrastrá un archivo PDF, JPG o PNG · Hasta 10 MB</span>
+                <span class="text-[#61718B] text-xs font-normal leading-5 truncate">{{ archivoFicha ? archivoFicha.name : 'Arrastrá un archivo PDF, JPG o PNG · Hasta 10 MB' }}</span>
               </div>
               <span class="shrink-0 text-[#176FB7] text-sm font-medium">Elegir archivo</span>
             </label>
+            <p v-if="errorFicha" class="shrink-0 text-xs text-red-600">{{ errorFicha }}</p>
             <div class="shrink-0 flex justify-between gap-3">
               <button type="button" class="w-44 h-11 rounded-xl bg-[#F4F7FB] text-[#176FB7] text-sm font-medium cursor-pointer hover:bg-[#EDF5FF] transition-colors" @click="posponerFicha">Completar después</button>
-              <button type="submit" class="w-52 h-11 rounded-xl bg-[#4270B0] text-white text-sm font-medium cursor-pointer hover:bg-[#365E96] transition-colors">Guardar ficha médica</button>
+              <button type="submit" :disabled="guardandoFicha" class="w-52 h-11 rounded-xl bg-[#4270B0] text-white text-sm font-medium cursor-pointer hover:bg-[#365E96] transition-colors disabled:opacity-60">{{ guardandoFicha ? 'Guardando...' : 'Guardar ficha médica' }}</button>
             </div>
           </form>
 
@@ -344,7 +435,7 @@ function posponerFicha() {
               <p v-if="!agenda.length" class="text-sm text-slate-500">No tenés turnos próximos.</p>
 
               <div v-else class="max-h-40 flex flex-col overflow-y-auto">
-                <button v-for="(t, i) in agenda" :key="t.id_turno" class="shrink-0 h-20 flex items-center gap-5 px-2 rounded-2xl text-left cursor-pointer hover:bg-slate-50 transition-colors" :class="{ 'opacity-50': yaPaso(t) }" @click="emit('ir-a-calendario')">
+                <button v-for="(t, i) in agenda" :key="t.id_turno" class="shrink-0 h-20 flex items-center gap-5 px-2 rounded-2xl text-left cursor-pointer hover:bg-slate-50 transition-colors" :class="{ 'opacity-50': yaPaso(t) }" @click="alHacerClick(t.fecha_hora)">
                   <div class="w-20 shrink-0 flex flex-col">
                     <span v-if="!turnosHoy.length" class="text-xs text-slate-500">{{ formatearFecha(t.fecha_hora) }}</span>
                     <span class="text-2xl font-medium text-gray-800">{{ formatearHora(t.fecha_hora) }}</span>

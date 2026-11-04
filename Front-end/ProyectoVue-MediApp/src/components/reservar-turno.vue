@@ -181,6 +181,11 @@ const nombresMes = [
 ]
 const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
+function limpiarFechaElegida() {
+  diaSeleccionado.value = null
+  horaSeleccionada.value = null
+}
+
 function mesAnterior() {
   if (mesActual.value === 0) {
     mesActual.value = 11
@@ -188,6 +193,7 @@ function mesAnterior() {
   } else {
     mesActual.value--
   }
+  limpiarFechaElegida()
 }
 
 function mesSiguiente() {
@@ -197,6 +203,7 @@ function mesSiguiente() {
   } else {
     mesActual.value++
   }
+  limpiarFechaElegida()
 }
 
 const celdas = computed(() => {

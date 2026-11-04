@@ -204,7 +204,7 @@ function cancelarCambios() {
   </div>
 
   <div class="contenido-pagina flex gap-6 items-start font-['Inter']">
-    <div class="w-64 h-[32.5rem] bg-white rounded-2xl border border-sky-500 shadow-[0rem_0.25rem_1.25rem_0.125rem_rgba(0,0,0,0.15)] p-5 flex flex-col gap-1 shrink-0">
+    <div class="w-64 h-130 bg-white rounded-2xl border border-sky-500 shadow-[0rem_0.25rem_1.25rem_0.125rem_rgba(0,0,0,0.15)] p-5 flex flex-col gap-1 shrink-0">
       <button class="flex items-center gap-3 px-3 py-3 rounded-xl text-black/70 hover:bg-sky-50 text-left" @click="emit('ir-a-mi-usuario')">
         <svg style="width: 1.25rem; height: 1.25rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke->
           <circle cx="12" cy="8" r="4" />
@@ -212,13 +212,6 @@ function cancelarCambios() {
         </svg>
         Mi usuario
       </button>
-      <div class="flex items-center gap-3 px-3 py-3 rounded-xl text-black/70">
-        <svg style="width: 1.25rem; height: 1.25rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke->
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
-        Notificaciones
-      </div>
       <div class="flex items-center gap-3 px-3 py-3 rounded-xl text-black/70">
         <svg style="width: 1.25rem; height: 1.25rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke->
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
