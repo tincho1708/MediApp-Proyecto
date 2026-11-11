@@ -1,26 +1,27 @@
-import smtplib
+import httpx
 import os
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from dotenv import load_dotenv
 
 load_dotenv()
 
-GMAIL_USER = os.getenv("GMAIL_USER")
-GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+MAIL_FROM = os.getenv("MAIL_FROM")
 BASE_URL = os.getenv("VERIFICATION_BASE_URL", "http://localhost:8000")
 
 
 def _send(to: str, subject: str, html: str):
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = GMAIL_USER
-    msg["To"] = to
-    msg.attach(MIMEText(html, "html"))
-
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
-        server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-        server.sendmail(GMAIL_USER, to, msg.as_string())
+    response = httpx.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers={"api-key": BREVO_API_KEY},
+        json={
+            "sender": {"name": "MediApp", "email": MAIL_FROM},
+            "to": [{"email": to}],
+            "subject": subject,
+            "htmlContent": html,
+        },
+        timeout=10,
+    )
+    response.raise_for_status()
 
 
 def send_pin_email(to: str, nombre: str, pin: str):
