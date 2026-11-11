@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 export type TurnoMedico = {
   id_turno: number
   fecha_hora: string
+  duracion: number
   notas: string | null
   notas_medico: string | null
   creado_en: string
@@ -10,12 +11,14 @@ export type TurnoMedico = {
   id_medicos: number
   estado: { id: number; estado: string }
   especialidad?: { id_especialidad: number; nombre_especialidad: string } | null
-  paciente: { id: number; nombre: string; apellido: string; mail: string }
+  paciente: { id: number; nombre: string; apellido: string; mail: string; telefono: string | null; ciudad: string | null; foto: string | null }
   medico: {
     id: number
     nombre: string
     apellido: string
     especialidades: { id_especialidad: number; nombre_especialidad: string }[]
+    duracion_turno: number
+    foto: string | null
   }
 }
 

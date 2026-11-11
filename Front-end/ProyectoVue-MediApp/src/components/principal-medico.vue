@@ -165,7 +165,7 @@ async function cargarTurnosConDevolucion() {
 onMounted(cargarTurnosConDevolucion)
 
 function turnoTerminado(t: TurnoMedico) {
-  const fin = new Date(t.fecha_hora).getTime() + UNA_HORA
+  const fin = new Date(t.fecha_hora).getTime() + t.duracion * 60 * 1000
   return t.estado?.estado === 'aceptado' && fin <= ahora.value && ahora.value - fin <= CINCO_DIAS
 }
 
@@ -284,7 +284,7 @@ function posponerFicha() {
       <div class="navbar-usuario-zona">
         <div class="navbar-divisor"></div>
         <button class="navbar-usuario" @click.stop="esta = !esta">
-          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <Avatar propia class="navbar-usuario-avatar" :texto="nombreUsuario.charAt(0).toUpperCase()" />
           <div class="navbar-usuario-info">
             <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
             <span class="navbar-usuario-rol">Mi cuenta</span>
@@ -339,9 +339,7 @@ function posponerFicha() {
             <div class="text-[#61718B] text-[0.825rem] font-normal leading-5">Retomá el registro de tu última consulta.</div>
           </div>
           <div class="w-full h-20 px-4 bg-[#EDF5FF] rounded-xl flex items-center gap-4">
-            <div class="size-11 shrink-0 bg-white rounded-3xl flex justify-center items-center">
-              <div class="text-[#176FB7] text-base font-semibold leading-5">{{ inicialesPaciente(turnoPopup) }}</div>
-            </div>
+            <Avatar class="size-11 shrink-0 bg-white rounded-3xl flex justify-center items-center text-[#176FB7] text-base font-semibold leading-5" :foto="turnoPopup.paciente.foto" :texto="inicialesPaciente(turnoPopup)" />
             <div class="flex-1 min-w-0 flex flex-col gap-1">
               <div class="text-zinc-900 text-base font-semibold leading-5 truncate">{{ nombrePaciente(turnoPopup) }}</div>
               <div class="text-[#61718B] text-[0.625rem] font-normal leading-5 truncate">{{ especialidadTurno(turnoPopup) }}</div>

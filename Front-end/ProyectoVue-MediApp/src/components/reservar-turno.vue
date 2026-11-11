@@ -37,6 +37,7 @@ type Medico = {
   telefono: string | null
   mail: string
   especialidades: Especialidad[]
+  foto: string | null
 }
 
 const medicos = ref<Medico[]>([])
@@ -148,14 +149,14 @@ function claseTextoPaso(n: number) {
 function continuarAPaso2() {
   if (!medicoSeleccionado.value || !puedeContinuarPaso1.value) return
   pasoActual.value = 2
-  cargarHorarios(medicoSeleccionado.value.id)
+  limpiarFechaElegida()
 }
 function volverAPaso1() {
   pasoActual.value = 1
 }
 
 function continuarAPaso3() {
-  if (!diaSeleccionado.value || !horaSeleccionada.value) return
+  if (diaSeleccionado.value === null || horaSeleccionada.value === null) return
   pasoActual.value = 3
 }
 function volverAPaso2() {
@@ -184,6 +185,7 @@ const nombresDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viern
 function limpiarFechaElegida() {
   diaSeleccionado.value = null
   horaSeleccionada.value = null
+  turnosLibres.value = []
 }
 
 function mesAnterior() {
@@ -240,97 +242,54 @@ const celdas = computed(() => {
 })
 
 const diaSeleccionado = ref<number | null>(null)
-
-function elegirDia(celda: { dia?: number; otroMes?: boolean; pasado?: boolean }) {
-  if (celda.otroMes || celda.pasado || celda.dia === undefined) return
-  diaSeleccionado.value = celda.dia
-  horaSeleccionada.value = null
-  if (medicoSeleccionado.value) cargarHorasOcupadas(medicoSeleccionado.value.id, celda.dia)
-}
-
-type Horario = {
-  id: number
-  dia_semana: number
-  hora: number
-}
-
-const horarios = ref<Horario[]>([])
+const horaSeleccionada = ref<string | null>(null)
+const turnosLibres = ref<string[]>([])
 const cargandoHorarios = ref(false)
 const errorHorarios = ref('')
-const horaSeleccionada = ref<number | null>(null)
-const horasOcupadas = ref<number[]>([])
 
-async function cargarHorarios(medicoId: number) {
-  cargandoHorarios.value = true
-  errorHorarios.value = ''
-  horarios.value = []
-  horaSeleccionada.value = null
+const dosDigitos = (n: number) => String(n).padStart(2, '0')
+
+const fechaElegida = computed(() =>
+  diaSeleccionado.value === null ? null : `${añoActual.value}-${dosDigitos(mesActual.value + 1)}-${dosDigitos(diaSeleccionado.value)}`,
+)
+
+async function cargarTurnosLibres(silencioso = false) {
+  if (!medicoSeleccionado.value || !fechaElegida.value) return
+  if (!silencioso) {
+    cargandoHorarios.value = true
+    errorHorarios.value = ''
+    turnosLibres.value = []
+  }
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/medicos/${medicoId}/horarios`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/medicos/${medicoSeleccionado.value.id}/turnos-libres?fecha=${fechaElegida.value}`)
     if (!res.ok) throw new Error()
-    horarios.value = await res.json()
+    turnosLibres.value = await res.json()
+    if (horaSeleccionada.value && !turnosLibres.value.includes(horaSeleccionada.value)) horaSeleccionada.value = null
   } catch {
-    errorHorarios.value = 'No se pudieron cargar los horarios. Intentá de nuevo más tarde.'
+    if (!silencioso) errorHorarios.value = 'No se pudieron cargar los horarios. Intentá de nuevo más tarde.'
   } finally {
     cargandoHorarios.value = false
   }
 }
 
-async function cargarHorasOcupadas(medicoId: number, dia: number, silencioso = false) {
-  if (!silencioso) horasOcupadas.value = []
-  try {
-    const pad = (n: number) => String(n).padStart(2, '0')
-    const fecha = `${añoActual.value}-${pad(mesActual.value + 1)}-${pad(dia)}`
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/medicos/${medicoId}/horarios-ocupados?fecha=${fecha}`,
-    )
-    if (!res.ok) throw new Error()
-    horasOcupadas.value = await res.json()
-  } catch {}
+function elegirDia(celda: { dia?: number; otroMes?: boolean; pasado?: boolean }) {
+  if (celda.otroMes || celda.pasado || celda.dia === undefined) return
+  diaSeleccionado.value = celda.dia
+  horaSeleccionada.value = null
+  cargarTurnosLibres()
 }
 
-let intervaloOcupadas: ReturnType<typeof setInterval> | undefined
+function elegirHora(hora: string) {
+  horaSeleccionada.value = horaSeleccionada.value === hora ? null : hora
+}
+
+let intervaloLibres: ReturnType<typeof setInterval> | undefined
 onMounted(() => {
-  intervaloOcupadas = setInterval(() => {
-    if (medicoSeleccionado.value && diaSeleccionado.value !== null) {
-      cargarHorasOcupadas(medicoSeleccionado.value.id, diaSeleccionado.value, true)
-    }
-  }, 6000)
+  intervaloLibres = setInterval(() => cargarTurnosLibres(true), 6000)
 })
 onBeforeUnmount(() => {
-  if (intervaloOcupadas !== undefined) clearInterval(intervaloOcupadas)
+  if (intervaloLibres !== undefined) clearInterval(intervaloLibres)
 })
-
-const diaSemanaSeleccionado = computed(() => {
-  if (diaSeleccionado.value === null) return null
-  const fecha = new Date(añoActual.value, mesActual.value, diaSeleccionado.value)
-  return (fecha.getDay() + 6) % 7
-})
-
-const esHoySeleccionado = computed(() => {
-  return (
-    diaSeleccionado.value === hoy.getDate() &&
-    mesActual.value === hoy.getMonth() &&
-    añoActual.value === hoy.getFullYear()
-  )
-})
-
-const horariosDelDia = computed(() => {
-  if (diaSemanaSeleccionado.value === null) return []
-  let lista = horarios.value.filter((h) => h.dia_semana === diaSemanaSeleccionado.value)
-  lista = lista.filter((h) => !horasOcupadas.value.includes(h.hora))
-  if (esHoySeleccionado.value) {
-    lista = lista.filter((h) => h.hora > hoy.getHours())
-  }
-  return lista.sort((a, b) => a.hora - b.hora)
-})
-
-function formatearHora(hora: number) {
-  return `${String(hora).padStart(2, '0')}:00`
-}
-function horaTexto(h: Horario) {
-  return formatearHora(h.hora)
-}
 
 const fechaSeleccionadaTexto = computed(() => {
   if (diaSeleccionado.value === null) return ''
@@ -340,8 +299,7 @@ const fechaSeleccionadaTexto = computed(() => {
 
 const fechaHoraElegidaTexto = computed(() => {
   if (diaSeleccionado.value === null || horaSeleccionada.value === null) return ''
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(diaSeleccionado.value)}/${pad(mesActual.value + 1)}/${añoActual.value} · ${formatearHora(horaSeleccionada.value)}`
+  return `${dosDigitos(diaSeleccionado.value)}/${dosDigitos(mesActual.value + 1)}/${añoActual.value} · ${horaSeleccionada.value}`
 })
 
 const fechaSeleccionadaTextoConAño = computed(() => {
@@ -349,14 +307,9 @@ const fechaSeleccionadaTextoConAño = computed(() => {
   return `${fechaSeleccionadaTexto.value} de ${añoActual.value}`
 })
 
-function elegirHora(h: Horario) {
-  horaSeleccionada.value = horaSeleccionada.value === h.hora ? null : h.hora
-}
-
 const fechaHoraISO = computed(() => {
-  if (diaSeleccionado.value === null || horaSeleccionada.value === null) return null
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${añoActual.value}-${pad(mesActual.value + 1)}-${pad(diaSeleccionado.value)}T${pad(horaSeleccionada.value)}:00:00`
+  if (!fechaElegida.value || horaSeleccionada.value === null) return null
+  return `${fechaElegida.value}T${horaSeleccionada.value}:00`
 })
 
 const reservando = ref(false)
@@ -424,7 +377,7 @@ async function confirmarReserva() {
       <div class="navbar-usuario-zona">
         <div class="navbar-divisor"></div>
         <button class="navbar-usuario" @click.stop="esta = !esta">
-          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <Avatar propia class="navbar-usuario-avatar" :texto="nombreUsuario.charAt(0).toUpperCase()" />
           <div class="navbar-usuario-info">
             <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
             <span class="navbar-usuario-rol">Mi cuenta</span>
@@ -530,7 +483,7 @@ async function confirmarReserva() {
               <div v-else class="flex-1 min-h-0 overflow-y-auto">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <button v-for="m in medicosFiltrados" :key="m.id" class="h-18 px-3 rounded-xl flex items-center gap-3 text-left cursor-pointer transition-colors min-w-0" :class="medicoSeleccionado?.id === m.id ? 'bg-blue-50 outline-1 -outline-offset-1 outline-sky-700' : 'bg-white outline-1 -outline-offset-1 outline-slate-200 hover:bg-slate-50'" @click="elegirMedico(m)">
-                    <span class="size-9 shrink-0 rounded-2xl bg-blue-50 text-sky-700 text-xs font-semibold flex items-center justify-center">{{ iniciales(m) }}</span>
+                    <Avatar class="size-9 shrink-0 rounded-2xl bg-blue-50 text-sky-700 text-xs font-semibold flex items-center justify-center" :foto="m.foto" :texto="iniciales(m)" />
                     <span class="flex-1 min-w-0 flex flex-col">
                       <span class="text-base font-semibold text-slate-900 truncate">{{ m.nombre }} {{ m.apellido }}</span>
                       <span class="text-xs text-slate-500 truncate">{{ m.especialidades.map((e) => e.nombre_especialidad).join(' · ') || 'Sin especialidad' }}</span>
@@ -628,13 +581,13 @@ async function confirmarReserva() {
                     <p v-else-if="errorHorarios" class="text-sm text-red-600 shrink-0">
                       {{ errorHorarios }}
                     </p>
-                    <p v-else-if="!horariosDelDia.length" class="text-sm text-slate-400 shrink-0">
+                    <p v-else-if="!turnosLibres.length" class="text-sm text-slate-400 shrink-0">
                       No hay horarios disponibles para este día.
                     </p>
 
                     <div v-else class="flex gap-3 overflow-x-auto pb-1 shrink-0">
-                      <button v-for="h in horariosDelDia" :key="h.id" @click="elegirHora(h)" class="shrink-0 w-24 h-11 rounded-xl text-sm font-medium cursor-pointer transition-colors" :class=" horaSeleccionada === h.hora ? 'bg-sky-700 text-white' : 'bg-white outline-1 -outline-offset-1 outline-slate-200 text-sky-700 hover:bg-slate-100' ">
-                        {{ horaTexto(h) }}
+                      <button v-for="h in turnosLibres" :key="h" @click="elegirHora(h)" class="shrink-0 w-24 h-11 rounded-xl text-sm font-medium cursor-pointer transition-colors" :class=" horaSeleccionada === h ? 'bg-sky-700 text-white' : 'bg-white outline-1 -outline-offset-1 outline-slate-200 text-sky-700 hover:bg-slate-100' ">
+                        {{ h }}
                       </button>
                     </div>
 
@@ -666,7 +619,7 @@ async function confirmarReserva() {
                   </svg>
                   Volver
                 </button>
-                <button @click="continuarAPaso3" class="h-11 px-5 rounded-xl bg-sky-700 text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed" :disabled="!diaSeleccionado || !horaSeleccionada">
+                <button @click="continuarAPaso3" class="h-11 px-5 rounded-xl bg-sky-700 text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed" :disabled="diaSeleccionado === null || horaSeleccionada === null">
                   Continuar
                 </button>
               </div>
@@ -709,7 +662,7 @@ async function confirmarReserva() {
                         fechaSeleccionadaTextoConAño
                       }}</span>
                       <span class="text-lg font-semibold text-sky-700">{{
-                        horaSeleccionada !== null ? formatearHora(horaSeleccionada) : ''
+                        horaSeleccionada ?? ''
                       }}</span>
                       <span class="text-xs text-sky-700">Pendiente de confirmación</span>
                     </div>
@@ -755,9 +708,7 @@ async function confirmarReserva() {
 
                     <template v-if="medicoSeleccionado">
                       <div class="flex items-center gap-3 shrink-0">
-                        <div class="size-11 shrink-0 rounded-full bg-blue-100 text-sky-700 flex items-center justify-center text-sm font-medium">
-                          {{ iniciales(medicoSeleccionado) }}
-                        </div>
+                        <Avatar class="size-11 shrink-0 rounded-full bg-blue-100 text-sky-700 flex items-center justify-center text-sm font-medium" :foto="medicoSeleccionado.foto" :texto="iniciales(medicoSeleccionado)" />
                         <div class="min-w-0">
                           <div class="font-semibold text-slate-900 truncate">
                             {{ medicoSeleccionado.nombre }} {{ medicoSeleccionado.apellido }}
@@ -778,7 +729,7 @@ async function confirmarReserva() {
                           {{ fechaSeleccionadaTextoConAño }}
                         </div>
                         <div class="text-lg font-semibold text-sky-700 mt-1">
-                          {{ horaSeleccionada !== null ? formatearHora(horaSeleccionada) : '' }}
+                          {{ horaSeleccionada ?? '' }}
                         </div>
                       </div>
                     </template>

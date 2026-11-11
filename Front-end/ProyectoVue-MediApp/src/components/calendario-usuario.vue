@@ -161,6 +161,7 @@ type Turno = {
     nombre: string
     apellido: string
     especialidades: { nombre_especialidad: string }[]
+    foto: string | null
   }
 }
 
@@ -264,7 +265,7 @@ function fechaLarga(d: Date) {
       <div class="navbar-usuario-zona">
         <div class="navbar-divisor"></div>
         <button class="navbar-usuario" @click.stop="esta = !esta">
-          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <Avatar propia class="navbar-usuario-avatar" :texto="nombreUsuario.charAt(0).toUpperCase()" />
           <div class="navbar-usuario-info">
             <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
             <span class="navbar-usuario-rol">Mi cuenta</span>
@@ -517,9 +518,7 @@ function fechaLarga(d: Date) {
         </div>
 
         <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl shrink-0">
-          <div class="w-12 h-12 shrink-0 rounded-full bg-blue-100 text-[#3D6FC2] font-semibold flex items-center justify-center">
-            {{ inicialesMedico(turnoSeleccionado) }}
-          </div>
+          <Avatar class="w-12 h-12 shrink-0 rounded-full bg-blue-100 text-[#3D6FC2] font-semibold flex items-center justify-center" :foto="turnoSeleccionado.medico.foto" :texto="inicialesMedico(turnoSeleccionado)" />
           <div class="min-w-0">
             <div class="font-semibold text-slate-900 truncate">
               {{ nombreMedicoTurno(turnoSeleccionado) }}

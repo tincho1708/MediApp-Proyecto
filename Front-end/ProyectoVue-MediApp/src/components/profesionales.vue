@@ -32,6 +32,9 @@ type Medico = {
   telefono: string | null
   mail: string
   especialidades: Especialidad[]
+  duracion_turno: number
+  edad: number | null
+  foto: string | null
 }
 type Turno = {
   id_turno: number
@@ -155,6 +158,13 @@ function iniciales(m: Medico) {
 function especialidadesTexto(m: Medico) {
   return m.especialidades.map((e) => e.nombre_especialidad).join(', ') || 'Sin especialidad'
 }
+const datosPerfil = computed(() => [
+  { titulo: 'Edad', valor: perfil.value?.edad ? `${perfil.value.edad} años` : 'No informada' },
+  { titulo: 'Duración del turno', valor: `${perfil.value?.duracion_turno ?? 60} min` },
+  { titulo: 'Teléfono', valor: perfil.value?.telefono || 'No informado' },
+  { titulo: 'Modalidad', valor: 'Presencial' },
+])
+
 function solicitarTurno(m: Medico) {
   emit('ir-a-reservar-turno', m.id)
 }
@@ -271,7 +281,7 @@ async function descargarArchivo(d: Devolucion) {
       <div class="navbar-usuario-zona">
         <div class="navbar-divisor"></div>
         <button class="navbar-usuario" @click.stop="esta = !esta">
-          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <Avatar propia class="navbar-usuario-avatar" :texto="nombreUsuario.charAt(0).toUpperCase()" />
           <div class="navbar-usuario-info">
             <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
             <span class="navbar-usuario-rol">Mi cuenta</span>
@@ -339,7 +349,7 @@ async function descargarArchivo(d: Devolucion) {
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
               <button v-for="m in misMedicosPagina" :key="m.id" class="tarjeta-medico" @click="verPerfil(m)">
-                <span class="avatar-medico">{{ iniciales(m) }}</span>
+                <Avatar class="avatar-medico" :foto="m.foto" :texto="iniciales(m)" />
                 <span class="flex-1 min-w-0 flex flex-col gap-0.5">
                   <span class="text-sm font-semibold text-[#182234] truncate">{{ m.nombre }} {{ m.apellido }}</span>
                   <span class="text-xs text-[#61718B] truncate">{{ especialidadesTexto(m) }}</span>
@@ -379,7 +389,7 @@ async function descargarArchivo(d: Devolucion) {
             <template v-else>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
                 <button v-for="m in directorioPagina" :key="m.id" class="tarjeta-medico" @click="verPerfil(m)">
-                  <span class="avatar-medico">{{ iniciales(m) }}</span>
+                  <Avatar class="avatar-medico" :foto="m.foto" :texto="iniciales(m)" />
                   <span class="flex-1 min-w-0 flex flex-col gap-0.5">
                     <span class="text-sm font-semibold text-[#182234] truncate">{{ m.nombre }} {{ m.apellido }}</span>
                     <span class="text-xs text-[#61718B] truncate">{{ especialidadesTexto(m) }}</span>
@@ -414,9 +424,9 @@ async function descargarArchivo(d: Devolucion) {
         </div>
 
         <div class="lg:flex-1 lg:min-h-0 flex flex-col lg:flex-row gap-6">
-          <section class="tarjeta-pop-up lg:w-80 shrink-0 p-6 flex flex-col justify-between gap-4">
+          <section class="tarjeta-pop-up lg:w-80 shrink-0 p-6 flex flex-col justify-between gap-4 lg:overflow-y-auto">
             <div class="flex flex-col gap-4">
-              <div class="size-16 rounded-full bg-[#EDF5FF] text-2xl font-semibold text-[#3D6FC2] flex items-center justify-center">{{ iniciales(perfil) }}</div>
+              <Avatar class="size-16 rounded-full bg-[#EDF5FF] text-2xl font-semibold text-[#3D6FC2] flex items-center justify-center" :foto="perfil.foto" :texto="iniciales(perfil)" />
               <div class="text-2xl font-semibold text-[#182234] wrap-break-word">{{ perfil.nombre }} {{ perfil.apellido }}</div>
               <div class="text-base font-semibold text-[#3D6FC2]">{{ especialidadesTexto(perfil) }}</div>
               <div class="text-xs text-[#61718B]">Matrícula nacional · No informada</div>
@@ -429,9 +439,16 @@ async function descargarArchivo(d: Devolucion) {
               <p class="text-sm text-[#61718B]">Atención en {{ especialidadesTexto(perfil) }} con seguimiento personalizado.</p>
             </div>
 
+            <div class="grid grid-cols-2 gap-x-3 gap-y-4">
+              <div v-for="dato in datosPerfil" :key="dato.titulo" class="flex flex-col gap-1 min-w-0">
+                <span class="text-xs text-[#61718B]">{{ dato.titulo }}</span>
+                <span class="text-sm font-semibold text-[#182234] wrap-break-word">{{ dato.valor }}</span>
+              </div>
+            </div>
+
             <div class="flex flex-col gap-1">
-              <span class="text-xs text-[#61718B]">Modalidad de atención</span>
-              <span class="text-sm font-semibold text-[#182234]">Presencial</span>
+              <span class="text-xs text-[#61718B]">Correo electrónico</span>
+              <span class="text-sm font-semibold text-[#182234] wrap-break-word">{{ perfil.mail }}</span>
             </div>
 
             <div v-if="proximoTurno" class="shrink-0 px-4 py-3 bg-[#EDF5FF] rounded-xl flex flex-col gap-1.5">

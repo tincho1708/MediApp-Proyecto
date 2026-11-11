@@ -111,6 +111,7 @@ function formatearFechaGrupo(fecha: string) {
 function tituloNotificacion(n: NotificacionPaciente) {
   if (n.mensaje.includes('rechazado')) return 'Solicitud rechazada'
   if (n.mensaje.includes('aceptado')) return 'Solicitud aceptada'
+  if (n.mensaje.includes('cancelado')) return 'Turno cancelado'
   return 'Notificación'
 }
 
@@ -155,7 +156,7 @@ const gruposNotificaciones = computed(() => {
       <div class="navbar-usuario-zona">
         <div class="navbar-divisor"></div>
         <button class="navbar-usuario" @click.stop="esta = !esta">
-          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <Avatar propia class="navbar-usuario-avatar" :texto="nombreUsuario.charAt(0).toUpperCase()" />
           <div class="navbar-usuario-info">
             <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
             <span class="navbar-usuario-rol">Mi cuenta</span>

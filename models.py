@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, LargeBinary, String, Table, Text, Float
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, LargeBinary, String, Table, Text, Float
 from sqlalchemy.orm import deferred, relationship
 from database import Base
 import datetime
@@ -38,6 +38,12 @@ class Medico(Base):
     google_id = Column(String(255), unique=True, nullable=True)
     pin_verificacion = Column(String(6), nullable=True)
     pin_expires = Column(DateTime, nullable=True)
+    duracion_turno = Column(Integer, nullable=False, default=60, server_default="60")
+    margen_turno = Column(Integer, nullable=False, default=0, server_default="0")
+    fecha_nacimiento = Column(Date, nullable=True)
+    foto_clave = Column(String(32), unique=True, nullable=True)
+    foto_tipo = Column(String(50), nullable=True)
+    foto_datos = deferred(Column(LargeBinary, nullable=True))
     # cambio_password_token = Column(String(255), nullable=True)
     # cambio_password_token_expires = Column(DateTime, nullable=True)
     # nuevo_password_hash = Column(String(255), nullable=True)
@@ -51,6 +57,18 @@ class Medico(Base):
     recomendaciones_dadas = relationship("Recomienda", foreign_keys="Recomienda.id_medico", back_populates="medico")
     recomendaciones_recibidas = relationship("Recomienda", foreign_keys="Recomienda.id_medico_recomendado", back_populates="medico_recomendado")
 
+    @property
+    def foto(self):
+        return f"/fotos/{self.foto_clave}" if self.foto_clave else None
+
+    @property
+    def edad(self):
+        if not self.fecha_nacimiento:
+            return None
+        hoy = datetime.date.today()
+        nacimiento = self.fecha_nacimiento
+        return hoy.year - nacimiento.year - ((hoy.month, hoy.day) < (nacimiento.month, nacimiento.day))
+
 
 class Paciente(Base):
     __tablename__ = "pacientes"
@@ -61,6 +79,12 @@ class Paciente(Base):
     apellido = Column(String(100), nullable=False)
     dni = Column(String(20), unique=True, nullable=True)
     telefono = Column(String(20))
+    direccion = Column(String(255), nullable=True)
+    ciudad = Column(String(100), nullable=True)
+    codigo_postal = Column(String(20), nullable=True)
+    foto_clave = Column(String(32), unique=True, nullable=True)
+    foto_tipo = Column(String(50), nullable=True)
+    foto_datos = deferred(Column(LargeBinary, nullable=True))
     password_hash = Column(String(255), nullable=True)
     email_verificado = Column(Boolean, default=False)
     verification_token = Column(String(255), nullable=True)
@@ -73,6 +97,10 @@ class Paciente(Base):
     resenas = relationship("Resena", back_populates="paciente")
     devoluciones = relationship("Devolucion", back_populates="paciente")
     notificaciones = relationship("NotificacionPaciente", back_populates="paciente")
+
+    @property
+    def foto(self):
+        return f"/fotos/{self.foto_clave}" if self.foto_clave else None
 
 
 class EstadoTurno(Base):
@@ -91,6 +119,7 @@ class Turno(Base):
     notas = Column(Text, nullable=True)
     notas_medico = Column(Text, nullable=True)
     fecha_hora = Column(DateTime, nullable=False)
+    duracion = Column(Integer, nullable=False, default=60, server_default="60")
     creado_en = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
     id_pacientes = Column(Integer, ForeignKey("pacientes.id"), nullable=False)
     id_medicos = Column(Integer, ForeignKey("medicos.id"), nullable=False)
@@ -112,6 +141,14 @@ class HorarioMedico(Base):
     hora = Column(Integer, nullable=False)
 
     medico = relationship("Medico", back_populates="horarios")
+
+
+class FechaBloqueada(Base):
+    __tablename__ = "fecha_bloqueada"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_medico = Column(Integer, ForeignKey("medicos.id"), nullable=False, index=True)
+    fecha = Column(Date, nullable=False)
 
 
 class Notificacion(Base):

@@ -135,7 +135,7 @@ def auth_google(data: GoogleAuthRequest, db: Session = Depends(get_db)):
     db.commit()
 
     token = create_access_token({"sub": str(usuario.id), "tipo": tipo})
-    response = {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre, "tipo": tipo, "nuevo": nuevo}
+    response = {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre, "foto": usuario.foto, "tipo": tipo, "nuevo": nuevo}
     if tipo == "medico" and usuario.setup_token:
         response["setup_token"] = usuario.setup_token
         response["medico_id"] = usuario.id
@@ -211,7 +211,7 @@ def verificar_pin(data: PinVerificacionRequest, db: Session = Depends(get_db)):
     db.commit()
 
     token = create_access_token({"sub": str(usuario.id), "tipo": data.tipo})
-    response = {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre}
+    response = {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre, "foto": usuario.foto}
 
     if data.tipo == "medico" and usuario.setup_token:
         response["setup_token"] = usuario.setup_token
@@ -239,4 +239,4 @@ def login_google(data: GoogleLoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Cuenta pendiente de verificación de PIN")
 
     token = create_access_token({"sub": str(usuario.id), "tipo": data.tipo})
-    return {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre}
+    return {"access_token": token, "token_type": "bearer", "nombre": usuario.nombre, "foto": usuario.foto}

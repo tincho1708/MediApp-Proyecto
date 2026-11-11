@@ -6,10 +6,11 @@ import uuid
 
 from database import get_db
 from models import Paciente
-from schemas import PacienteRegister, PacienteLogin, PacienteResponse, Token, Message, CambiarPassword
+from schemas import PacienteRegister, PacienteLogin, PacienteResponse, Token, Message, CambiarPassword, PerfilPaciente, PerfilPacienteUpdate
 from auth_utils import hash_password, verify_password, create_access_token
 from email_utils import send_verification_email
 from deps import solo_paciente
+from perfil import limpiar_datos
 
 router = APIRouter(prefix="/auth/pacientes", tags=["Auth Pacientes"])
 
@@ -81,7 +82,7 @@ def login_paciente(data: PacienteLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Debés verificar tu mail antes de iniciar sesión")
 
     token = create_access_token({"sub": str(paciente.id), "tipo": "paciente"})
-    return {"access_token": token, "token_type": "bearer", "nombre": paciente.nombre}
+    return {"access_token": token, "token_type": "bearer", "nombre": paciente.nombre, "foto": paciente.foto}
 
 
 @router.put("/password", response_model=Message)
@@ -97,3 +98,22 @@ def cambiar_password_paciente(data: CambiarPassword, user: dict = Depends(solo_p
     paciente.password_hash = hash_password(data.password_nueva)
     db.commit()
     return {"message": "Contraseña actualizada correctamente"}
+
+
+@router.get("/perfil", response_model=PerfilPaciente)
+def mi_perfil_paciente(user: dict = Depends(solo_paciente), db: Session = Depends(get_db)):
+    return db.query(Paciente).filter(Paciente.id == int(user["sub"])).first()
+
+
+@router.put("/perfil", response_model=PerfilPaciente)
+def actualizar_perfil_paciente(data: PerfilPacienteUpdate, user: dict = Depends(solo_paciente), db: Session = Depends(get_db)):
+    paciente = db.query(Paciente).filter(Paciente.id == int(user["sub"])).first()
+    datos = limpiar_datos(data)
+
+    if db.query(Paciente).filter(Paciente.mail == datos["mail"], Paciente.id != paciente.id).first():
+        raise HTTPException(status_code=400, detail="Ese correo ya está en uso")
+
+    for campo, valor in datos.items():
+        setattr(paciente, campo, valor)
+    db.commit()
+    return paciente

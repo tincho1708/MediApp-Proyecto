@@ -109,7 +109,7 @@ class MediBotTests(unittest.TestCase):
         self.db.add(Turno(id_medicos=1, id_pacientes=1, id_estado=2, fecha_hora=datetime(2026, 9, 16, 15)))
         self.db.commit()
         with patch.object(medibot.datetime, "datetime") as clock:
-            clock.utcnow.return_value = ahora
+            clock.now.return_value = ahora
             resultado = self.tool("horarios_libres", {"id": 1, "dias": 2}, "paciente")
         fechas = [datetime.strptime(s.split(" ", 1)[1], "%d/%m/%Y %H:%M") for s in resultado["libres"]]
         self.assertEqual(fechas, sorted(fechas))

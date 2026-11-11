@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from database import get_db
 from deps import get_current_user
+from agenda import turnos_libres
 from models import (
     ConversacionMediBot,
     Especialidad,
@@ -588,32 +589,14 @@ def ejecutar_tool(nombre: str, args: dict, db: Session, user_id: int, tipo: str)
         ahora = datetime.datetime.now()
         hasta = ahora + datetime.timedelta(days=dias)
 
-        horarios = db.query(HorarioMedico).filter(HorarioMedico.id_medico == medico.id).all()
+        horarios = db.query(HorarioMedico).filter(HorarioMedico.id_medico == medico.id).first()
         if not horarios:
             return {"encontrado": True, "profesional": _nombre_completo(medico), "libres": [], "mensaje": "Este profesional no tiene horarios cargados."}
 
-        ocupados = {
-            t.fecha_hora.replace(minute=0, second=0, microsecond=0)
-            for t in db.query(Turno)
-            .join(EstadoTurno)
-            .filter(
-                Turno.id_medicos == medico.id,
-                Turno.fecha_hora >= ahora,
-                Turno.fecha_hora <= hasta,
-                EstadoTurno.estado.in_(["pendiente", "aceptado"]),
-            )
-            .all()
-        }
-
         libres = []
-        dia = ahora.replace(minute=0, second=0, microsecond=0)
-        while dia <= hasta:
-            for h in horarios:
-                if h.dia_semana != dia.weekday():
-                    continue
-                slot = dia.replace(hour=h.hora)
-                if ahora < slot <= hasta and slot not in ocupados:
-                    libres.append(slot)
+        dia = ahora.date()
+        while dia <= hasta.date():
+            libres += [slot for slot in turnos_libres(db, medico, dia, ahora) if slot <= hasta]
             dia += datetime.timedelta(days=1)
 
         return {

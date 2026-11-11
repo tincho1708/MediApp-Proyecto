@@ -18,6 +18,7 @@ import Profesionales from './components/profesionales.vue'
 import MiUsuarioPaciente from './components/MiUsuario-Paciente.vue'
 import Notificaciones from './components/notificaciones.vue'
 import SeguridadUsuario from './components/seguridad-usuario.vue'
+import Seguridad from './components/seguridad.vue'
 import { useTurnosMedico } from '@/stores/turnosMedico'
 import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
 
@@ -48,6 +49,13 @@ function irAReservarTurno(medicoId?: number) {
   vista.value = 'reservarTurno'
 }
 
+const tipoRegistro = ref<'Medico' | 'Paciente' | null>(null)
+
+function irARegistro(tipo?: 'Medico' | 'Paciente') {
+  tipoRegistro.value = tipo ?? null
+  vista.value = 'registrar'
+}
+
 function cerrarSesion() {
   localStorage.removeItem('sesion')
   resetTurnosMedico()
@@ -59,29 +67,31 @@ function cerrarSesion() {
 <template>
   <Transition name="fade">
     <!-- Acceso -->
-    <Bienvenida v-if="vista === 'bienvenida'" key="bienvenida" @ir-a-registro="vista = 'registrar'" @ir-a-login="vista = 'iniciarSesion'" @ir-a-principal="vista = 'Principal'" @ir-a-principal-usuario="vista = 'principalUsuario'" />
+    <Bienvenida v-if="vista === 'bienvenida'" key="bienvenida" @ir-a-registro="irARegistro" @ir-a-login="vista = 'iniciarSesion'" />
 
-    <Registrar v-else-if="vista === 'registrar'" key="registrar" @ir-a-login="vista = 'iniciarSesion'" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-principal-usuario="vista = 'principalUsuario'" />
+    <Registrar v-else-if="vista === 'registrar'" key="registrar" :tipo-inicial="tipoRegistro" @ir-a-login="vista = 'iniciarSesion'" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-principal-usuario="vista = 'principalUsuario'" />
 
-    <IniciarSesion v-else-if="vista === 'iniciarSesion'" key="iniciarSesion" @bienvenida="vista = 'bienvenida'" @ir-a-registro="vista = 'registrar'" @ir-a-principal="vista = 'Principal'" @ir-a-principal-usuario="vista = 'principalUsuario'" />
+    <IniciarSesion v-else-if="vista === 'iniciarSesion'" key="iniciarSesion" @bienvenida="vista = 'bienvenida'" @ir-a-registro="irARegistro()" @ir-a-principal="vista = 'Principal'" @ir-a-principal-usuario="vista = 'principalUsuario'" />
 
     <!-- Compartida (médico y paciente) -->
-    <MediBot v-else-if="vista === 'chatbot'" key="chatbot" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-calendario="vista = 'calendario'" @ir-a-configuracion="vista = 'configuracion'" @ir-a-mi-usuario="vista = 'miUsuario'" @ir-a-principal-usuario="vista = 'principalUsuario'" @ir-a-reservar-turno="irAReservarTurno()" @ir-a-profesionales="vista = 'profesionales'" @ir-a-calendario-usuario="irACalendarioUsuario()" @ir-a-mi-usuario-paciente="vista = 'miUsuarioPaciente'" @ir-a-notificaciones="vista = 'notificaciones'" />
+    <MediBot v-else-if="vista === 'chatbot'" key="chatbot" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-calendario="vista = 'calendario'" @ir-a-configuracion="vista = 'miUsuario'" @ir-a-mi-usuario="vista = 'miUsuario'" @ir-a-principal-usuario="vista = 'principalUsuario'" @ir-a-reservar-turno="irAReservarTurno()" @ir-a-profesionales="vista = 'profesionales'" @ir-a-calendario-usuario="irACalendarioUsuario()" @ir-a-mi-usuario-paciente="vista = 'miUsuarioPaciente'" @ir-a-notificaciones="vista = 'notificaciones'" />
 
     <!-- Médico -->
-    <Principal v-else-if="vista === 'Principal'" key="principal" @ir-a-bienvenida="cerrarSesion" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'configuracion'" @ir-a-mi-usuario="vista = 'miUsuario'" />
+    <Principal v-else-if="vista === 'Principal'" key="principal" @ir-a-bienvenida="cerrarSesion" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'miUsuario'" @ir-a-mi-usuario="vista = 'miUsuario'" />
 
-    <Calendario v-else-if="vista === 'calendario'" key="calendario" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'configuracion'" @ir-a-mi-usuario="vista = 'miUsuario'" />
+    <Calendario v-else-if="vista === 'calendario'" key="calendario" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'miUsuario'" @ir-a-mi-usuario="vista = 'miUsuario'" />
 
-    <MediPlus v-else-if="vista === 'MediPlus'" key="MediPlus" @ir-a-bienvenida="cerrarSesion" @ir-a-chatbot="vista = 'chatbot'" @ir-a-principal="vista = 'Principal'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'configuracion'" @ir-a-mi-usuario="vista = 'miUsuario'" />
+    <MediPlus v-else-if="vista === 'MediPlus'" key="MediPlus" @ir-a-bienvenida="cerrarSesion" @ir-a-chatbot="vista = 'chatbot'" @ir-a-principal="vista = 'Principal'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'miUsuario'" @ir-a-mi-usuario="vista = 'miUsuario'" />
 
-    <Solicitudes v-else-if="vista === 'solicitudes'" key="solicitudes" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'configuracion'" @ir-a-mi-usuario="vista = 'miUsuario'" />
+    <Solicitudes v-else-if="vista === 'solicitudes'" key="solicitudes" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'miUsuario'" @ir-a-mi-usuario="vista = 'miUsuario'" />
 
-    <MisPacientes v-else-if="vista === 'misPacientes'" key="misPacientes" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-configuracion="vista = 'configuracion'" @ir-a-mi-usuario="vista = 'miUsuario'" />
+    <MisPacientes v-else-if="vista === 'misPacientes'" key="misPacientes" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-configuracion="vista = 'miUsuario'" @ir-a-mi-usuario="vista = 'miUsuario'" />
 
-    <Disponibilidad v-else-if="vista === 'configuracion'" key="configuracion" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-mi-usuario="vista = 'miUsuario'" />
+    <Disponibilidad v-else-if="vista === 'configuracion'" key="configuracion" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-mi-usuario="vista = 'miUsuario'" @ir-a-seguridad="vista = 'seguridadMedico'" />
 
-    <MiUsuario v-else-if="vista === 'miUsuario'" key="miUsuario" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'configuracion'" />
+    <Seguridad v-else-if="vista === 'seguridadMedico'" key="seguridadMedico" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'configuracion'" @ir-a-mi-usuario="vista = 'miUsuario'" />
+
+    <MiUsuario v-else-if="vista === 'miUsuario'" key="miUsuario" @ir-a-bienvenida="cerrarSesion" @ir-a-principal="vista = 'Principal'" @ir-a-chatbot="vista = 'chatbot'" @ir-a-calendario="vista = 'calendario'" @ir-a-MediPlus="vista = 'MediPlus'" @ir-a-solicitudes="vista = 'solicitudes'" @ir-a-mis-pacientes="vista = 'misPacientes'" @ir-a-configuracion="vista = 'configuracion'" @ir-a-seguridad="vista = 'seguridadMedico'" @ir-a-mi-usuario="vista = 'miUsuario'" />
 
     <!-- Paciente -->
     <PrincipalUsuario v-else-if="vista === 'principalUsuario'" key="principalUsuario" @ir-a-bienvenida="cerrarSesion" @ir-a-chatbot="vista = 'chatbot'" @ir-a-reservar-turno="irAReservarTurno()" @ir-a-profesionales="vista = 'profesionales'" @ir-a-calendario-usuario="irACalendarioUsuario" @ir-a-mi-usuario-paciente="vista = 'miUsuarioPaciente'" @ir-a-notificaciones="vista = 'notificaciones'" />

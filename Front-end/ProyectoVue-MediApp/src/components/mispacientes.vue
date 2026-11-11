@@ -25,6 +25,9 @@ type Paciente = {
   nombre: string
   apellido: string
   mail: string
+  telefono: string | null
+  ciudad: string | null
+  foto: string | null
   proximoTurno: TurnoMedico | null
   notaRapida: string | null
   primerTurno: string
@@ -150,6 +153,8 @@ const fichasFiltradas = computed(() =>
 const cantidadFichas = computed(() => fichasPaciente.value.filter((f) => f.devolucion).length)
 
 const datosPaciente = computed(() => [
+  { titulo: 'Teléfono', valor: pacienteAbierto.value?.telefono || 'No informado' },
+  { titulo: 'Ciudad', valor: pacienteAbierto.value?.ciudad || 'No informada' },
   { titulo: 'Último turno', valor: fichasPaciente.value[0] ? formatearTurno(fichasPaciente.value[0].turno) : 'Sin turnos anteriores' },
   { titulo: 'Turnos anteriores', valor: fichasPaciente.value.length },
 ])
@@ -189,7 +194,7 @@ async function descargarArchivo(d: Devolucion) {
       <div class="navbar-usuario-zona">
         <div class="navbar-divisor"></div>
         <button class="navbar-usuario" @click.stop="esta = !esta">
-          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <Avatar propia class="navbar-usuario-avatar" :texto="nombreUsuario.charAt(0).toUpperCase()" />
           <div class="navbar-usuario-info">
             <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
             <span class="navbar-usuario-rol">Mi cuenta</span>
@@ -262,7 +267,7 @@ async function descargarArchivo(d: Devolucion) {
           <div v-else class="flex-1 min-h-0 overflow-y-auto">
             <button v-for="(p, i) in pacientesFiltrados" :key="p.id" class="w-full min-h-14 px-4 py-2 grid grid-cols-[1fr_auto] md:grid-cols-[minmax(10rem,16rem)_10rem_1fr_7rem] items-center gap-x-6 gap-y-1 border-b border-slate-200 text-left cursor-pointer transition-colors hover:bg-blue-50" :class="i % 2 ? 'bg-slate-50' : 'bg-white'" @click="abrirPaciente(p.id)">
               <span class="flex items-center gap-3 min-w-0">
-                <span class="size-8 shrink-0 rounded-full bg-blue-50 text-[#3D6FC2] text-xs font-medium flex items-center justify-center">{{ iniciales(p) }}</span>
+                <Avatar class="size-8 shrink-0 rounded-full bg-blue-50 text-[#3D6FC2] text-xs font-medium flex items-center justify-center" :foto="p.foto" :texto="iniciales(p)" />
                 <span class="text-sm font-medium text-gray-800 truncate">{{ nombreCompleto(p) }}</span>
               </span>
               <span class="hidden md:block text-sm text-slate-500">{{ p.proximoTurno ? formatearTurno(p.proximoTurno) : 'Sin turnos próximos' }}</span>
@@ -292,7 +297,7 @@ async function descargarArchivo(d: Devolucion) {
         <div class="lg:flex-1 lg:min-h-0 flex flex-col lg:flex-row gap-6">
           <section class="lg:w-88 shrink-0 p-6 bg-white rounded-2xl shadow-[0_0.25rem_1rem_0_rgba(26,51,89,0.08)] flex flex-col justify-between gap-4 lg:overflow-y-auto">
             <div class="flex flex-col gap-4">
-              <div class="size-16 rounded-full bg-[#EDF5FF] text-2xl font-semibold text-[#3D6FC2] flex items-center justify-center">{{ iniciales(pacienteAbierto) }}</div>
+              <Avatar class="size-16 rounded-full bg-[#EDF5FF] text-2xl font-semibold text-[#3D6FC2] flex items-center justify-center" :foto="pacienteAbierto.foto" :texto="iniciales(pacienteAbierto)" />
               <div class="text-2xl font-semibold text-[#182234] wrap-break-word">{{ nombreCompleto(pacienteAbierto) }}</div>
               <div class="text-xs text-[#61718B]">Paciente desde {{ pacienteDesde(pacienteAbierto) }}</div>
             </div>

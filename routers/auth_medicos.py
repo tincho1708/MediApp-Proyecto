@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import uuid
 
 from database import get_db
 from models import Medico, Especialidad, HorarioMedico
-from schemas import MedicoRegister, MedicoLogin, Token, Message, RegistroMedicoResponse, EspecialidadesSetup
+from schemas import MedicoRegister, MedicoLogin, Token, Message, RegistroMedicoResponse, EspecialidadesSetup, CambiarPassword, PerfilMedico, PerfilMedicoUpdate
 from auth_utils import hash_password, verify_password, create_access_token
 from email_utils import send_verification_email
+from deps import solo_medico
+from perfil import limpiar_datos
 
 router = APIRouter(prefix="/auth/medicos", tags=["Auth Medicos"])
 
@@ -108,4 +110,42 @@ def login_medico(data: MedicoLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Debés verificar tu mail antes de iniciar sesión")
 
     token = create_access_token({"sub": str(medico.id), "tipo": "medico"})
-    return {"access_token": token, "token_type": "bearer", "nombre": medico.nombre}
+    return {"access_token": token, "token_type": "bearer", "nombre": medico.nombre, "foto": medico.foto}
+
+
+@router.put("/password", response_model=Message)
+def cambiar_password_medico(data: CambiarPassword, user: dict = Depends(solo_medico), db: Session = Depends(get_db)):
+    medico = db.query(Medico).filter(Medico.id == int(user["sub"])).first()
+    if not medico:
+        raise HTTPException(status_code=404, detail="Médico no encontrado")
+    if not medico.password_hash:
+        raise HTTPException(status_code=400, detail="Tu cuenta usa inicio de sesión con Google y no tiene contraseña")
+    if not verify_password(data.password_actual, medico.password_hash):
+        raise HTTPException(status_code=400, detail="La contraseña actual es incorrecta")
+
+    medico.password_hash = hash_password(data.password_nueva)
+    db.commit()
+    return {"message": "Contraseña actualizada correctamente"}
+
+
+@router.get("/perfil", response_model=PerfilMedico)
+def mi_perfil_medico(user: dict = Depends(solo_medico), db: Session = Depends(get_db)):
+    return db.query(Medico).filter(Medico.id == int(user["sub"])).first()
+
+
+@router.put("/perfil", response_model=PerfilMedico)
+def actualizar_perfil_medico(data: PerfilMedicoUpdate, user: dict = Depends(solo_medico), db: Session = Depends(get_db)):
+    medico = db.query(Medico).filter(Medico.id == int(user["sub"])).first()
+    datos = limpiar_datos(data)
+
+    if db.query(Medico).filter(Medico.mail == datos["mail"], Medico.id != medico.id).first():
+        raise HTTPException(status_code=400, detail="Ese correo ya está en uso")
+    if datos["dni"] and db.query(Medico).filter(Medico.dni == datos["dni"], Medico.id != medico.id).first():
+        raise HTTPException(status_code=400, detail="Ese DNI ya está registrado")
+    if datos["fecha_nacimiento"] and not date(1900, 1, 1) <= datos["fecha_nacimiento"] <= date.today():
+        raise HTTPException(status_code=400, detail="La fecha de nacimiento no es válida")
+
+    for campo, valor in datos.items():
+        setattr(medico, campo, valor)
+    db.commit()
+    return medico

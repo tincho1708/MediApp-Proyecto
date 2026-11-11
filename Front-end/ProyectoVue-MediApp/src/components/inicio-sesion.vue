@@ -23,11 +23,11 @@ const cargandoGoogle = ref(false)
 
 function guardarSesionYEntrar(
   tipo: 'Medico' | 'Paciente',
-  data: { access_token: string; nombre: string },
+  data: { access_token: string; nombre: string; foto?: string | null },
 ) {
   localStorage.setItem(
     'sesion',
-    JSON.stringify({ token: data.access_token, tipo, nombre: data.nombre }),
+    JSON.stringify({ token: data.access_token, tipo, nombre: data.nombre, foto: data.foto ?? null }),
   )
   if (tipo === 'Medico') {
     resetTurnosMedico()

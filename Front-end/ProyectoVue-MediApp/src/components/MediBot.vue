@@ -272,7 +272,7 @@ function formatear(texto: string) {
     <div class="navbar-usuario-zona">
       <div class="navbar-divisor"></div>
       <button class="navbar-usuario" @click.stop="esta = !esta">
-        <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+        <Avatar propia class="navbar-usuario-avatar" :texto="nombreUsuario.charAt(0).toUpperCase()" />
         <div class="navbar-usuario-info">
           <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
           <span class="navbar-usuario-rol">Mi cuenta</span>

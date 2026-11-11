@@ -19,7 +19,7 @@ function cerrarAlClickFuera() {
 onMounted(() => document.addEventListener('click', cerrarAlClickFuera))
 onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
-const { turnos, usarPollingTurnos, guardarNotasMedico } = useTurnosMedico()
+const { turnos, usarPollingTurnos, guardarNotasMedico, actualizarEstadoTurno } = useTurnosMedico()
 
 usarPollingTurnos()
 
@@ -150,6 +150,26 @@ async function guardarCambios() {
     guardando.value = false
   }
 }
+
+const cancelando = ref(false)
+const confirmandoCancelacion = ref(false)
+
+const puedeCancelar = computed(() => !!turnoEditando.value && new Date(turnoEditando.value.fecha_hora).getTime() > Date.now())
+
+async function cancelarTurno() {
+  if (!turnoEditando.value) return
+  cancelando.value = true
+  errorGuardar.value = ''
+  try {
+    await actualizarEstadoTurno(turnoEditando.value.id_turno, 'cancelar')
+    cerrarEdicion()
+  } catch (e) {
+    errorGuardar.value = e instanceof Error ? e.message : 'No se pudo conectar al servidor.'
+  } finally {
+    cancelando.value = false
+    confirmandoCancelacion.value = false
+  }
+}
 </script>
 
 <template>
@@ -172,7 +192,7 @@ async function guardarCambios() {
       <div class="navbar-usuario-zona">
         <div class="navbar-divisor"></div>
         <button class="navbar-usuario" @click.stop="esta = !esta">
-          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <Avatar propia class="navbar-usuario-avatar" :texto="nombreUsuario.charAt(0).toUpperCase()" />
           <div class="navbar-usuario-info">
             <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
             <span class="navbar-usuario-rol">Mi cuenta</span>
@@ -281,10 +301,11 @@ async function guardarCambios() {
 
             <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4">
               <div class="shrink-0 p-4 bg-slate-50 rounded-2xl flex items-center gap-4 min-w-0">
-                <div class="size-11 shrink-0 rounded-full bg-blue-50 text-[#3D6FC2] text-sm font-medium flex items-center justify-center">{{ iniciales(turnoEditando) }}</div>
+                <Avatar class="size-11 shrink-0 rounded-full bg-blue-50 text-[#3D6FC2] text-sm font-medium flex items-center justify-center" :foto="turnoEditando.paciente.foto" :texto="iniciales(turnoEditando)" />
                 <div class="min-w-0">
                   <div class="text-lg font-semibold text-gray-800 truncate">{{ nombrePaciente(turnoEditando) }}</div>
                   <div class="text-xs text-slate-500 truncate">Email: {{ turnoEditando.paciente.mail }}</div>
+                  <div v-if="turnoEditando.paciente.telefono" class="text-xs text-slate-500 truncate">Teléfono: {{ turnoEditando.paciente.telefono }}</div>
                 </div>
               </div>
 
@@ -316,6 +337,7 @@ async function guardarCambios() {
             <div class="shrink-0 flex flex-col gap-2">
               <p v-if="errorGuardar" class="text-sm text-red-600">{{ errorGuardar }}</p>
               <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <button v-if="puedeCancelar" class="sm:mr-auto sm:w-44 h-12 bg-white rounded-xl outline-1 -outline-offset-1 outline-red-200 text-sm font-medium text-red-600 cursor-pointer hover:bg-red-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" @click="confirmandoCancelacion = true">Cancelar turno</button>
                 <button class="sm:w-44 h-12 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-[#3D6FC2] cursor-pointer hover:bg-slate-50 transition-colors" @click="cerrarEdicion">Descartar cambios</button>
                 <button class="sm:w-60 h-12 bg-[#3D6FC2] rounded-xl flex items-center justify-center gap-2 text-sm font-medium text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed" :disabled="guardando" @click="guardarCambios">
                   <svg style="width: 1rem; height: 1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
@@ -388,6 +410,21 @@ async function guardarCambios() {
               Usá "Editar" para ver los datos del turno y agregar notas.
             </p>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- pop up -->
+    <div v-if="confirmandoCancelacion && turnoEditando" class="fixed inset-0 z-200 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-['Inter']" @click.self="!cancelando && (confirmandoCancelacion = false)">
+      <div class="w-full max-w-md bg-white rounded-3xl shadow-[0_0.75rem_2rem_-0.5rem_rgba(20,51,87,0.1)] p-6 flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <span class="text-lg font-semibold text-gray-800">¿Cancelar este turno?</span>
+          <span class="text-sm text-slate-500">{{ nombrePaciente(turnoEditando) }} · {{ formatearFechaNumerica(turnoEditando.fecha_hora) }} · {{ formatearHora(turnoEditando.fecha_hora) }}</span>
+        </div>
+        <p class="text-sm text-gray-800">Le vamos a avisar al paciente que el turno fue cancelado. Esta acción no se puede deshacer.</p>
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+          <button class="h-11 px-5 bg-white rounded-xl outline-1 -outline-offset-1 outline-slate-200 text-sm font-medium text-[#3D6FC2] cursor-pointer hover:bg-slate-50 transition-colors disabled:opacity-40" :disabled="cancelando" @click="confirmandoCancelacion = false">Volver</button>
+          <button class="h-11 px-5 bg-red-600 rounded-xl text-sm font-medium text-white cursor-pointer hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" :disabled="cancelando" @click="cancelarTurno">{{ cancelando ? 'Cancelando...' : 'Sí, cancelar turno' }}</button>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useConteoNoLeidas } from '@/stores/notificacionesConteo'
+import { actualizarSesion, subirFoto } from '@/fotoPerfil'
 
 const emit = defineEmits([
   'ir-a-profesionales',
@@ -15,40 +16,80 @@ const emit = defineEmits([
 const { conteoNoLeidas, usarPollingConteoNoLeidas } = useConteoNoLeidas()
 usarPollingConteoNoLeidas()
 
+const API = import.meta.env.VITE_API_URL
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
-const nombreUsuario = sesion.nombre || 'Usuario'
+const nombreUsuario = ref(sesion.nombre || 'Usuario')
+const headers = { Authorization: `Bearer ${sesion.token}`, 'Content-Type': 'application/json' }
 
-const form = ref({
-  nombre: '',
-  apellido: '',
-  email: '',
-  telefono: '',
-  direccion: '',
-  ciudad: '',
-  codigoPostal: '',
-})
+const vacio = { nombre: '', apellido: '', mail: '', telefono: '', direccion: '', ciudad: '', codigo_postal: '' }
+const guardado = ref({ ...vacio })
+const form = ref({ ...vacio })
+const mensaje = ref('')
+const error = ref('')
 
-const campos: { clave: keyof typeof form.value; label: string; placeholder: string; tipo?: string; completo?: boolean }[] = [
+const campos: { clave: keyof typeof vacio; label: string; placeholder: string; tipo?: string; completo?: boolean }[] = [
   { clave: 'nombre', label: 'Nombre', placeholder: 'Ingresá tu nombre' },
   { clave: 'apellido', label: 'Apellido', placeholder: 'Ingresá tu apellido' },
-  { clave: 'email', label: 'Correo electrónico', placeholder: 'nombre@ejemplo.com', tipo: 'email' },
+  { clave: 'mail', label: 'Correo electrónico', placeholder: 'nombre@ejemplo.com', tipo: 'email' },
   { clave: 'telefono', label: 'Teléfono', placeholder: '+54 11 0000 0000', tipo: 'tel' },
   { clave: 'direccion', label: 'Dirección', placeholder: 'Ingresá tu dirección', completo: true },
   { clave: 'ciudad', label: 'Ciudad', placeholder: 'Ingresá tu ciudad' },
-  { clave: 'codigoPostal', label: 'Código postal', placeholder: 'Ingresá tu código postal' },
+  { clave: 'codigo_postal', label: 'Código postal', placeholder: 'Ingresá tu código postal' },
 ]
 
+function mostrarDatos(datos: typeof vacio) {
+  guardado.value = { ...vacio }
+  for (const c of campos) guardado.value[c.clave] = datos[c.clave] ?? ''
+  form.value = { ...guardado.value }
+}
+
+async function cargarPerfil() {
+  const res = await fetch(`${API}/auth/pacientes/perfil`, { headers }).catch(() => null)
+  if (res?.ok) mostrarDatos(await res.json())
+  else error.value = 'No se pudieron cargar tus datos.'
+}
+
 function cancelarCambios() {
-  form.value = {
-    nombre: '',
-    apellido: '',
-    email: '',
-    telefono: '',
-    direccion: '',
-    ciudad: '',
-    codigoPostal: '',
+  form.value = { ...guardado.value }
+  mensaje.value = ''
+  error.value = ''
+}
+
+async function guardarCambios() {
+  mensaje.value = ''
+  error.value = ''
+  const res = await fetch(`${API}/auth/pacientes/perfil`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(form.value),
+  }).catch(() => null)
+  const datos = await res?.json().catch(() => null)
+  if (!res?.ok) {
+    error.value = typeof datos?.detail === 'string' ? datos.detail : 'Revisá los datos ingresados.'
+    return
+  }
+  mostrarDatos(datos)
+  nombreUsuario.value = datos.nombre
+  actualizarSesion({ nombre: datos.nombre })
+  mensaje.value = 'Tus datos se guardaron correctamente.'
+}
+
+const foto = ref<string | null>(sesion.foto ?? null)
+
+async function cambiarFoto(evento: Event) {
+  mensaje.value = ''
+  error.value = ''
+  try {
+    const nueva = await subirFoto(evento)
+    if (!nueva) return
+    foto.value = nueva
+    mensaje.value = 'Tu foto se actualizó correctamente.'
+  } catch (e) {
+    error.value = (e as Error).message
   }
 }
+
+onMounted(cargarPerfil)
 
 const esta = ref(false)
 
@@ -88,7 +129,7 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
       <div class="navbar-usuario-zona">
         <div class="navbar-divisor"></div>
         <button class="navbar-usuario" @click.stop="esta = !esta">
-          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <Avatar class="navbar-usuario-avatar" :foto="foto" :texto="nombreUsuario.charAt(0).toUpperCase()" />
           <div class="navbar-usuario-info">
             <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
             <span class="navbar-usuario-rol">Mi cuenta</span>
@@ -172,12 +213,11 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
 
         <div class="flex flex-col gap-4">
           <div class="flex flex-row gap-4 items-center shrink-0">
-            <div class="w-14 h-14 rounded-3xl bg-[#EDF5FF] flex items-center justify-center">
-              <div class="text-lg font-semibold text-[#176FB7]">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
-            </div>
-            <button class="w-36 h-11 rounded-xl border border-[#D7E2F0] bg-white text-[#176FB7] text-sm font-medium hover:bg-[#EDF5FF]">
+            <Avatar class="w-14 h-14 rounded-3xl bg-[#EDF5FF] flex items-center justify-center text-lg font-semibold text-[#176FB7]" :foto="foto" :texto="nombreUsuario.charAt(0).toUpperCase()" />
+            <label class="w-36 h-11 rounded-xl border border-[#D7E2F0] bg-white text-[#176FB7] text-sm font-medium hover:bg-[#EDF5FF] cursor-pointer flex items-center justify-center">
               Cambiar foto
-            </button>
+              <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" @change="cambiarFoto" />
+            </label>
           </div>
 
           <div class="grid grid-cols-2 gap-x-6 gap-y-3">
@@ -188,11 +228,13 @@ onBeforeUnmount(() => document.removeEventListener('click', cerrarAlClickFuera))
           </div>
         </div>
 
-        <div class="flex justify-end gap-3 mt-auto pt-6">
+        <div class="flex items-center justify-end gap-3 mt-auto pt-6">
+          <span v-if="error" class="mr-auto text-xs text-red-600">{{ error }}</span>
+          <span v-else-if="mensaje" class="mr-auto text-xs text-green-700">{{ mensaje }}</span>
           <button class="w-32 h-11 rounded-xl border border-[#D7E2F0] bg-white text-[#176FB7] text-sm font-medium hover:bg-[#EDF5FF]" @click="cancelarCambios">
             Cancelar
           </button>
-          <button class="w-52 h-11 rounded-xl bg-[#4270B0] text-white text-sm font-medium hover:bg-[#365E96]">
+          <button class="w-52 h-11 rounded-xl bg-[#4270B0] text-white text-sm font-medium hover:bg-[#365E96]" @click="guardarCambios">
             Guardar cambios
           </button>
         </div>

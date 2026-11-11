@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from typing import Optional, List
-from datetime import date, datetime, timedelta
+from datetime import date
 
 from database import get_db
-from models import Medico, Especialidad, HorarioMedico, Turno, EstadoTurno
-from schemas import MedicoPublicoResponse, EspecialidadResponse, HorarioResponse, HorarioUpdate
+from models import Medico, Especialidad, HorarioMedico, FechaBloqueada
+from schemas import MedicoPublicoResponse, EspecialidadResponse, HorarioResponse, HorarioUpdate, ConfiguracionTurnos
 from deps import solo_medico
+from agenda import turnos_libres
+
+DURACIONES = {15, 20, 30, 45, 60}
+MARGENES = {0, 5, 10, 15}
 
 router = APIRouter(tags=["Médicos"])
 
@@ -45,19 +49,48 @@ def obtener_horarios(medico_id: int, db: Session = Depends(get_db)):
     ).order_by(HorarioMedico.dia_semana, HorarioMedico.hora).all()
 
 
-@router.get("/medicos/{medico_id}/horarios-ocupados", response_model=List[int])
-def obtener_horarios_ocupados(medico_id: int, fecha: date, db: Session = Depends(get_db)):
-    inicio = datetime.combine(fecha, datetime.min.time())
-    fin = inicio + timedelta(days=1)
+@router.get("/medicos/{medico_id}/turnos-libres", response_model=List[str])
+def obtener_turnos_libres(medico_id: int, fecha: date, db: Session = Depends(get_db)):
+    medico = db.query(Medico).filter(Medico.id == medico_id, Medico.email_verificado == True).first()
+    if not medico:
+        raise HTTPException(status_code=404, detail="Médico no encontrado")
+    return [t.strftime("%H:%M") for t in turnos_libres(db, medico, fecha)]
 
-    turnos = db.query(Turno).join(EstadoTurno).filter(
-        Turno.id_medicos == medico_id,
-        Turno.fecha_hora >= inicio,
-        Turno.fecha_hora < fin,
-        EstadoTurno.estado.in_(["pendiente", "aceptado"]),
-    ).all()
 
-    return [t.fecha_hora.hour for t in turnos]
+@router.get("/medicos/mi-configuracion", response_model=ConfiguracionTurnos)
+def mi_configuracion(
+    db: Session = Depends(get_db),
+    user: dict = Depends(solo_medico),
+):
+    medico = db.query(Medico).filter(Medico.id == int(user["sub"])).first()
+    fechas = db.query(FechaBloqueada).filter(FechaBloqueada.id_medico == medico.id).order_by(FechaBloqueada.fecha).all()
+    return {
+        "duracion_turno": medico.duracion_turno,
+        "margen_turno": medico.margen_turno,
+        "fechas_bloqueadas": [f.fecha for f in fechas],
+    }
+
+
+@router.put("/medicos/mi-configuracion", response_model=ConfiguracionTurnos)
+def actualizar_configuracion(
+    data: ConfiguracionTurnos,
+    db: Session = Depends(get_db),
+    user: dict = Depends(solo_medico),
+):
+    if data.duracion_turno not in DURACIONES:
+        raise HTTPException(status_code=400, detail="Duración de turno inválida")
+    if data.margen_turno not in MARGENES:
+        raise HTTPException(status_code=400, detail="Tiempo entre turnos inválido")
+
+    medico = db.query(Medico).filter(Medico.id == int(user["sub"])).first()
+    medico.duracion_turno = data.duracion_turno
+    medico.margen_turno = data.margen_turno
+
+    db.query(FechaBloqueada).filter(FechaBloqueada.id_medico == medico.id).delete()
+    for fecha in sorted(set(data.fechas_bloqueadas)):
+        db.add(FechaBloqueada(id_medico=medico.id, fecha=fecha))
+    db.commit()
+    return mi_configuracion(db, user)
 
 
 @router.get("/medicos/mis-horarios", response_model=List[HorarioResponse])

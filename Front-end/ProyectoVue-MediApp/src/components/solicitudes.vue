@@ -48,9 +48,9 @@ function formatearFecha(fechaHora: string) {
   return `${f.getDate()} de ${nombresMes[f.getMonth()]}`
 }
 
-function formatearRangoHora(fechaHora: string) {
-  const f = new Date(fechaHora)
-  const fin = new Date(f.getTime() + 60 * 60 * 1000)
+function formatearRangoHora(t: TurnoMedico) {
+  const f = new Date(t.fecha_hora)
+  const fin = new Date(f.getTime() + t.duracion * 60 * 1000)
   const hora = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
   return `${hora(f)}–${hora(fin)}`
 }
@@ -103,7 +103,7 @@ async function resolverTurno(accion: 'aceptar' | 'rechazar') {
       <div class="navbar-usuario-zona">
         <div class="navbar-divisor"></div>
         <button class="navbar-usuario" @click.stop="esta = !esta">
-          <div class="navbar-usuario-avatar">{{ nombreUsuario.charAt(0).toUpperCase() }}</div>
+          <Avatar propia class="navbar-usuario-avatar" :texto="nombreUsuario.charAt(0).toUpperCase()" />
           <div class="navbar-usuario-info">
             <span class="navbar-usuario-nombre">{{ nombreUsuario }}</span>
             <span class="navbar-usuario-rol">Mi cuenta</span>
@@ -192,7 +192,7 @@ async function resolverTurno(accion: 'aceptar' | 'rechazar') {
             <div v-else class="flex-1 min-h-0 max-h-96 lg:max-h-none flex flex-col gap-2 overflow-y-auto">
               <button v-for="t in turnosPendientes" :key="t.id_turno" class="shrink-0 grid grid-cols-[1fr_auto_1.25rem] md:grid-cols-[14rem_1fr_11rem_1.25rem] items-center gap-4 px-4 py-3 rounded-2xl text-left cursor-pointer transition-colors" :class="turnoSeleccionado?.id_turno === t.id_turno ? 'bg-blue-50 outline-1 -outline-offset-1 outline-[#3D6FC2]' : 'hover:bg-slate-50'" @click="turnoSeleccionadoId = t.id_turno">
                 <div class="flex items-center gap-3 min-w-0">
-                  <div class="size-11 shrink-0 rounded-full bg-blue-50 text-[#3D6FC2] text-sm font-medium flex items-center justify-center">{{ iniciales(t) }}</div>
+                  <Avatar class="size-11 shrink-0 rounded-full bg-blue-50 text-[#3D6FC2] text-sm font-medium flex items-center justify-center" :foto="t.paciente.foto" :texto="iniciales(t)" />
                   <div class="min-w-0">
                     <div class="text-sm font-medium text-gray-800 truncate">{{ nombrePaciente(t) }}</div>
                     <div class="text-xs text-slate-500">Paciente</div>
@@ -201,7 +201,7 @@ async function resolverTurno(accion: 'aceptar' | 'rechazar') {
                 <span class="hidden md:block text-sm text-slate-500 line-clamp-2">{{ t.notas || 'Sin motivo especificado' }}</span>
                 <div>
                   <div class="text-sm font-medium text-gray-800">{{ formatearFecha(t.fecha_hora) }}</div>
-                  <div class="text-xs text-slate-500">{{ formatearRangoHora(t.fecha_hora) }}</div>
+                  <div class="text-xs text-slate-500">{{ formatearRangoHora(t) }}</div>
                 </div>
                 <svg style="width: 1.25rem; height: 1.25rem" class="text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg>
               </button>
@@ -216,7 +216,7 @@ async function resolverTurno(accion: 'aceptar' | 'rechazar') {
             <template v-else>
               <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-5">
               <div class="shrink-0 flex items-center gap-4 min-w-0">
-                <div class="size-16 shrink-0 rounded-3xl bg-blue-50 text-[#3D6FC2] text-xl font-semibold flex items-center justify-center">{{ iniciales(turnoSeleccionado) }}</div>
+                <Avatar class="size-16 shrink-0 rounded-3xl bg-blue-50 text-[#3D6FC2] text-xl font-semibold flex items-center justify-center" :foto="turnoSeleccionado.paciente.foto" :texto="iniciales(turnoSeleccionado)" />
                 <span class="text-xl font-semibold text-gray-800 truncate">{{ nombrePaciente(turnoSeleccionado) }}</span>
               </div>
 
@@ -225,7 +225,7 @@ async function resolverTurno(accion: 'aceptar' | 'rechazar') {
                   <svg style="width: 1.25rem; height: 1.25rem" class="text-[#3D6FC2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>
                   Turno solicitado
                 </div>
-                <span class="text-lg font-semibold text-gray-800">{{ formatearFecha(turnoSeleccionado.fecha_hora) }} · {{ formatearRangoHora(turnoSeleccionado.fecha_hora) }}</span>
+                <span class="text-lg font-semibold text-gray-800">{{ formatearFecha(turnoSeleccionado.fecha_hora) }} · {{ formatearRangoHora(turnoSeleccionado) }}</span>
               </div>
 
               <div class="shrink-0 flex flex-col gap-3">

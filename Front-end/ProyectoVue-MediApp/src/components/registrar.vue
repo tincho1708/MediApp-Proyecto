@@ -8,13 +8,15 @@ const emit = defineEmits([
   'ir-a-principal-usuario',
 ])
 
+const props = defineProps<{ tipoInicial?: 'Medico' | 'Paciente' | null }>()
+
 const form = ref({
   nombre: '',
   email: '',
   password: '',
 })
 
-const tipoUsuario = ref<'Medico' | 'Paciente' | null>(null)
+const tipoUsuario = ref<'Medico' | 'Paciente' | null>(props.tipoInicial ?? null)
 const error = ref('')
 const cargando = ref(false)
 const exito = ref('')
@@ -150,7 +152,7 @@ async function testearSubmit() {
       <div class="etiqueta-tipo">Registrarse como</div>
       <div class="tipo-usuario">
         <button type="button" class="tipo-boton" :class="{ activo: tipoUsuario === 'Medico' }" @click="seleccionar('Medico')">
-          Médico
+          Profesional
         </button>
         <button type="button" class="tipo-boton" :class="{ activo: tipoUsuario === 'Paciente' }" @click="seleccionar('Paciente')">
           Paciente

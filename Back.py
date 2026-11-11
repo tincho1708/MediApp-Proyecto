@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth_medicos, auth_pacientes, auth_google, medicos, turnos, notificaciones, medibot, devoluciones
+from routers import auth_medicos, auth_pacientes, auth_google, medicos, turnos, notificaciones, medibot, devoluciones, fotos
 
 app = FastAPI(title="MediApp API", version="1.0.0")
 
@@ -21,6 +21,7 @@ app.include_router(turnos.router)
 app.include_router(notificaciones.router)
 app.include_router(medibot.router)
 app.include_router(devoluciones.router)
+app.include_router(fotos.router)
 
 
 @app.get("/")

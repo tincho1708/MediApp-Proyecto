@@ -55,9 +55,45 @@ class MedicoPublicoResponse(BaseModel):
     telefono: Optional[str]
     mail: str
     especialidades: List[EspecialidadResponse]
+    duracion_turno: int = 60
+    edad: Optional[int] = None
+    foto: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+
+class PerfilMedico(BaseModel):
+    nombre: str = Field(max_length=100)
+    apellido: str = Field(default="", max_length=100)
+    mail: str
+    telefono: Optional[str] = Field(default=None, max_length=20)
+    dni: Optional[str] = Field(default=None, max_length=20)
+    fecha_nacimiento: Optional[datetime.date] = None
+
+    class Config:
+        from_attributes = True
+
+
+class PerfilMedicoUpdate(PerfilMedico):
+    mail: EmailStr
+
+
+class PerfilPaciente(BaseModel):
+    nombre: str = Field(max_length=100)
+    apellido: str = Field(default="", max_length=100)
+    mail: str
+    telefono: Optional[str] = Field(default=None, max_length=20)
+    direccion: Optional[str] = Field(default=None, max_length=255)
+    ciudad: Optional[str] = Field(default=None, max_length=100)
+    codigo_postal: Optional[str] = Field(default=None, max_length=20)
+
+    class Config:
+        from_attributes = True
+
+
+class PerfilPacienteUpdate(PerfilPaciente):
+    mail: EmailStr
 
 
 class PacienteRegister(BaseModel):
@@ -103,6 +139,12 @@ class HorarioUpdate(BaseModel):
     horarios: list[dict]
 
 
+class ConfiguracionTurnos(BaseModel):
+    duracion_turno: int
+    margen_turno: int
+    fechas_bloqueadas: List[datetime.date] = []
+
+
 class TurnoCreate(BaseModel):
     medico_id: int
     fecha_hora: datetime.datetime
@@ -123,6 +165,9 @@ class PacienteBasico(BaseModel):
     nombre: str
     apellido: str
     mail: str
+    telefono: Optional[str] = None
+    ciudad: Optional[str] = None
+    foto: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -133,6 +178,8 @@ class MedicoBasico(BaseModel):
     nombre: str
     apellido: str
     especialidades: List[EspecialidadResponse]
+    duracion_turno: int = 60
+    foto: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -141,6 +188,7 @@ class MedicoBasico(BaseModel):
 class TurnoResponse(BaseModel):
     id_turno: int
     fecha_hora: datetime.datetime
+    duracion: int = 60
     creado_en: Optional[datetime.datetime]
     notas: Optional[str]
     id_pacientes: int
@@ -244,6 +292,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     nombre: str
+    foto: Optional[str] = None
 
 
 class Message(BaseModel):

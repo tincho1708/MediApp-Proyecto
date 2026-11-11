@@ -4,9 +4,10 @@ from typing import List
 from datetime import datetime
 
 from database import get_db
-from models import Turno, EstadoTurno, Medico, Paciente, HorarioMedico, Notificacion, NotificacionPaciente
+from models import Turno, EstadoTurno, Medico, Paciente, Notificacion, NotificacionPaciente
 from schemas import TurnoCreate, TurnoResponse, TurnoMedicoResponse, NotasMedicoUpdate
 from deps import get_current_user, solo_paciente, solo_medico
+from agenda import turnos_libres
 
 router = APIRouter(prefix="/turnos", tags=["Turnos"])
 
@@ -39,32 +40,19 @@ def solicitar_turno(
     if especialidad_id is not None and especialidad_id not in ids_especialidades:
         raise HTTPException(status_code=400, detail="El profesional no atiende esa especialidad")
 
-    if data.fecha_hora <= datetime.now():
+    fecha_hora = data.fecha_hora.replace(tzinfo=None, second=0, microsecond=0)
+    if fecha_hora <= datetime.now():
         raise HTTPException(status_code=400, detail="La fecha debe ser futura")
 
-    dia_semana = data.fecha_hora.weekday()
-    hora = data.fecha_hora.hour
-    disponible = db.query(HorarioMedico).filter(
-        HorarioMedico.id_medico == data.medico_id,
-        HorarioMedico.dia_semana == dia_semana,
-        HorarioMedico.hora == hora,
-    ).first()
-    if not disponible:
-        raise HTTPException(status_code=400, detail="El médico no está disponible en ese horario")
-
-    solapado = db.query(Turno).join(EstadoTurno).filter(
-        Turno.id_medicos == data.medico_id,
-        Turno.fecha_hora == data.fecha_hora,
-        EstadoTurno.estado.in_(["pendiente", "aceptado"]),
-    ).first()
-    if solapado:
-        raise HTTPException(status_code=400, detail="El médico ya tiene un turno en ese horario")
+    if fecha_hora not in turnos_libres(db, medico, fecha_hora.date()):
+        raise HTTPException(status_code=400, detail="Ese horario no está disponible. Elegí otro.")
 
     estado_pendiente = _get_estado(db, "pendiente")
     turno = Turno(
         id_pacientes=paciente_id,
         id_medicos=data.medico_id,
-        fecha_hora=data.fecha_hora,
+        fecha_hora=fecha_hora,
+        duracion=medico.duracion_turno,
         notas=data.notas,
         id_estado=estado_pendiente.id,
         id_especialidad=especialidad_id,
@@ -73,7 +61,7 @@ def solicitar_turno(
     db.flush()
 
     paciente = db.query(Paciente).filter(Paciente.id == paciente_id).first()
-    fecha_str = data.fecha_hora.strftime("%d/%m/%Y a las %H:%M")
+    fecha_str = fecha_hora.strftime("%d/%m/%Y a las %H:%M")
     notificacion = Notificacion(
         id_medico=data.medico_id,
         id_turno=turno.id_turno,
@@ -166,8 +154,10 @@ def cancelar_turno(
     if not es_paciente_del_turno and not es_medico_del_turno:
         raise HTTPException(status_code=403, detail="No tenés permiso para cancelar este turno")
 
-    if turno.estado.estado == "cancelado":
-        raise HTTPException(status_code=400, detail="El turno ya está cancelado")
+    if turno.estado.estado not in ("pendiente", "aceptado"):
+        raise HTTPException(status_code=400, detail=f"No se puede cancelar un turno {turno.estado.estado}")
+    if turno.fecha_hora <= datetime.now():
+        raise HTTPException(status_code=400, detail="No se puede cancelar un turno que ya pasó")
 
     turno.id_estado = _get_estado(db, "cancelado").id
     fecha_str = turno.fecha_hora.strftime("%d/%m/%Y a las %H:%M")
